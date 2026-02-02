@@ -1,0 +1,983 @@
+/* Home Screen Refinements & Animations */
+
+/* 1. Single Screen Layout (No Scroll) */
+/* Only apply when home section is active */
+body:has(#home-section.active-section) {
+    overflow: hidden;
+    height: 100vh;
+}
+
+/* Fully Centered Home Layout */
+#home-section {
+    height: auto;
+    /* Allow growth */
+    min-height: 100vh;
+    /* Ensure full screen minimum */
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    /* Fix items to top, don't float center */
+    align-items: center;
+    gap: 1.5rem;
+    /* Top padding reduced for tighter alignment */
+    /* Top padding reduced for tighter alignment */
+    padding: 0.5rem 1rem 1rem 1rem !important;
+    /* Reduced bottom padding */
+    box-sizing: border-box;
+    overflow: hidden !important;
+    /* Force no scroll */
+    flex: 1;
+    /* Take remaining space */
+    gap: 0.5rem !important;
+    /* Reduced from 1.5rem to save vertical space */
+}
+
+/* Reset Margins for Child Elements */
+.unified-countdown-card {
+    margin: 0 !important;
+    flex-shrink: 0;
+}
+
+.home-actions-wrapper {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-top: 0.5rem !important;
+    min-height: auto !important;
+    flex-shrink: 0;
+    /* Prevent shrinking too much */
+    flex-grow: 0;
+    /* STOP taking up all space - this hid the quote */
+    align-items: center;
+}
+
+.daily-quote-widget {
+    margin: auto auto 1rem auto !important;
+    /* Push to bottom (auto top) */
+    flex-shrink: 0 !important;
+    /* Prevent disappearing */
+    text-align: center !important;
+    max-width: 90%;
+    transform: scale(0.9);
+    /* Slightly larger than 0.85 */
+    opacity: 1 !important;
+    /* Force visible */
+    display: block !important;
+}
+
+/* Ensure buttons don't stretch weirdly */
+.home-action-btn {
+    min-width: 120px;
+}
+
+.daily-quote-widget:active {
+    transform: scale(0.98);
+}
+
+.daily-quote-widget .quote-text {
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.quote-icon {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 0.5rem;
+}
+
+/* 2. White Heart Animation */
+.white-heart {
+    font-size: 1.8rem;
+    display: inline-block;
+    animation: heartBeat 2s infinite ease-in-out;
+    filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.6));
+}
+
+@keyframes heartBeat {
+    0% {
+        transform: scale(1);
+    }
+
+    14% {
+        transform: scale(1.15);
+    }
+
+    28% {
+        transform: scale(1);
+    }
+
+    42% {
+        transform: scale(1.15);
+    }
+
+    70% {
+        transform: scale(1);
+    }
+}
+
+/* Quote Widget Animations */
+.quote-heart-svg {
+    width: 32px;
+    height: 32px;
+    fill: #ffffff;
+    /* Not red, matches theme */
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+    animation: gentleFloat 3s ease-in-out infinite, organicHeartbeat 3s ease-in-out infinite;
+}
+
+.quote-text {
+    animation: textSlideUp 1s ease-out both;
+    animation-delay: 0.5s;
+}
+
+@keyframes gentleFloat {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-5px);
+    }
+}
+
+@keyframes textSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+
+
+/* 3. Home Action Buttons Animation - REMOVED */
+/* Removed due to performance/UX considerations */
+
+@keyframes btnFloat {
+
+    0%,
+    100% {
+        transform: translateY(0);
+        box-shadow: 0 4px 15px rgba(var(--primary-rgb), 0.2);
+    }
+
+    50% {
+        transform: translateY(-6px);
+        box-shadow: 0 8px 20px rgba(var(--primary-rgb), 0.3);
+    }
+}
+
+/* Ensure header subtitle has a graceful animation */
+.header-subtitle {
+    animation: subtitleFadeIn 1.5s ease-out both;
+    animation-delay: 0.3s;
+}
+
+@keyframes subtitleFadeIn {
+    from {
+        opacity: 0;
+        transform: translateX(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Enhanced Heart Animation */
+.pulse-heart {
+    animation: organicHeartbeat 2.5s infinite ease-in-out !important;
+    display: inline-block;
+}
+
+@keyframes organicHeartbeat {
+    0% {
+        transform: scale(1);
+    }
+
+    10% {
+        transform: scale(1.1) rotate(-5deg);
+    }
+
+    20% {
+        transform: scale(1);
+    }
+
+    30% {
+        transform: scale(1.1) rotate(5deg);
+    }
+
+    40% {
+        transform: scale(1);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* Spacing overrides are now handled at the top of the file */
+
+/* Ensure bottom nav doesn't overlap on small screens if we lock headers */
+#app-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden !important;
+    padding: 0 !important;
+    min-height: 0;
+    /* Important for flex children scrolling */
+}
+
+#landing-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+}
+
+/* Adjust header to not take too much space if needed, 
+   but usually it's fine. 
+*/
+
+/* Compact Countdown Card - User Request Phase 4 (More Breathing Room) */
+.unified-countdown-card {
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: center !important;
+    align-items: center !important;
+    padding: 0.4rem 0.5rem !important;
+    gap: 0.1rem !important;
+    min-height: auto !important;
+    max-width: 85% !important;
+    margin-bottom: 0 !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+
+.countdown-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center !important;
+    /* Center text */
+    gap: 0 !important;
+    width: 100%;
+    /* Ensure full width for centering */
+}
+
+.countdown-label {
+    font-size: 0.6rem !important;
+    margin-bottom: 0 !important;
+    opacity: 0.6;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    line-height: 1;
+    text-align: center !important;
+}
+
+.countdown-date {
+    display: none !important;
+    /* Hide date to save space per "squeezed" feedback */
+}
+
+.countdown-timer {
+    font-size: 0.85rem !important;
+    font-weight: 700 !important;
+    margin-top: 4px !important;
+    color: var(--primary-color);
+    line-height: 1.5 !important;
+    text-align: center !important;
+}
+
+/* Resize SVGs to be tiny icons */
+.unified-countdown-card svg,
+.infinity-svg,
+.nikah-svg {
+    width: 28px !important;
+    height: auto !important;
+    max-height: 28px !important;
+    margin-bottom: 2px !important;
+    display: block !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+
+.countdown-section {
+    flex: 1 !important;
+    /* Force equal width */
+    flex-basis: 0 !important;
+    /* Ensure they start from 0 to divide equally */
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 0.2rem !important;
+}
+
+/* Nişan & Nikah Sections - Match Home Buttons (Rose Theme) */
+/* Dark Mode Overrides for Nişan/Nikah to match buttons exactly */
+body.dark-mode .countdown-section.nisan,
+body.dark-mode .countdown-section.nikah {
+    background: linear-gradient(135deg, #3E2F32, #36282B) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+    color: var(--text-color) !important;
+    /* Use theme text color which is light in dark mode */
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Ensure text in Dark Mode uses theme color (light grey/white) */
+body.dark-mode .countdown-section.nisan .countdown-label,
+body.dark-mode .countdown-section.nisan .countdown-timer,
+body.dark-mode .countdown-section.nisan .countdown-date,
+body.dark-mode .countdown-section.nisan .hcc-label,
+body.dark-mode .countdown-section.nisan .hcc-timer,
+body.dark-mode .countdown-section.nikah .countdown-label,
+body.dark-mode .countdown-section.nikah .countdown-timer,
+body.dark-mode .countdown-section.nikah .countdown-date,
+body.dark-mode .countdown-section.nikah .hcc-label,
+body.dark-mode .countdown-section.nikah .hcc-timer {
+    color: var(--text-color) !important;
+    text-shadow: none !important;
+}
+
+/* Icons in Dark Mode to muted pink/primary */
+body.dark-mode .countdown-section.nisan .infinity-path {
+    stroke: #E59CAE !important;
+}
+
+body.dark-mode .countdown-section.nikah .heart-path {
+    fill: #E59CAE !important;
+}
+
+.countdown-section.nisan,
+.countdown-section.nikah {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    border-radius: 12px;
+    margin: 4px;
+    padding: 10px !important;
+    /* Add some internal padding */
+    box-shadow: 0 4px 12px rgba(223, 166, 166, 0.3);
+    /* Match button shadow */
+    color: white !important;
+}
+
+/* Ensure text is white */
+.countdown-section.nisan .countdown-label,
+.countdown-section.nisan .countdown-timer,
+.countdown-section.nisan .countdown-date,
+.countdown-section.nisan .hcc-label,
+.countdown-section.nisan .hcc-timer,
+.countdown-section.nikah .countdown-label,
+.countdown-section.nikah .countdown-timer,
+.countdown-section.nikah .countdown-date,
+.countdown-section.nikah .hcc-label,
+.countdown-section.nikah .hcc-timer {
+    color: white !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Icons to white */
+.countdown-section.nisan .infinity-path {
+    stroke: white !important;
+    fill: none;
+}
+
+.countdown-section.nikah .heart-path {
+    fill: white !important;
+    stroke: none;
+}
+
+.countdown-section svg {
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+/* Adjust Divider */
+.countdown-divider {
+    display: none !important;
+}
+
+/* More Breathing Room for Buttons */
+/* .home-actions removed - consolidated */
+
+/* FIX: Hide unwanted bottom widget */
+#fixed-countdown-widget,
+.fixed-countdown {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+
+/* FIX: Toast Container shouldn't block clicks when empty/invisible */
+#toast-container {
+    pointer-events: none;
+    z-index: 9999;
+}
+
+#toast-container .toast-content,
+#toast-container button {
+    pointer-events: auto;
+    /* Only actual toast content is clickable */
+}
+
+/* FIX: Ensure Filter Bar doesn't ghost-block on Home Screen */
+body:has(#home-section.active-section) #filter-bar {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+}
+
+/* --- Carousel & Calendar Styles (Phase 6) --- */
+.countdown-carousel-wrapper {
+    position: relative;
+    width: 100%;
+    max-width: 85%;
+    margin: 0 auto;
+    overflow: hidden;
+    margin-bottom: 0 !important;
+    /* Removed excess spacing */
+    /* Ensure spacing */
+    flex-shrink: 0;
+    /* Prevent crushing */
+}
+
+.carousel-track {
+    display: flex;
+    width: 100%;
+    transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+    will-change: transform;
+}
+
+.carousel-slide {
+    width: 100%;
+    flex-shrink: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.carousel-slide .unified-countdown-card {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+/* Calendar Card Styles (iOS Theme) */
+.calendar-card {
+    display: flex !important;
+    flex-direction: column !important;
+    padding: 0.5rem !important;
+    /* Compact like countdown */
+    height: 100%;
+    min-height: auto;
+    box-sizing: border-box;
+    justify-content: flex-start !important;
+    color: var(--text-light);
+}
+
+.calendar-header {
+    display: flex;
+    justify-content: center;
+    /* iOS Style: Center title */
+    align-items: center;
+    width: 100%;
+    margin-bottom: 0.2rem;
+    position: relative;
+    height: 24px;
+}
+
+.cal-month-year {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--primary-color);
+    text-transform: capitalize;
+}
+
+/* Nav buttons positioned absolute to not mess center title */
+.cal-nav-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    color: var(--primary-color);
+    cursor: pointer;
+    padding: 4px;
+    font-size: 0.8rem;
+}
+
+.cal-nav-btn.prev {
+    left: 0;
+}
+
+.cal-nav-btn.next {
+    right: 0;
+}
+
+.calendar-days-header {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    width: 100%;
+    font-size: 0.6rem;
+    color: #8e8e93;
+    /* iOS Gray */
+    text-align: center;
+    font-weight: 500;
+    margin-bottom: 2px;
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    width: 100%;
+    row-gap: 2px;
+    /* Tight rows */
+    flex: 1;
+    /* Fill remaining space */
+}
+
+.cal-day {
+    font-size: 0.7rem;
+    text-align: center;
+    cursor: default;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-light);
+    position: relative;
+    height: 28px;
+    /* Fixed height for consistency */
+}
+
+/* The number circle */
+.cal-day span {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    z-index: 1;
+}
+
+.cal-day.empty {
+    pointer-events: none;
+}
+
+/* Today: Solid Circle (Red/Primary) */
+.cal-day.today span {
+    background: var(--primary-color);
+    color: white;
+    font-weight: 600;
+}
+
+/* Event Dot (Small dot below number) */
+.event-dot {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    margin-top: 1px;
+}
+
+/* Dots area */
+.carousel-dots-container {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 2px;
+    margin-bottom: 2px !important;
+    /* Reduced from 0.5rem */
+}
+
+/* Compact Mini Dashboard if visible */
+.mini-dashboard {
+    margin: 4px auto !important;
+    padding: 0 !important;
+    transform: scale(0.9);
+    width: 90%;
+}
+
+/* Full Screen Calendar Modal Refined - Made truly full screen */
+.calendar-modal-main {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 100% !important;
+    height: 100dvh !important;
+    max-height: 100vh !important;
+    border-radius: 0 !important;
+    background: white;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    margin: 0 !important;
+}
+
+@media (min-width: 601px) {
+    .calendar-modal-main {
+        max-width: 100% !important;
+        height: 100% !important;
+        height: 100dvh !important;
+    }
+}
+
+.calendar-header.large-header {
+    justify-content: center;
+    position: relative;
+    height: 40px;
+}
+
+.cal-month-year.large-title {
+    font-size: 1.2rem;
+    color: var(--text-dark);
+}
+
+.calendar-days-header.large-days span {
+    font-weight: 600;
+    color: #8e8e93;
+}
+
+.calendar-grid.large-grid {
+    flex: none;
+    /* Auto height based on content */
+    row-gap: 12px !important;
+}
+
+.large-grid .cal-day {
+    height: 48px;
+    /* Bigger touch target */
+    font-size: 1rem;
+}
+
+.large-grid .cal-day span {
+    width: 36px;
+    height: 36px;
+}
+
+.large-grid .event-dot {
+    width: 6px;
+    height: 6px;
+    margin-top: 3px;
+}
+
+/* Event List Styling */
+.event-list-item {
+    display: flex;
+    align-items: center;
+    padding: 0.8rem 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.event-list-item .date-circle {
+    width: 32px;
+    height: 32px;
+    background: #f0f0f5;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    margin-right: 1rem;
+    font-size: 0.85rem;
+    color: var(--text-dark);
+}
+
+.event-list-item .note-text {
+    flex: 1;
+    color: var(--text-dark);
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+/* Premium Empty State */
+.empty-events-premium {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 1rem;
+    color: var(--text-light);
+    opacity: 0.7;
+}
+
+.empty-events-premium .empty-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    color: var(--primary-light);
+}
+
+.empty-events-premium p {
+    font-size: 0.9rem;
+    font-style: italic;
+}
+
+/* Fix: Day Details Modal must be above Full Calendar Modal */
+#modal-day-details {
+    z-index: 11000 !important;
+}
+
+#modal-day-details .modal-backdrop {
+    z-index: 11001 !important;
+}
+
+#modal-day-details .modal-content-sheet {
+    z-index: 11002 !important;
+}
+
+.clickable-event {
+    cursor: pointer;
+    transition: background 0.2s;
+    border-radius: 8px;
+    padding: 0.8rem 0.5rem !important;
+}
+
+.clickable-event:hover {
+    background: rgba(var(--primary-rgb), 0.05);
+}
+
+.clickable-event:active {
+    background: rgba(var(--primary-rgb), 0.1);
+}
+
+.delete-hint {
+    margin-left: 10px;
+    color: var(--text-light);
+    opacity: 0.5;
+    font-size: 0.8rem;
+}
+
+.c-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    transition: all 0.2s;
+}
+
+.c-dot.active {
+    background: var(--primary-color);
+    width: 18px;
+    border-radius: 4px;
+}
+
+/* --- Greeting Section --- */
+.home-greeting {
+    text-align: center;
+    margin-bottom: 0.5rem;
+    animation: fadeSlideDown 0.8s ease-out;
+}
+
+.greeting-title {
+    font-size: 1.4rem;
+    font-weight: 600;
+    margin: 0;
+    color: var(--text-color);
+    letter-spacing: -0.5px;
+}
+
+.greeting-subtitle {
+    font-size: 0.9rem;
+    color: var(--text-light);
+    margin: 4px 0 0 0;
+    font-weight: 400;
+}
+
+@keyframes fadeSlideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* --- Mini Dashboard --- */
+.mini-dashboard {
+    display: flex;
+    gap: 12px;
+    width: 85%;
+    margin: 0.5rem auto;
+    justify-content: center;
+}
+
+.mini-stat-card {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    transition: transform 0.2s;
+}
+
+body.dark-mode .mini-stat-card {
+    background: rgba(30, 30, 30, 0.6);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.mini-stat-card:active {
+    transform: scale(0.98);
+}
+
+.mini-stat-icon {
+    font-size: 1rem;
+    color: var(--primary-color);
+    margin-bottom: 2px;
+}
+
+.mini-stat-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.mini-stat-val {
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+.mini-stat-bar {
+    height: 4px;
+    background: #f0f0f0;
+    border-radius: 2px;
+    overflow: hidden;
+    width: 100%;
+}
+
+body.dark-mode .mini-stat-bar {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.mini-stat-fill {
+    height: 100%;
+    background: var(--primary-color);
+    border-radius: 2px;
+    transition: width 1s ease-out;
+}
+
+/* --- New Action Cards --- */
+.home-actions {
+    flex-direction: row !important;
+    /* Force Side-by-Side */
+    gap: 8px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100%;
+    max-width: 100%;
+    justify-content: center;
+}
+
+.home-action-card {
+    display: flex;
+    flex-direction: column;
+    /* Stack Icon + Text for compactness */
+    align-items: center;
+    justify-content: center;
+    background: white;
+    /* Fallback */
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.6));
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 16px;
+    /* Smaller radius */
+    padding: 10px;
+    /* Compact padding */
+    width: 45%;
+    /* Fit two in row */
+    text-align: center;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+    transition: transform 0.2s, box-shadow 0.2s;
+    position: relative;
+    overflow: hidden;
+    height: 100%;
+}
+
+body.dark-mode .home-action-card {
+    background: linear-gradient(135deg, rgba(45, 45, 45, 0.9), rgba(30, 30, 30, 0.8));
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+.home-action-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(var(--primary-rgb), 0.15);
+}
+
+.home-action-card:active {
+    transform: scale(0.98);
+}
+
+.action-icon-circle {
+    width: 36px;
+    /* Smaller */
+    height: 36px;
+    background: var(--bg-color);
+    /* Light gray usually */
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 0;
+    /* Stacked layout */
+    margin-bottom: 6px;
+    color: var(--primary-color);
+    font-size: 1rem;
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.03);
+}
+
+body.dark-mode .action-icon-circle {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.action-text {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.action-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.action-desc {
+    font-size: 0.75rem;
+    color: var(--text-light);
+    margin-top: 2px;
+}
+
+.action-arrow {
+    font-size: 0.9rem;
+    color: var(--text-light);
+    opacity: 0.5;
+}
+
+/* Adjust Quote spacing */
+.daily-quote-widget {
+    margin-top: 0.2rem !important;
+    /* Move closer */
+    transform: scale(0.9);
+    /* Slightly smaller to fit */
+    margin-bottom: 50px;
+    /* Space for bottom nav */
+}

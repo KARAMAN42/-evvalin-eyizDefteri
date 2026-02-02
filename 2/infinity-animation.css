@@ -1,0 +1,62 @@
+/* Infinity Symbol Animation */
+.infinity-container {
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.1));
+}
+
+.infinity-svg {
+    width: 100%;
+    height: 100%;
+}
+
+.infinity-path {
+    fill: none;
+    stroke: var(--primary-color);
+    stroke-width: 4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: 200;
+    stroke-dashoffset: 200;
+    animation: infinity-draw 4s linear infinite;
+}
+
+@keyframes infinity-draw {
+    0% {
+        stroke-dashoffset: 400;
+    }
+
+    50% {
+        stroke-dashoffset: 200;
+    }
+
+    100% {
+        stroke-dashoffset: 0;
+    }
+}
+
+/* Pulse effect for the container */
+.infinity-container {
+    animation: infinity-pulse 3s ease-in-out infinite;
+}
+
+@keyframes infinity-pulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.1);
+    }
+}
+
+/* Dark mode adjustment */
+body.dark-mode .infinity-path {
+    stroke: var(--primary-color);
+    filter: drop-shadow(0 0 5px var(--primary-color));
+}

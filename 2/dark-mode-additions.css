@@ -1,0 +1,151 @@
+/* Additional Premium Dark Mode Styles */
+
+/* Buttons - Soft Rose with Glow */
+body.dark-mode .home-action-btn {
+    background: linear-gradient(135deg, #E8A5A5, #D89595) !important;
+    color: #121212 !important;
+    box-shadow: 0 4px 12px rgba(232, 165, 165, 0.25),
+        0 0 20px rgba(232, 165, 165, 0.15) !important;
+}
+
+body.dark-mode .home-action-btn:hover {
+    background: linear-gradient(135deg, #F0B0B0, #E0A0A0) !important;
+    box-shadow: 0 6px 16px rgba(232, 165, 165, 0.35),
+        0 0 24px rgba(232, 165, 165, 0.2) !important;
+}
+
+body.dark-mode .home-action-btn.damat {
+    background: linear-gradient(135deg, #C5B5A5, #B0A194) !important;
+    box-shadow: 0 4px 12px rgba(197, 181, 165, 0.25),
+        0 0 20px rgba(197, 181, 165, 0.15) !important;
+}
+
+body.dark-mode .home-action-btn.damat:hover {
+    background: linear-gradient(135deg, #D0C0B0, #BFB0A0) !important;
+    box-shadow: 0 6px 16px rgba(197, 181, 165, 0.35),
+        0 0 24px rgba(197, 181, 165, 0.2) !important;
+}
+
+/* Primary Buttons */
+body.dark-mode .btn-primary,
+body.dark-mode button[type="submit"] {
+    background: linear-gradient(135deg, #E8A5A5, #B87B7B) !important;
+    color: #121212 !important;
+    box-shadow: 0 4px 12px rgba(232, 165, 165, 0.25) !important;
+}
+
+body.dark-mode .btn-primary:hover,
+body.dark-mode button[type="submit"]:hover {
+    box-shadow: 0 6px 16px rgba(232, 165, 165, 0.35),
+        0 0 20px rgba(232, 165, 165, 0.15) !important;
+}
+
+/* FAB Button */
+body.dark-mode #fab {
+    background: linear-gradient(135deg, #E8A5A5, #B87B7B) !important;
+    color: #121212 !important;
+    box-shadow: 0 6px 20px rgba(232, 165, 165, 0.3),
+        0 0 20px rgba(232, 165, 165, 0.15) !important;
+}
+
+body.dark-mode #fab:hover {
+    box-shadow: 0 8px 24px rgba(232, 165, 165, 0.4),
+        0 0 30px rgba(232, 165, 165, 0.25) !important;
+}
+
+/* Icon Buttons */
+body.dark-mode .btn-icon,
+body.dark-mode .header-actions button {
+    color: #A0A0A0;
+}
+
+body.dark-mode .btn-icon:hover,
+body.dark-mode .header-actions button:hover {
+    color: #E8A5A5;
+    background: rgba(232, 165, 165, 0.1);
+}
+
+/* Theme Toggle */
+body.dark-mode .theme-toggle {
+    color: #E8A5A5 !important;
+}
+
+body.dark-mode .theme-toggle:hover {
+    color: #F0B0B0 !important;
+    background: rgba(232, 165, 165, 0.15);
+}
+
+/* List Items */
+body.dark-mode .list-item {
+    background: #1E1E1E;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+body.dark-mode .list-item:hover {
+    background: #252525;
+    border-color: rgba(232, 165, 165, 0.2);
+}
+
+
+/* Badges & Tags */
+body.dark-mode .category-badge,
+body.dark-mode .tag {
+    background: #252525;
+    color: #E0E0E0;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+/* Dividers */
+body.dark-mode hr,
+body.dark-mode .divider {
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+/* Checkboxes & Radio */
+body.dark-mode input[type="checkbox"],
+body.dark-mode input[type="radio"] {
+    border-color: rgba(255, 255, 255, 0.12);
+}
+
+body.dark-mode input[type="checkbox"]:checked,
+body.dark-mode input[type="radio"]:checked {
+    background-color: #E8A5A5;
+    border-color: #E8A5A5;
+}
+
+/* Scrollbars */
+body.dark-mode ::-webkit-scrollbar {
+    background: #121212;
+}
+
+body.dark-mode ::-webkit-scrollbar-thumb {
+    background: #2C2C2C;
+    border-radius: 4px;
+}
+
+body.dark-mode ::-webkit-scrollbar-thumb:hover {
+    background: #B87B7B;
+}
+
+/* Toast/Notifications */
+body.dark-mode .toast,
+body.dark-mode .notification {
+    background: #1E1E1E;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5),
+        0 4px 8px rgba(0, 0, 0, 0.4);
+    color: #E0E0E0;
+}
+
+/* State colors */
+body.dark-mode .success {
+    color: #90EE90;
+}
+
+body.dark-mode .warning {
+    color: #FFD700;
+}
+
+body.dark-mode .error {
+    color: #FF6B6B;
+}

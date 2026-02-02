@@ -1,0 +1,51 @@
+/* Compact Countdown Card - User Request Phase 2 */
+.unified-countdown-card {
+    padding: 0.8rem 1rem !important;
+    gap: 0.8rem !important;
+    min-height: auto !important;
+}
+
+.countdown-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2px !important;
+}
+
+.countdown-label {
+    font-size: 0.75rem !important;
+    margin-bottom: 2px !important;
+    opacity: 0.8;
+}
+
+.countdown-date {
+    font-size: 0.85rem !important;
+    font-weight: 500 !important;
+}
+
+.countdown-timer {
+    font-size: 1rem !important;
+    /* Reduced from likely 1.2+ */
+    font-weight: 600 !important;
+    margin-top: 2px !important;
+}
+
+/* Resize SVGs */
+.unified-countdown-card svg,
+.infinity-svg,
+.nikah-svg {
+    width: 50px !important;
+    /* Reduced size */
+    height: auto !important;
+    max-height: 40px !important;
+}
+
+.countdown-section {
+    padding: 0.5rem !important;
+}
+
+/* Adjust Divider */
+.countdown-divider {
+    height: 40px !important;
+    margin: 0 0.5rem !important;
+}

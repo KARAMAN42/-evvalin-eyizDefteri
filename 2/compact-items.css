@@ -1,0 +1,49 @@
+/* Compact List Items Optimization */
+.item-card {
+    margin-bottom: 8px !important;
+    padding: 10px 14px !important;
+    border-radius: 12px !important;
+    gap: 10px !important;
+    border: 1px solid rgba(0, 0, 0, 0.03) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02) !important;
+}
+
+.item-content {
+    gap: 12px !important;
+}
+
+.checkbox-wrapper {
+    transform: scale(0.9);
+}
+
+.item-info h3 {
+    font-size: 0.95rem !important;
+    margin-bottom: 2px !important;
+}
+
+.item-details {
+    gap: 6px !important;
+}
+
+.item-tag {
+    font-size: 0.7rem !important;
+    padding: 2px 8px !important;
+    height: auto !important;
+}
+
+.item-actions {
+    gap: 4px !important;
+}
+
+.btn-icon.edit,
+.btn-icon.delete {
+    width: 32px !important;
+    height: 32px !important;
+    font-size: 0.9rem !important;
+}
+
+/* Dark mode adjustments */
+body.dark-mode .item-card {
+    background: #1c1c1e !important;
+    border-color: rgba(255, 255, 255, 0.05) !important;
+}

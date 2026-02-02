@@ -1,0 +1,139 @@
+/* Checkbox Animation Enhancements */
+
+/* Smooth checkbox transitions */
+.checkbox-wrapper {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    flex-shrink: 0;
+}
+
+.custom-checkbox {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    border-radius: 8px !important;
+}
+
+/* Checkmark animation */
+.custom-checkbox i {
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transform: scale(0);
+}
+
+.action-check:checked~.custom-checkbox i {
+    transform: scale(1);
+    animation: checkBounce 0.4s ease;
+}
+
+@keyframes checkBounce {
+    0% {
+        transform: scale(0);
+    }
+
+    50% {
+        transform: scale(1.2);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* Item completion animation - stays in place */
+.item-card.bought {
+    animation: itemComplete 0.6s ease forwards;
+}
+
+@keyframes itemComplete {
+    0% {
+        transform: scale(1) translateY(0);
+        opacity: 1;
+    }
+
+    15% {
+        transform: scale(0.98) translateY(0);
+    }
+
+    30% {
+        transform: scale(1.02) translateY(0);
+    }
+
+    50% {
+        transform: scale(1) translateY(0);
+    }
+
+    100% {
+        transform: scale(1) translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Checkbox glow effect when checked - using pseudo element to avoid layout shift */
+.action-check:checked~.custom-checkbox::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%;
+    height: 100%;
+    border-radius: inherit;
+    animation: checkGlow 0.6s ease;
+    pointer-events: none;
+    z-index: -1;
+}
+
+@keyframes checkGlow {
+
+    0%,
+    100% {
+        box-shadow: 0 0 0 0 rgba(216, 138, 154, 0);
+    }
+
+    50% {
+        box-shadow: 0 0 0 8px rgba(216, 138, 154, 0.3);
+    }
+}
+
+/* Completed badge animation */
+.completed-badge {
+    animation: badgeSlideIn 0.3s ease 0.2s both;
+}
+
+@keyframes badgeSlideIn {
+    0% {
+        opacity: 0;
+        transform: translateX(10px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Item name strikethrough animation when completed */
+.item-card.bought .item-info h3 {
+    animation: strikethrough 0.4s ease 0.3s forwards;
+}
+
+@keyframes strikethrough {
+    0% {
+        text-decoration: none;
+        opacity: 1;
+    }
+
+    100% {
+        text-decoration: line-through;
+        opacity: 0.6;
+    }
+}
+
+/* Smooth opacity transition for the whole card */
+.item-card {
+    transition: opacity 0.3s ease, transform 0.2s ease;
+}
+
+/* Haptic-like feedback on checkbox click */
+.checkbox-wrapper:active {
+    transform: scale(0.9);
+}

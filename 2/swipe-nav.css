@@ -1,0 +1,101 @@
+/* Swipe Navigation Layout */
+
+/* Viewport: Fixed window that shows only one section at a time */
+.swipe-viewport {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    position: relative;
+    /* Ensure it takes remaining height if flex parent */
+    flex: 1;
+}
+
+/* Container: Holds all sections side-by-side (400% width for 4 sections) */
+.swipe-container {
+    display: flex;
+    width: 400%;
+    /* 4 sections * 100% */
+    height: 100%;
+    transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+    /* Smooth ease-out */
+    will-change: transform;
+}
+
+/* Individual Sections */
+.swipe-section {
+    width: 25%;
+    /* Each section is 1/4 of the 400% container */
+    height: 100%;
+    overflow-y: auto;
+    /* Internal scrolling for each section */
+    overflow-x: hidden;
+    /* Prevent horizontal bleed from individual items */
+    -webkit-overflow-scrolling: touch;
+    /* Smooth scrolling on iOS */
+    flex: 0 0 25%;
+    /* Strict size control */
+    min-width: 0;
+    /* Allow flex to shrink if needed, though 25% is fixed */
+    position: relative;
+    padding-bottom: 120px;
+    /* More space for bottom nav */
+    overflow-y: scroll !important;
+    touch-action: pan-y !important;
+    -webkit-overflow-scrolling: touch;
+    /* FORCE scrollbar track always to ensure perfect symmetry */
+    scrollbar-gutter: auto;
+    /* Revert gutter if we force scroll */
+    scrollbar-width: thin;
+    /* Firefox: Thin scrollbar */
+    scrollbar-color: transparent transparent;
+    /* Firefox: Transparent track AND thumb by default */
+}
+
+/* Custom Scrollbar Styling for WebKit */
+.swipe-section::-webkit-scrollbar {
+    width: 6px;
+    /* Fixed width to ensure stable layout calculation */
+    background-color: transparent;
+    /* Transparent track */
+}
+
+.swipe-section::-webkit-scrollbar-track {
+    background-color: transparent;
+}
+
+.swipe-section::-webkit-scrollbar-thumb {
+    background-color: rgba(223, 166, 166, 0.5);
+    /* Semi-transparent pink */
+    border-radius: 10px;
+    border: 2px solid transparent;
+    /* Padding around thumb */
+    background-clip: content-box;
+}
+
+.swipe-section::-webkit-scrollbar-thumb:hover {
+    background-color: var(--primary-color);
+}
+
+/* Remove old visibility classes as they conflict with swipe layout */
+.active-section {
+    display: block !important;
+    /* Override if needed, but flex layout handles this */
+}
+
+.hidden-section {
+    display: block !important;
+    /* Ensure it's rendered for resizing */
+}
+
+/* Ensure Bottom Nav is always on top of swipe-viewport */
+.bottom-nav {
+    position: fixed;
+    /* Reinforce fixed position */
+    z-index: 9999 !important;
+    /* Force on top */
+}
+
+/* Ensure FAB is also on top */
+.fab {
+    z-index: 9999 !important;
+}

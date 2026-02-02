@@ -1,0 +1,13 @@
+
+    <!-- Floating Action Button -->
+    <button id="fab-add" class="fab-btn" aria-label="Ekle">
+        <i class="fas fa-plus"></i>
+    </button>
+
+    <!-- Toast Notification -->
+    <div id="toast-container" class="toast-container hidden">
+        <div class="toast-content">
+            <span id="toast-message">İşlem tamamlandı</span>
+            <button id="btn-undo" class="toast-undo hidden">GERİ AL</button>
+        </div>
+    </div>
