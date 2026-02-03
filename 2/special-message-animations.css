@@ -1,4 +1,4 @@
-/* Special Love Message Card Animations */
+﻿/* Special Love Message Card Animations */
 
 .special-message-card {
     position: relative;
@@ -7,14 +7,14 @@
     margin-bottom: 1rem;
     padding: 16px;
     border-radius: 20px;
-    background: linear-gradient(135deg, #fff5f7 0%, #fff0f3 100%);
-    border: 1px solid rgba(223, 166, 166, 0.3);
-    box-shadow: 0 4px 15px rgba(223, 166, 166, 0.1);
+    background: var(--primary-light);
+    border: 1px solid rgba(var(--primary-rgb), 0.3);
+    box-shadow: 0 4px 15px rgba(var(--primary-rgb), 0.1);
 }
 
 body.dark-mode .special-message-card {
-    background: linear-gradient(135deg, #2d2023 0%, #251b1d 100%);
-    border-color: rgba(223, 166, 166, 0.15);
+    background: linear-gradient(135deg, rgba(var(--primary-rgb), 0.1) 0%, rgba(var(--primary-rgb), 0.05) 100%);
+    border-color: rgba(var(--primary-rgb), 0.2);
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
 }
 
@@ -37,7 +37,7 @@ body.dark-mode .special-message-card {
 
 .message-title {
     font-size: 1rem;
-    color: #d88a9a;
+    color: var(--primary-dark);
     display: flex;
     align-items: center;
     gap: 8px;
@@ -46,7 +46,7 @@ body.dark-mode .special-message-card {
 
 body.dark-mode .message-title,
 body.dark-mode #message-chevron {
-    color: #dfa6a6 !important;
+    color: var(--primary-color) !important;
 }
 
 .special-message-card .card-ico {
@@ -54,11 +54,11 @@ body.dark-mode #message-chevron {
 }
 
 body.dark-mode .special-message-card .card-ico {
-    color: #dfa6a6;
+    color: var(--primary-color);
 }
 
 #message-chevron {
-    color: #d88a9a;
+    color: var(--primary-dark);
 }
 
 /* Heart pulse animation */
@@ -99,7 +99,7 @@ body.dark-mode .special-message-card .card-ico {
 /* Message inner fade-in animation */
 .message-inner {
     animation: fadeInUp 0.6s ease-out forwards;
-    box-shadow: 0 4px 20px rgba(255, 192, 203, 0.1);
+    box-shadow: 0 4px 20px rgba(var(--primary-rgb), 0.1);
     margin-top: 15px;
     padding: 15px;
     background: white;
@@ -116,7 +116,7 @@ body.dark-mode .message-inner {
 }
 
 .spec-heart {
-    color: #dfa6a6;
+    color: var(--primary-color);
 }
 
 .yusuf-sig {
@@ -126,7 +126,7 @@ body.dark-mode .message-inner {
 }
 
 body.dark-mode .yusuf-sig {
-    color: #dfa6a6;
+    color: var(--primary-color);
 }
 
 @keyframes fadeInUp {

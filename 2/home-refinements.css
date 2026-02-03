@@ -1,4 +1,4 @@
-/* Home Screen Refinements & Animations */
+﻿/* Home Screen Refinements & Animations */
 
 /* 1. Single Screen Layout (No Scroll) */
 /* Only apply when home section is active */
@@ -9,28 +9,18 @@ body:has(#home-section.active-section) {
 
 /* Fully Centered Home Layout */
 #home-section {
-    height: auto;
-    /* Allow growth */
-    min-height: 100vh;
-    /* Ensure full screen minimum */
+    height: 100vh !important;
     width: 100%;
     display: flex;
     flex-direction: column;
-    justify-content: flex-start;
-    /* Fix items to top, don't float center */
+    justify-content: space-around !important;
+    /* Spread elements symmetrically */
     align-items: center;
-    gap: 1.5rem;
-    /* Top padding reduced for tighter alignment */
-    /* Top padding reduced for tighter alignment */
-    padding: 0.5rem 1rem 1rem 1rem !important;
-    /* Reduced bottom padding */
+    gap: 0 !important;
+    padding: 1.5rem 1.2rem 5rem 1.2rem !important;
+    /* Proper padding for header and nav */
     box-sizing: border-box;
     overflow: hidden !important;
-    /* Force no scroll */
-    flex: 1;
-    /* Take remaining space */
-    gap: 0.5rem !important;
-    /* Reduced from 1.5rem to save vertical space */
 }
 
 /* Reset Margins for Child Elements */
@@ -43,7 +33,8 @@ body:has(#home-section.active-section) {
     width: 100%;
     display: flex;
     justify-content: center;
-    margin-top: 0.5rem !important;
+    align-items: center;
+    margin: 0 !important;
     min-height: auto !important;
     flex-shrink: 0;
     /* Prevent shrinking too much */
@@ -53,16 +44,12 @@ body:has(#home-section.active-section) {
 }
 
 .daily-quote-widget {
-    margin: auto auto 1rem auto !important;
-    /* Push to bottom (auto top) */
+    margin: 0 auto !important;
     flex-shrink: 0 !important;
-    /* Prevent disappearing */
     text-align: center !important;
-    max-width: 90%;
-    transform: scale(0.9);
-    /* Slightly larger than 0.85 */
+    width: 85%;
+    max-width: 360px;
     opacity: 1 !important;
-    /* Force visible */
     display: block !important;
 }
 
@@ -249,18 +236,21 @@ body:has(#home-section.active-section) {
 */
 
 /* Compact Countdown Card - User Request Phase 4 (More Breathing Room) */
+/* Compact Countdown Card - User Request Phase 4 (More Breathing Room) */
 .unified-countdown-card {
     display: flex !important;
     flex-direction: row !important;
     justify-content: center !important;
     align-items: center !important;
-    padding: 0.4rem 0.5rem !important;
-    gap: 0.1rem !important;
+    padding: 0.2rem !important;
+    gap: 0 !important;
     min-height: auto !important;
-    max-width: 85% !important;
-    margin-bottom: 0 !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
+    max-width: 95% !important;
+    margin: 0 auto !important;
+    background: rgba(255, 255, 255, 0.65) !important;
+    border-radius: 24px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05) !important;
 }
 
 .countdown-info {
@@ -323,8 +313,8 @@ body:has(#home-section.active-section) {
     padding: 0.2rem !important;
 }
 
-/* Nişan & Nikah Sections - Match Home Buttons (Rose Theme) */
-/* Dark Mode Overrides for Nişan/Nikah to match buttons exactly */
+/* NiÅŸan & Nikah Sections - Match Home Buttons (Rose Theme) */
+/* Dark Mode Overrides for NiÅŸan/Nikah to match buttons exactly */
 body.dark-mode .countdown-section.nisan,
 body.dark-mode .countdown-section.nikah {
     background: linear-gradient(135deg, #3E2F32, #36282B) !important;
@@ -351,53 +341,72 @@ body.dark-mode .countdown-section.nikah .hcc-timer {
 
 /* Icons in Dark Mode to muted pink/primary */
 body.dark-mode .countdown-section.nisan .infinity-path {
-    stroke: #E59CAE !important;
+    stroke: var(--primary-color) !important;
 }
 
 body.dark-mode .countdown-section.nikah .heart-path {
-    fill: #E59CAE !important;
+    fill: var(--primary-color) !important;
 }
 
 .countdown-section.nisan,
 .countdown-section.nikah {
-    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-    border-radius: 12px;
-    margin: 4px;
-    padding: 10px !important;
-    /* Add some internal padding */
-    box-shadow: 0 4px 12px rgba(223, 166, 166, 0.3);
-    /* Match button shadow */
-    color: white !important;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.68), rgba(255, 247, 249, 0.68)) !important;
+    border-radius: 20px !important;
+    margin: 6px !important;
+    padding: 15px 10px !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05) !important;
+    color: var(--primary-dark) !important;
+    border: 1px solid rgba(255, 255, 255, 0.8) !important;
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
 }
 
-/* Ensure text is white */
-.countdown-section.nisan .countdown-label,
+body.dark-mode .countdown-section.nisan,
+body.dark-mode .countdown-section.nikah {
+    background: linear-gradient(135deg, rgba(44, 44, 46, 0.95), rgba(58, 58, 60, 0.95)) !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    color: var(--primary-color) !important;
+}
+
 .countdown-section.nisan .countdown-timer,
-.countdown-section.nisan .countdown-date,
-.countdown-section.nisan .hcc-label,
-.countdown-section.nisan .hcc-timer,
-.countdown-section.nikah .countdown-label,
-.countdown-section.nikah .countdown-timer,
-.countdown-section.nikah .countdown-date,
-.countdown-section.nikah .hcc-label,
-.countdown-section.nikah .hcc-timer {
-    color: white !important;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+.countdown-section.nikah .countdown-timer {
+    color: var(--primary-color) !important;
 }
 
-/* Icons to white */
-.countdown-section.nisan .infinity-path {
-    stroke: white !important;
-    fill: none;
+/* Ensure labels are readable */
+.countdown-section.nisan .countdown-label,
+.countdown-section.nikah .countdown-label {
+    color: var(--text-light) !important;
+    opacity: 0.8;
 }
 
-.countdown-section.nikah .heart-path {
-    fill: white !important;
-    stroke: none;
+body.dark-mode .countdown-section.nisan .countdown-label,
+body.dark-mode .countdown-section.nikah .countdown-label {
+    color: var(--primary-light) !important;
+}
+
+/* Glass Shine Effect */
+.countdown-section::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+body.dark-mode .countdown-section.nisan,
+body.dark-mode .countdown-section.nikah {
+    background: linear-gradient(135deg, rgba(60, 40, 45, 0.9), rgba(40, 30, 35, 0.8)) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), inset 0 0 10px rgba(255, 255, 255, 0.05) !important;
 }
 
 .countdown-section svg {
-    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
 }
 
 /* Adjust Divider */
@@ -439,8 +448,8 @@ body:has(#home-section.active-section) #filter-bar {
 /* --- Carousel & Calendar Styles (Phase 6) --- */
 .countdown-carousel-wrapper {
     position: relative;
-    width: 100%;
-    max-width: 85%;
+    width: 90%;
+    max-width: 400px;
     margin: 0 auto;
     overflow: hidden;
     margin-bottom: 0 !important;
@@ -476,13 +485,31 @@ body:has(#home-section.active-section) #filter-bar {
 .calendar-card {
     display: flex !important;
     flex-direction: column !important;
-    padding: 0.5rem !important;
-    /* Compact like countdown */
+    padding: 10px !important;
     height: 100%;
     min-height: auto;
     box-sizing: border-box;
     justify-content: flex-start !important;
-    color: var(--text-light);
+    color: var(--text-dark);
+    background: rgba(255, 255, 255, 0.68);
+    border-radius: 20px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+body.dark-mode .calendar-card {
+    background: #1e1e1e;
+    border-color: rgba(255, 255, 255, 0.05);
+    color: #eee;
+}
+
+body.dark-mode .unified-countdown-card {
+    background: #1e1e1e !important;
+    border-color: rgba(255, 255, 255, 0.05);
+}
+
+body.dark-mode .cal-month-year {
+    color: var(--primary-color);
 }
 
 .calendar-header {
@@ -595,18 +622,12 @@ body:has(#home-section.active-section) #filter-bar {
     display: flex;
     justify-content: center;
     gap: 6px;
-    margin-top: 2px;
-    margin-bottom: 2px !important;
+    margin-top: 8px;
+    margin-bottom: 10px !important;
     /* Reduced from 0.5rem */
 }
 
-/* Compact Mini Dashboard if visible */
-.mini-dashboard {
-    margin: 4px auto !important;
-    padding: 0 !important;
-    transform: scale(0.9);
-    width: 90%;
-}
+/* Mini Dashboard Removed */
 
 /* Full Screen Calendar Modal Refined - Made truly full screen */
 .calendar-modal-main {
@@ -773,7 +794,7 @@ body:has(#home-section.active-section) #filter-bar {
 /* --- Greeting Section --- */
 .home-greeting {
     text-align: center;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.2rem;
     animation: fadeSlideDown 0.8s ease-out;
 }
 
@@ -804,75 +825,7 @@ body:has(#home-section.active-section) #filter-bar {
     }
 }
 
-/* --- Mini Dashboard --- */
-.mini-dashboard {
-    display: flex;
-    gap: 12px;
-    width: 85%;
-    margin: 0.5rem auto;
-    justify-content: center;
-}
-
-.mini-stat-card {
-    flex: 1;
-    background: rgba(255, 255, 255, 0.8);
-    backdrop-filter: blur(10px);
-    border-radius: 16px;
-    padding: 10px 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.4);
-    transition: transform 0.2s;
-}
-
-body.dark-mode .mini-stat-card {
-    background: rgba(30, 30, 30, 0.6);
-    border-color: rgba(255, 255, 255, 0.1);
-}
-
-.mini-stat-card:active {
-    transform: scale(0.98);
-}
-
-.mini-stat-icon {
-    font-size: 1rem;
-    color: var(--primary-color);
-    margin-bottom: 2px;
-}
-
-.mini-stat-info {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 0.8rem;
-    font-weight: 500;
-}
-
-.mini-stat-val {
-    font-weight: 700;
-    color: var(--primary-color);
-}
-
-.mini-stat-bar {
-    height: 4px;
-    background: #f0f0f0;
-    border-radius: 2px;
-    overflow: hidden;
-    width: 100%;
-}
-
-body.dark-mode .mini-stat-bar {
-    background: rgba(255, 255, 255, 0.1);
-}
-
-.mini-stat-fill {
-    height: 100%;
-    background: var(--primary-color);
-    border-radius: 2px;
-    transition: width 1s ease-out;
-}
+/* Mini Dashboard Styles Removed */
 
 /* --- New Action Cards --- */
 .home-actions {
@@ -912,20 +865,6 @@ body.dark-mode .mini-stat-bar {
     height: 100%;
 }
 
-body.dark-mode .home-action-card {
-    background: linear-gradient(135deg, rgba(45, 45, 45, 0.9), rgba(30, 30, 30, 0.8));
-    border-color: rgba(255, 255, 255, 0.08);
-}
-
-.home-action-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(var(--primary-rgb), 0.15);
-}
-
-.home-action-card:active {
-    transform: scale(0.98);
-}
-
 .action-icon-circle {
     width: 36px;
     /* Smaller */
@@ -944,16 +883,6 @@ body.dark-mode .home-action-card {
     box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.03);
 }
 
-body.dark-mode .action-icon-circle {
-    background: rgba(255, 255, 255, 0.05);
-}
-
-.action-text {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-}
-
 .action-title {
     font-size: 1rem;
     font-weight: 600;
@@ -966,12 +895,6 @@ body.dark-mode .action-icon-circle {
     margin-top: 2px;
 }
 
-.action-arrow {
-    font-size: 0.9rem;
-    color: var(--text-light);
-    opacity: 0.5;
-}
-
 /* Adjust Quote spacing */
 .daily-quote-widget {
     margin-top: 0.2rem !important;
@@ -980,4 +903,176 @@ body.dark-mode .action-icon-circle {
     /* Slightly smaller to fit */
     margin-bottom: 50px;
     /* Space for bottom nav */
+    display: block !important;
+}
+
+/* Budget Calculator Buttons - Sweet Style */
+.budget-calc-btn {
+    flex: 1;
+    border-radius: 14px !important;
+    padding: 12px !important;
+    font-weight: 600 !important;
+    font-size: 0.95rem !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    transition: all 0.2s ease !important;
+    border: none !important;
+    color: white !important;
+    cursor: pointer;
+}
+
+.budget-calc-btn.add {
+    background: #7bed9f !important;
+    box-shadow: 0 4px 12px rgba(123, 237, 159, 0.3) !important;
+}
+
+.budget-calc-btn.sub {
+    background: #ff7675 !important;
+    box-shadow: 0 4px 12px rgba(255, 118, 117, 0.3) !important;
+}
+
+.budget-calc-btn:hover {
+    transform: translateY(-2px);
+    opacity: 0.9;
+}
+
+.budget-calc-btn:active {
+    transform: translateY(0) scale(0.98);
+}
+
+body.dark-mode .budget-calc-btn.add {
+    background: #2ecc71 !important;
+}
+
+body.dark-mode .budget-calc-btn.sub {
+    background: #e74c3c !important;
+}
+
+/* Glassmorphism for Modals */
+.glass-sheet {
+    background: rgba(255, 255, 255, 0.72) !important;
+    backdrop-filter: blur(25px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(25px) saturate(180%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.4) !important;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12) !important;
+}
+
+.glass-sheet .modal-sheet-header,
+.glass-sheet .sheet-body {
+    background: transparent !important;
+    border-bottom-color: rgba(0, 0, 0, 0.05) !important;
+}
+
+body.dark-mode .glass-sheet {
+    background: rgba(30, 30, 30, 0.65) !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    box-shadow: 0 15px 50px rgba(0, 0, 0, 0.4) !important;
+}
+
+body.dark-mode .glass-sheet .modal-sheet-header,
+body.dark-mode .glass-sheet .sheet-body {
+    border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Ensure Kaydet button is well padded and visible */
+.glass-sheet #btn-save-budget {
+    margin-top: 10px;
+    margin-bottom: 5px;
+}
+
+/* Translucent Blurred Modal Backdrop */
+.modal-backdrop {
+    background: rgba(255, 255, 255, 0.4) !important;
+    backdrop-filter: blur(15px) !important;
+    -webkit-backdrop-filter: blur(15px) !important;
+}
+
+body.dark-mode .modal-backdrop {
+    background: rgba(0, 0, 0, 0.4) !important;
+    backdrop-filter: blur(15px) !important;
+    -webkit-backdrop-filter: blur(15px) !important;
+}
+
+/* Fix Upcoming Dates Squeeze */
+.unified-countdown-card.upcoming-mode {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    padding: 16px !important;
+    gap: 12px !important;
+    height: auto !important;
+}
+
+.upcoming-mode #home-upcoming-list {
+    gap: 8px !important;
+}
+
+
+/* Weekly Goal Card - Compact & Premium */
+.weekly-goal-card {
+    width: 88%;
+    max-width: 360px;
+    background: rgba(255, 255, 255, 0.45);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 12px 18px;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin: 12px auto !important;
+    /* Forces breathing room above and below */
+    flex-shrink: 0;
+}
+
+.weekly-goal-card:active {
+    transform: scale(0.98);
+    background: rgba(255, 255, 255, 0.6);
+}
+
+.weekly-goal-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    opacity: 0.8;
+}
+
+.weekly-goal-content {
+    font-size: 0.88rem;
+    color: var(--text-dark);
+    font-weight: 500;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    word-break: break-word;
+}
+
+body.dark-mode .weekly-goal-card {
+    background: rgba(44, 44, 46, 0.4);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+body.dark-mode .weekly-goal-content {
+    color: #eee;
+}
+
+.daily-quote-widget {
+    padding: 12px 18px !important;
+    background: rgba(255, 255, 255, 0.35);
+    backdrop-filter: blur(8px);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
 }

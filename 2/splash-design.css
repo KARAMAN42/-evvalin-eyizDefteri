@@ -1,4 +1,4 @@
-/* Advanced Splash Design - "Fairy Tale Pink" */
+﻿/* Advanced Splash Design - "Fairy Tale Pink" */
 
 /* 1. Background with Sparkles */
 #splash-screen {
@@ -52,7 +52,7 @@ body.dark-mode #splash-screen {
 body.dark-mode .splash-theme-btn {
     background: rgba(45, 45, 45, 0.6);
     border-color: rgba(255, 255, 255, 0.1);
-    color: #dfa6a6;
+    color: var(--primary-color);
 }
 
 .splash-theme-btn:active {
@@ -104,42 +104,34 @@ body.dark-mode .splash-theme-btn {
     margin-right: auto;
 }
 
-/* The Glossy Heart Shape Construction */
-.splash-icon::before {
-    content: "❤";
-    font-size: 8rem;
-    color: transparent;
-    background: linear-gradient(135deg, #ffffff 0%, #fefefe 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    filter: drop-shadow(0 0 20px rgba(0, 0, 0, 0.08));
-    /* Make it look puffy */
-    text-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+/* The Puffy Heart SVG Style */
+.puffy-heart-svg {
+    width: 140px;
+    height: 140px;
+    filter: drop-shadow(0 15px 30px rgba(var(--primary-rgb), 0.3));
+    animation: floatHeart 4s ease-in-out infinite;
+    transform-origin: center;
 }
 
-/* Alternative: CSS Shape Heart for more control over gloss? 
-   Let's stick to a really nice text shadow/gradient heart or SVG. 
-   Since we can't upload SVG easily, let's use a heavily styled font icon with gradient text.
-*/
-.splash-icon::after {
-    /* The glossy shine */
-    content: "❤";
-    font-size: 8rem;
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0) 40%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    pointer-events: none;
-    mask-image: linear-gradient(black, black);
-    /* Mask specifically for the shape */
+/* The Puffy Heart Image */
+.puffy-heart {
+    width: 120px;
+    height: 120px;
+    object-fit: contain;
+    filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.15));
+    animation: floatHeart 4s ease-in-out infinite;
+}
+
+@keyframes floatHeart {
+
+    0%,
+    100% {
+        transform: translateY(0) scale(1.0) rotate(0deg);
+    }
+
+    50% {
+        transform: translateY(-15px) scale(1.08) rotate(2deg);
+    }
 }
 
 /* The Glowing Rings */
@@ -192,13 +184,13 @@ body.dark-mode #splash-screen h1.splash-names {
 .infinity-symbol {
     font-size: 3rem;
     /* Much larger */
-    color: #dfa6a6;
+    color: var(--primary-color);
     margin: 5px 0;
     opacity: 0.9;
     font-weight: 300;
     animation: infinityFlow 4s linear infinite;
     /* Smooth continuous flow */
-    background: linear-gradient(90deg, #dfa6a6, #fff0f5, #dfa6a6);
+    background: linear-gradient(90deg, var(--primary-color), #fff0f5, var(--primary-color));
     /* Pink -> White -> Pink */
     -webkit-background-clip: text;
     background-clip: text;
@@ -207,7 +199,7 @@ body.dark-mode #splash-screen h1.splash-names {
 }
 
 body.dark-mode .infinity-symbol {
-    background: linear-gradient(90deg, #dfa6a6, #eec4c4, #dfa6a6);
+    background: linear-gradient(90deg, var(--primary-color), #eec4c4, var(--primary-color));
     -webkit-background-clip: text;
     background-clip: text;
 }
@@ -309,7 +301,7 @@ body.dark-mode .splash-item {
 
 .sp-icon-wrapper {
     font-size: 1.8rem;
-    color: #dfa6a6;
+    color: var(--primary-color);
     /* Dusty pink base */
     margin-bottom: 0.8rem;
     filter: drop-shadow(0 2px 4px rgba(223, 166, 166, 0.4));
@@ -317,7 +309,7 @@ body.dark-mode .splash-item {
 }
 
 .sp-icon-wrapper i {
-    background: linear-gradient(135deg, #ffffff 0%, #dfa6a6 100%);
+    background: linear-gradient(135deg, #ffffff 0%, var(--primary-color) 100%);
     /* White to Pink */
     -webkit-background-clip: text;
     background-clip: text;
@@ -343,7 +335,7 @@ body.dark-mode .splash-item {
 }
 
 body.dark-mode .sp-label {
-    color: #dfa6a6;
+    color: var(--primary-color);
 }
 
 body.dark-mode .sp-time {
@@ -373,7 +365,7 @@ body.dark-mode .sp-time {
 .next-event-tag {
     font-size: 0.6rem;
     letter-spacing: 2px;
-    color: #dfa6a6;
+    color: var(--primary-color);
     font-weight: 700;
     background: white;
     padding: 3px 10px;
@@ -410,31 +402,50 @@ body.dark-mode .next-event-content {
     }
 }
 
-/* 6. Hint */
+/* 6. Hint - Animated Arrow */
 .splash-hint {
     margin-top: 4rem;
-    font-family: 'Playfair Display', serif;
-    font-style: italic;
-    color: #99787e;
-    font-size: 1rem;
+    color: var(--primary-color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .splash-hint i {
-    display: none;
-    /* User image shows just text "Mutluluğa doğru kaydırın" usually or chevron? Image has chevron but text is handwritten style */
+    display: block !important;
+    font-size: 2rem;
+    filter: drop-shadow(0 2px 5px rgba(223, 166, 166, 0.4));
+    animation: bounceChevron 2.5s infinite ease-in-out;
+    opacity: 0.8;
 }
 
-.splash-hint span {
-    border-bottom: 1px solid rgba(153, 120, 126, 0.3);
-    padding-bottom: 2px;
+@keyframes bounceChevron {
+
+    0%,
+    20%,
+    50%,
+    80%,
+    100% {
+        transform: translateY(0);
+    }
+
+    40% {
+        transform: translateY(-12px);
+    }
+
+    60% {
+        transform: translateY(-6px);
+    }
 }
 
 body.dark-mode .splash-subtitle {
-    color: #dfa6a6 !important;
+    color: var(--primary-color) !important;
 }
 
 body.dark-mode .splash-hint {
-    color: #dfa6a6;
+    color: var(--primary-color) !important;
+    background: transparent !important;
+    padding: 0 !important;
 }
 
 /* Floating animation */

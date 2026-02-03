@@ -89,15 +89,19 @@ function addTouchDragSupport() {
         function createAvatar(touch, original) {
             const rect = original.getBoundingClientRect();
             dragAvatar = original.cloneNode(true);
-
+            dragAvatar.classList.remove('is-being-dragged'); // Ensure avatar is solid
             dragAvatar.classList.add('drag-avatar');
             dragAvatar.style.position = 'fixed';
             dragAvatar.style.top = rect.top + 'px';
             dragAvatar.style.left = rect.left + 'px';
             dragAvatar.style.width = rect.width + 'px';
             dragAvatar.style.height = rect.height + 'px';
-            dragAvatar.style.zIndex = '9999';
+            dragAvatar.style.zIndex = '10001';
             dragAvatar.style.pointerEvents = 'none';
+            dragAvatar.style.opacity = '1';
+            dragAvatar.style.boxShadow = '0 20px 50px rgba(0,0,0,0.3)';
+            dragAvatar.style.transform = 'scale(1.05)';
+            dragAvatar.style.transition = 'transform 0.1s ease';
 
             // Offset for exact finger grab point
             dragAvatar.dataset.touchOffsetY = touch.clientY - rect.top;
@@ -110,85 +114,55 @@ function addTouchDragSupport() {
             e.preventDefault();
 
             const touch = e.touches[0];
+            const clientX = touch.clientX;
             const clientY = touch.clientY;
 
             // 1. Move Avatar
             const offsetY = parseFloat(dragAvatar.dataset.touchOffsetY);
             dragAvatar.style.top = (clientY - offsetY) + 'px';
 
-            // 2. Detect New Index
-            const newIndex = calculateNewIndex(clientY);
+            // 2. Real-time DOM Swapping with FLIP
+            const target = document.elementFromPoint(clientX, clientY);
+            if (target) {
+                const targetCard = target.closest('.item-card');
 
-            if (newIndex !== currentIndex) {
-                currentIndex = newIndex;
-                applyVisualTransforms();
-                if (navigator.vibrate) navigator.vibrate(5);
+                if (targetCard && targetCard !== draggedItem && targetCard.parentElement === itemContainer) {
+                    // Start FLIP
+                    const cards = Array.from(itemContainer.children).filter(el => el.classList.contains('item-card'));
+                    const rects = new Map(cards.map(c => [c, c.getBoundingClientRect()]));
+
+                    // Swap in DOM
+                    const isAfter = targetCard.compareDocumentPosition(draggedItem) & Node.DOCUMENT_POSITION_PRECEDING;
+                    if (isAfter) {
+                        itemContainer.insertBefore(draggedItem, targetCard.nextSibling);
+                    } else {
+                        itemContainer.insertBefore(draggedItem, targetCard);
+                    }
+
+                    // Complete FLIP: Animate the others
+                    const newCards = Array.from(itemContainer.children).filter(el => el.classList.contains('item-card'));
+                    newCards.forEach(c => {
+                        if (c === draggedItem) return; // Don't animate the invisible one
+
+                        const oldRect = rects.get(c);
+                        const newRect = c.getBoundingClientRect();
+                        const dy = oldRect.top - newRect.top;
+
+                        if (dy !== 0) {
+                            c.style.transition = 'none';
+                            c.style.transform = `translateY(${dy}px)`;
+                            c.offsetHeight; // trigger reflow
+                            c.style.transition = 'transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)';
+                            c.style.transform = 'translateY(0)';
+                        }
+                    });
+
+                    if (navigator.vibrate) navigator.vibrate(5);
+                }
             }
 
             // 3. Handle Auto-Scroll
             handleAutoScroll(clientY);
-        }
-
-        function calculateNewIndex(y) {
-            // We need to map clientY (screen) to our list positions.
-            // List positions move when we scroll.
-            // Current Scroll Top:
-            const scrollTop = scrollContainer.scrollTop;
-            const containerRect = scrollContainer.getBoundingClientRect(); // visible window
-
-            // Virtual Y position within the content = (y - containerTop) + scrollTop
-            // But itemContainer might have padding/margin from Section?
-            // itemContainer.offsetTop usually 0 if it's first child.
-            // Let's assume itemContainer is inside scrollContainer directly.
-
-            // Position of finger inside the "scrolled long content":
-            const pointerContentY = (y - containerRect.top) + scrollTop; // Rough approx
-
-            // Find closest item center
-            let bestIndex = -1;
-            let minDist = Infinity;
-
-            items.forEach((item, index) => {
-                if (index === initialIndex) return;
-
-                // Center of item in Content Coordinates
-                const itemCenterY = itemTopOffsets[index] + (itemHeights[index] / 2);
-
-                // Compare with pointer
-                const dist = Math.abs(pointerContentY - itemCenterY);
-                if (dist < minDist) {
-                    minDist = dist;
-                    bestIndex = index;
-                }
-            });
-
-            if (bestIndex === -1) return initialIndex;
-            return bestIndex;
-        }
-
-        function applyVisualTransforms() {
-            items.forEach((item, index) => {
-                if (index === initialIndex) {
-                    item.style.transform = ''; // Hide or whatever
-                    return;
-                }
-
-                let transformY = 0;
-                const height = itemHeights[initialIndex];
-
-                if (currentIndex > initialIndex) {
-                    if (index > initialIndex && index <= currentIndex) {
-                        transformY = -height - 8;
-                    }
-                } else if (currentIndex < initialIndex) {
-                    if (index >= currentIndex && index < initialIndex) {
-                        transformY = height + 8;
-                    }
-                }
-
-                item.style.transform = `translateY(${transformY}px)`;
-                item.style.transition = 'transform 0.2s cubic-bezier(0.2, 0, 0, 1)';
-            });
         }
 
         function handleAutoScroll(y) {
@@ -231,30 +205,24 @@ function addTouchDragSupport() {
             autoScrollSpeed = 0;
             if (scrollFrameId) cancelAnimationFrame(scrollFrameId);
 
-            // Commit Change
-            if (currentIndex !== initialIndex && currentIndex !== -1) {
-                const targetNode = items[currentIndex];
-                const originalNode = items[initialIndex];
-
-                if (currentIndex > initialIndex) {
-                    itemContainer.insertBefore(originalNode, targetNode.nextSibling);
-                } else {
-                    itemContainer.insertBefore(originalNode, targetNode);
-                }
-
-                const event = new CustomEvent('itemsReordered', {
-                    detail: { containerId: itemContainer.id }
-                });
-                itemContainer.dispatchEvent(event);
-            }
+            // Item is already in its final DOM position due to real-time swapping
+            const event = new CustomEvent('itemsReordered', {
+                detail: { containerId: itemContainer.id }
+            });
+            itemContainer.dispatchEvent(event);
 
             if (dragAvatar) dragAvatar.remove();
-            if (draggedItem) draggedItem.classList.remove('is-being-dragged');
+            if (draggedItem) {
+                draggedItem.classList.remove('is-being-dragged');
+                draggedItem.style.opacity = '';
+                draggedItem.style.visibility = '';
+            }
 
             dragAvatar = null;
             draggedItem = null;
 
-            items.forEach(item => {
+            // Clear any lingering transforms
+            Array.from(itemContainer.children).forEach(item => {
                 item.style.transform = '';
                 item.style.transition = '';
             });

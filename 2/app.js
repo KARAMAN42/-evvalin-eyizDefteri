@@ -1,4 +1,4 @@
-﻿console.log("APP LOADED - \u015Eevval Theme Mode");
+﻿console.log("APP LOADED - \u015EŞevval Theme Mode");
 
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -58,10 +58,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const tabOrder = ['home', 'ceyiz', 'damat', 'stats']; // Global Tab Order
     let settings = {
         darkMode: false,
-        name: '\u015Eevval',
+        name: 'Şevval',
+        partnerName: 'Yusuf',
         dates: { engagement: '2026-10-01', wedding: '2027-10-01' },
         appearance: { fontSize: 'normal', animations: true },
-        feedback: ''
+        budget: 0,
+        feedback: '',
+        weeklyGoal: 'Bu hafta için bir güzellik belirle...'
     };
 
     // Make variables globally accessible for addCategory function
@@ -204,7 +207,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             function getDays(target) {
                 const diff = target - now;
-                if (diff <= 0) return "Tamamland\u0131";
+                if (diff <= 0) return "Tamamland\u0131 \u2728";
                 return Math.ceil(diff / (1000 * 60 * 60 * 24)) + " G\u00FCn";
             }
 
@@ -299,8 +302,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Settings
     const darkModeToggle = document.getElementById('darkModeToggle');
-    const sNisan = document.getElementById('setting-date-nisan');
-    const sNikah = document.getElementById('setting-date-nikah');
     const btnExport = document.getElementById('btn-export');
     const btnImport = document.getElementById('btn-import');
     const fileImport = document.getElementById('file-import');
@@ -310,18 +311,34 @@ document.addEventListener('DOMContentLoaded', () => {
         const modal = document.getElementById('modal-settings');
         if (!modal) return;
 
-        // Reset inputs to current settings
+        // 1. Reset inputs to current settings
+        const sNisan = document.getElementById('setting-date-nisan');
+        const sNikah = document.getElementById('setting-date-nikah');
         if (sNisan) sNisan.value = settings.dates.engagement;
         if (sNikah) sNikah.value = settings.dates.wedding;
 
         const animToggle = document.getElementById('animations-toggle');
         if (animToggle) animToggle.checked = settings.appearance.animations;
 
-        // Reset scroll
+        // 2. Reset scroll
         const sheet = modal.querySelector('.settings-sheet');
         const body = modal.querySelector('.settings-body');
         if (sheet) sheet.scrollTop = 0;
         if (body) body.scrollTop = 0;
+
+        // 3. Collapse special message
+        const msgContent = document.getElementById('special-message-content');
+        const msgChevron = document.getElementById('message-chevron');
+        const msgCard = document.querySelector('.special-message-card');
+        if (msgContent) msgContent.classList.remove('expanded');
+        if (msgChevron) msgChevron.classList.remove('rotated');
+        if (msgCard) msgCard.classList.remove('active');
+
+        // 4. Hide import area if open
+        const importArea = document.getElementById('import-area');
+        const btnImport = document.getElementById('btn-import-paste');
+        if (importArea) importArea.classList.add('hidden');
+        if (btnImport) btnImport.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> Yedek Yükle';
     }
     window.resetSettingsState = resetSettingsState;
 
@@ -335,8 +352,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const successMessages = [
         "Harika! Bir adÄ±m daha tamam 💖",
-        "Ã‡ok gÃ¼zel gidiyorsun Åevval ✨",
-        "Bu da tamamlandÄ±! ☑",
+        "Ã‡ok gÃ¼zel gidiyorsun ÅŞevval ✨",
+        "Bu da tamamlandı! \u2705",
         "Eksikler azalÄ±yor... 🤞",
         "SÃ¼persin! 🌸"
     ];
@@ -581,7 +598,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!target || isNaN(target.getTime())) return "Tarih Hatal\u0131"; // Should not happen with hardcodes
 
             const diff = target - now;
-            if (diff <= 0) return "Tamamland\u0131 Ã¢Å“Â¨";
+            if (diff <= 0) return "Tamamland\u0131 \u2728";
 
             const totalSecs = Math.floor(diff / 1000);
             const days = Math.floor(totalSecs / 86400);
@@ -642,7 +659,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const now = new Date();
             let diff = target - now;
 
-            if (diff <= 0) return "Tamamland\u0131 Ã¢Å“Â¨";
+            if (diff <= 0) return "Tamamland\u0131 \u2728";
 
             // Calculate breakup
             // Simple approximation for Year/Month to be robust
@@ -723,6 +740,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 items.forEach(i => {
                     if (typeof i.price === 'undefined') i.price = 0;
                     if (typeof i.note === 'undefined') i.note = '';
+
+                    // Repair: Backfill dateBought for legacy bought items
+                    if (i.isBought && !i.dateBought) {
+                        i.dateBought = new Date().toISOString();
+                    }
                 });
             } else {
                 items = [];
@@ -760,6 +782,36 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (e) {
             console.error("Error parsing settings:", e);
             // Keep default settings
+        }
+
+        // --- Budget Migration & Auto-Reset ---
+        const now = new Date();
+        const currentMonth = now.getMonth();
+        const currentYear = now.getFullYear();
+
+        // 1. Migration: If budget is number, convert to object
+        if (typeof settings.budget === 'number') {
+            settings.budgetConf = {
+                amount: settings.budget,
+                lastMonth: currentMonth,
+                lastYear: currentYear
+            };
+            delete settings.budget;
+        }
+
+        // 2. Init if missing
+        if (!settings.budgetConf) {
+            settings.budgetConf = { amount: 0, lastMonth: currentMonth, lastYear: currentYear };
+        }
+
+        // 3. Auto-Reset Check
+        if (settings.budgetConf.lastMonth !== currentMonth || settings.budgetConf.lastYear !== currentYear) {
+            console.log("New month detected! Resetting budget.");
+            settings.budgetConf.amount = 0;
+            settings.budgetConf.lastMonth = currentMonth;
+            settings.budgetConf.lastYear = currentYear;
+            // Ensure we save this reset state eventually
+            setTimeout(saveSettings, 1000);
         }
 
         // --- FORCE VALID DATES RECOVERY ---
@@ -854,31 +906,60 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function applySettings() {
-        // 1. Dark Mode (Handled by initDarkMode)
+        // 1. Name
+        const nameInput = document.getElementById('setting-user-name');
+        if (nameInput) nameInput.value = settings.name || 'Şevval';
 
+        const partnerInput = document.getElementById('setting-partner-name');
+        if (partnerInput) partnerInput.value = settings.partnerName || 'Yusuf';
 
-        // 2. Profile Inputs
-        const dateNisan = document.getElementById('setting-date-nisan');
-        if (dateNisan) dateNisan.value = settings.dates.engagement;
-
-        const dateNikah = document.getElementById('setting-date-nikah');
-        if (dateNikah) dateNikah.value = settings.dates.wedding;
+        // 2. Dark Mode (Handled by initDarkMode)
 
         // 3. Appearance
         const animToggle = document.getElementById('animations-toggle');
         if (animToggle) animToggle.checked = settings.appearance.animations;
 
-        // Font size logic removed per user request
-
         // Apply Animations Class
         if (!settings.appearance.animations) document.body.classList.add('no-anim');
         else document.body.classList.remove('no-anim');
 
-        // Update Title
+        // Update Title & Greetings
         const pageTitle = document.getElementById('page-title');
-        if (pageTitle) pageTitle.innerHTML = `${settings.name || '\u015Eevval'}'in \u00C7eyiz Defteri <i class="fas fa-heart pulse-heart"></i>`;
+        const currentName = settings.name || 'Şevval';
+        const partnerName = settings.partnerName || 'Yusuf';
+        if (pageTitle) pageTitle.innerHTML = `${currentName}'in Çeyiz Defteri <i class="fas fa-heart pulse-heart"></i>`;
 
-        // Update Labels in Fixed Widget if needed (optional)
+        // Update Splash Names
+        const splashBride = document.getElementById('splash-name-bride');
+        const splashGroom = document.getElementById('splash-name-groom');
+        if (splashBride) splashBride.textContent = currentName;
+        if (splashGroom) splashGroom.textContent = partnerName;
+
+        // Update Special Message Signature
+        const sigEl = document.getElementById('special-message-signature');
+        if (sigEl) sigEl.textContent = `- ${partnerName}`;
+
+        // Update Home Greeting if exists
+        const welcomeTitle = document.querySelector('.welcome-title');
+        if (welcomeTitle) {
+            const now = new Date();
+            const hour = now.getHours();
+            let greeting = "İyi Günler";
+            if (hour < 12) greeting = "Günaydın";
+            else if (hour < 18) greeting = "Tünaydın";
+            else greeting = "İyi Akşamlar";
+            welcomeTitle.textContent = `${greeting}, ${currentName} ✨`;
+        }
+
+        // 4. Weekly Goal
+        renderWeeklyGoal();
+    }
+
+    function renderWeeklyGoal() {
+        const goalText = document.getElementById('weekly-goal-text');
+        if (goalText) {
+            goalText.textContent = settings.weeklyGoal || 'Bu hafta i\u00E7in bir g\u00FCzellik belirle...';
+        }
     }
 
 
@@ -973,7 +1054,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             ${item.link ? `<a href="${item.link}" target="_blank" class="item-link-btn" onclick="event.stopPropagation();"><i class="fas fa-external-link-alt"></i> \u00DCr\u00FCne Git</a>` : ''}
                         </div>
                         ${item.image ? `<div class="item-thumbnail" onclick="window.viewImage('${item.image}'); event.stopPropagation();"><img src="${item.image}" alt="Ürün"></div>` : ''}
-                        ${item.isBought ? '<div class="completed-badge">Tamamlandı ✅</div>' : ''}
+                        ${item.isBought ? '<div class="completed-badge">Tamamland\u0131 \u2728</div>' : ''}
                     </div>
                 `;
                 // Add actions: Edit + Delete
@@ -981,7 +1062,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 actionsDiv.className = 'item-actions';
                 actionsDiv.innerHTML = `
                     <button class="btn-icon edit" data-id="${item.id}" style="margin-right: 4px;"><i class="fas fa-pen"></i></button>
-                    <button class="btn-icon delete"><i class="fas fa-trash"></i></button>
+                        <button class="btn-icon delete"><i class="fas fa-trash"></i></button>
                 `;
                 el.appendChild(actionsDiv);
 
@@ -1161,58 +1242,221 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function renderStats() {
-        // Reuse similar logic, structure matches new HTML
         const totalCount = items.length;
         const boughtCount = items.filter(i => i.isBought).length;
-        const remainingCount = totalCount - boughtCount;
+        // const remainingCount = totalCount - boughtCount; // Unused
         const pct = totalCount === 0 ? 0 : Math.round((boughtCount / totalCount) * 100);
 
-        document.getElementById('stat-total').textContent = totalCount;
-        document.getElementById('stat-bought').textContent = boughtCount;
-        document.getElementById('stat-remaining').textContent = remainingCount;
-        document.getElementById('total-percentage').textContent = `%${pct}`;
-
-        // Update Pie Chart gradient
-        const deg = pct * 3.6;
-        document.querySelector('.pie-chart').style.background = `conic-gradient(var(--primary-color) ${deg}deg, var(--primary-light) ${deg}deg 360deg)`;
-
+        // 1. Hero Card Financials
         let totalCost = 0, spentCost = 0, remainingCost = 0;
+        let monthlySpent = 0;
+
+        const now = new Date();
+        const currentYear = now.getFullYear();
+        const currentMonth = now.getMonth();
+
         items.forEach(i => {
-            const cost = (i.price || 0) * i.quantity;
+            const cost = (i.price || 0) * (i.quantity || 1);
             totalCost += cost;
-            if (i.isBought) spentCost += cost;
-            else remainingCost += cost;
+            if (i.isBought) {
+                spentCost += cost;
+
+                // Monthly Check
+                if (i.dateBought) {
+                    const d = new Date(i.dateBought);
+                    if (d.getFullYear() === currentYear && d.getMonth() === currentMonth) {
+                        monthlySpent += cost;
+                    }
+                }
+            } else {
+                remainingCost += cost;
+            }
+
+            if (i.type === 'ceyiz') {
+                // ... (sub-counts remain same)
+            }
         });
 
-        document.getElementById('money-total').textContent = currencyFormatter.format(totalCost);
-        document.getElementById('money-spent').textContent = currencyFormatter.format(spentCost);
-        document.getElementById('money-remaining').textContent = currencyFormatter.format(remainingCost);
+        // ... (re-running sub loops for counts if needed, but above loop structure is shared)
+        // Re-implementing sub loop logic properly to match existing structure:
+        items.forEach(i => {
+            // Redundant loop for safety or keep single? 
+            // The original code mixed them. Let's start fresh with single loop above.
+        });
+        // Fixing variable scope issues by just using one loop. 
+        // Resetting counters to correct logic below:
 
-        // --- Dashboard Widget Update (Phase 5) ---
-        const dashboardPct = totalCost === 0 ? 0 : Math.round((spentCost / totalCost) * 100);
-        const elDashPct = document.getElementById('dash-budget-pct');
-        const elDashBar = document.getElementById('dash-budget-bar');
-        const elDashSpent = document.getElementById('dash-spent');
-        const elDashTotal = document.getElementById('dash-total');
+        // Reset counters for correct calculation
+        totalCost = 0; spentCost = 0; remainingCost = 0; monthlySpent = 0;
+        ceyizTotal = 0; ceyizSpent = 0; ceyizCount = 0; ceyizBought = 0;
+        damatTotal = 0; damatSpent = 0; damatCount = 0; damatBought = 0;
 
-        if (elDashPct) {
-            elDashPct.textContent = `%${dashboardPct}`;
-            elDashBar.style.width = `${dashboardPct}%`;
-            elDashSpent.textContent = `${currencyFormatter.format(spentCost)} Harcanan`;
-            elDashTotal.textContent = `/ ${currencyFormatter.format(totalCost)}`;
+        items.forEach(i => {
+            const cost = (i.price || 0) * (i.quantity || 1);
+            totalCost += cost;
+            if (i.isBought) {
+                spentCost += cost;
+                if (i.dateBought) {
+                    const d = new Date(i.dateBought);
+                    if (!isNaN(d.getTime()) && d.getFullYear() === currentYear && d.getMonth() === currentMonth) {
+                        monthlySpent += cost;
+                    }
+                }
+            } else {
+                remainingCost += cost;
+            }
+
+            if (i.type === 'ceyiz') {
+                ceyizCount++;
+                ceyizTotal += cost;
+                if (i.isBought) { ceyizBought++; ceyizSpent += cost; }
+            } else if (i.type === 'damat') {
+                damatCount++;
+                damatTotal += cost;
+                if (i.isBought) { damatBought++; damatSpent += cost; }
+            }
+        });
+
+        // User Budget Logic (Monthly)
+        const userBudget = (settings.budgetConf && settings.budgetConf.amount) ? settings.budgetConf.amount : 0;
+        const useBudget = userBudget > 0;
+
+        let displayTotal = useBudget ? userBudget : totalCost;
+        // If budgeting, 'spent' is monthly spent, 'remaining' is budget left.
+        // If no budget, 'spent' is total spent, 'remaining' is total cost left.
+
+        let displaySpent = useBudget ? monthlySpent : spentCost;
+        let displayRemaining = useBudget ? (userBudget - monthlySpent) : remainingCost;
+
+        let displayGauge;
+        if (useBudget) {
+            displayGauge = userBudget === 0 ? 0 : Math.min(100, Math.round((monthlySpent / userBudget) * 100));
+        } else {
+            displayGauge = totalCost === 0 ? 0 : Math.min(100, Math.round((spentCost / totalCost) * 100));
         }
 
-        ['ceyiz', 'damat'].forEach(type => {
-            const subItems = items.filter(i => i.type === type);
-            const subBought = subItems.filter(i => i.isBought).length;
-            const subPct = subItems.length === 0 ? 0 : (subBought / subItems.length) * 100;
-            const subSpent = subItems.reduce((acc, i) => acc + (i.isBought ? (i.price || 0) * i.quantity : 0), 0);
+        // Update DOM
+        const elTotalM = document.getElementById('stat-total-money');
+        const elSpentM = document.getElementById('stat-spent-money');
+        const elRemM = document.getElementById('stat-remaining-money');
+        const elGauge = document.getElementById('budget-gauge-fill');
+        const elTotalLabel = document.querySelector('.hero-main-val .label');
 
-            document.getElementById(`${type}-progress`).style.width = `${subPct}%`;
-            document.getElementById(`${type}-stats-text`).textContent = `${subBought}/${subItems.length} tamamland\u0131`;
-            document.getElementById(`${type}-money-text`).textContent = `Harcama: ${currencyFormatter.format(subSpent)}`;
+        // Update labels for Monthly context
+        const elSpentLabel = document.querySelector('.hero-item.spent .label');
+        if (elSpentLabel) elSpentLabel.textContent = useBudget ? 'Bu Ay Harcanan' : 'Harcanan ve alınanlar';
+
+        if (elTotalM) elTotalM.textContent = currencyFormatter.format(displayTotal).replace('₺', '');
+        if (elSpentM) elSpentM.textContent = currencyFormatter.format(displaySpent);
+        if (elRemM) elRemM.textContent = currencyFormatter.format(displayRemaining);
+        if (elTotalLabel) elTotalLabel.textContent = useBudget ? 'Bu Ayki Bütçe' : 'Tahmini Toplam';
+
+        // Gauge width and color
+        if (elGauge) {
+            elGauge.style.width = `${displayGauge}% `;
+            // Change color if over budget
+            if (useBudget && displayRemaining < 0) {
+                elGauge.style.backgroundColor = '#ff6b6b';
+            } else {
+                elGauge.style.backgroundColor = 'rgba(255, 255, 255, 0.95)';
+            }
+        }
+
+
+        // 2. Main Progress Cards
+        const rings = document.getElementById('total-progress-ring');
+        const badge = document.getElementById('total-pct-badge');
+        const elTotalCount = document.getElementById('total-items-count');
+        const elBoughtCount = document.getElementById('total-bought-count');
+
+        if (rings) {
+            const radius = rings.r.baseVal.value;
+            const circumference = radius * 2 * Math.PI;
+            const offset = circumference - (pct / 100) * circumference;
+            rings.style.strokeDashoffset = offset;
+        }
+        if (badge) badge.textContent = `% ${pct} `;
+        if (elTotalCount) elTotalCount.textContent = totalCount;
+        if (elBoughtCount) elBoughtCount.textContent = boughtCount;
+
+        // Mini Lists
+        const ceyizPct = ceyizCount === 0 ? 0 : Math.round((ceyizBought / ceyizCount) * 100);
+        const damatPct = damatCount === 0 ? 0 : Math.round((damatBought / damatCount) * 100);
+
+        const elCBar = document.getElementById('stat-ceyiz-bar');
+        const elCRatio = document.getElementById('stat-ceyiz-ratio');
+        if (elCBar) elCBar.style.width = `${ceyizPct}% `;
+        if (elCRatio) elCRatio.textContent = `${ceyizBought}/${ceyizCount}`;
+
+        const elDBar = document.getElementById('stat-damat-bar');
+        const elDRatio = document.getElementById('stat-damat-ratio');
+        if (elDBar) elDBar.style.width = `${damatPct}%`;
+        if (elDRatio) elDRatio.textContent = `${damatBought}/${damatCount}`;
+
+
+        // 3. Category Breakdown
+        const cats = {};
+        items.forEach(i => {
+            const c = i.category || 'Diğer';
+            const cost = (i.price || 0) * (i.quantity || 1);
+
+            if (!cats[c]) cats[c] = { name: c, spent: 0, total: 0 };
+            cats[c].total += cost;
+            if (i.isBought) cats[c].spent += cost;
         });
 
+        // Convert to array and sort by TOTAL cost desc
+        const sortedCats = Object.values(cats).sort((a, b) => b.total - a.total).slice(0, 5); // Top 5
+        const maxCatVal = sortedCats.length > 0 ? sortedCats[0].total : 1;
+
+        const catContainer = document.getElementById('category-breakdown-container');
+        if (catContainer) {
+            if (sortedCats.length === 0) {
+                catContainer.innerHTML = '<div class="empty-chart-msg">Henüz veri yok</div>';
+            } else {
+                catContainer.innerHTML = sortedCats.map(c => `
+                    <div class="category-bar-item">
+                        <div class="c-bar-icon"><i class="fas fa-tag"></i></div>
+                        <div class="c-bar-content">
+                            <div class="c-bar-header">
+                                <span class="c-name">${c.name}</span>
+                                <span class="c-price">${currencyFormatter.format(c.total)}</span>
+                            </div>
+                            <div class="c-track">
+                                <div class="c-fill" style="width: ${(c.total / maxCatVal) * 100}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+
+        // 4. Recent Activity (Last 5 bought items)
+        const recentList = document.getElementById('recent-activity-list');
+        if (recentList) {
+            const boughtItems = items.filter(i => i.isBought).sort((a, b) => {
+                // If dateAdded exists, sort by date? Otherwise ID desc
+                return (b.id || 0) - (a.id || 0);
+            }).slice(0, 5);
+
+            if (boughtItems.length === 0) {
+                recentList.innerHTML = '<div class="empty-chart-msg">Henüz alınan ürün yok</div>';
+            } else {
+                recentList.innerHTML = boughtItems.map(i => `
+                    <div class="recent-item">
+                        <div class="recent-img-box">
+                            ${i.image ? `<img src="${i.image}">` : '<i class="fas fa-shopping-bag"></i>'}
+                        </div>
+                        <div class="recent-info">
+                            <span class="recent-name">${i.name}</span>
+                            <span class="recent-date">${i.category}</span>
+                        </div>
+                        <div class="recent-price">${currencyFormatter.format((i.price || 0) * i.quantity)}</div>
+                    </div>
+                `).join('');
+            }
+        }
 
         // Update Mini Dashboard on Home Screen
         if (typeof updateMiniStats === 'function') updateMiniStats();
@@ -1365,7 +1609,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // User asked for Turkish, ensure all text is Turkish
         // (Existing text is already Turkish)
 
-        const name = settings.name || '\u015Eevval';
+        const name = settings.name || '\u015EŞevval';
 
         if (titleEl) titleEl.textContent = `${greeting}, ${name} 👋`;
 
@@ -1436,6 +1680,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const item = items.find(i => i.id === id);
         if (item) {
             item.isBought = isChecked;
+            if (isChecked) {
+                item.dateBought = new Date().toISOString();
+            } else {
+                delete item.dateBought;
+            }
             saveData();
 
             // Wait for animation to complete before re-rendering (0.6s total animation time)
@@ -1448,7 +1697,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 showToast(msg, false);
                 const boughtCount = items.filter(i => i.isBought).length;
                 if (boughtCount > 0 && boughtCount % 5 === 0) {
-                    setTimeout(() => showToast(`Şevval, harikasın! ${boughtCount} ürün oldu bile! ✨`, false), 3000);
+                    setTimeout(() => showToast(`ŞŞevval, harikasın! ${boughtCount} ürün oldu bile! ✨`, false), 3000);
                 }
             }
         }
@@ -1704,299 +1953,339 @@ document.addEventListener('DOMContentLoaded', () => {
     // We will stick to local function hoisting, but protect the call.
 
     // Globals for inline calls
-    window.editItemModal = (item = null) => {
-        console.log("Ã¢Å“ÂÃ¯Â¸Â Edit Modal Triggered for:", item);
-        try {
-            // Re-query primarily elements to be safe against closure issues
-            const modalForm = document.getElementById('modal-form');
-            if (!modalForm) {
-                console.error("Critical: #modal-form not found in DOM");
-                alert("Hata: D\u00FCzenleme formu bulunamad\u0131. L\u00FCtfen sayfay\u0131 yenileyiniz.");
-                return;
-            }
+    // --- Item Editor Logic (New) ---
 
-            const isEdit = !!item;
-            modalForm.classList.remove('hidden');
-            requestAnimationFrame(() => modalForm.classList.add('active'));
-            document.body.classList.add('modal-open');
+    // State for Editor
+    let currentItemPhotos = [];
+    let currentItemLinks = [];
 
-            const type = isEdit ? item.type : currentTab;
+    window.openItemEditor = function (item = null) {
+        const modal = document.getElementById('modal-item-editor');
+        if (!modal) return;
 
-            // Safe helper call
-            const getter = typeof getCategories === 'function' ? getCategories : window.getCategories;
-            if (!getter) throw new Error("Kategori y\u00FCkleme fonksiyonu (getCategories) bulunamad\u0131!");
+        // Reset State
+        currentItemPhotos = [];
+        currentItemLinks = [];
 
-            const currentCats = getter(type === 'stats' ? 'ceyiz' : type);
+        const isEdit = !!item;
+        const editorTitle = document.getElementById('editor-title');
+        const editorId = document.getElementById('editor-id');
+        const nameInput = document.getElementById('editor-name');
+        const qtyInput = document.getElementById('editor-qty');
+        const priceInput = document.getElementById('editor-price');
+        const noteInput = document.getElementById('editor-note');
+        const boughtCheck = document.getElementById('editor-bought');
+        const catSelect = document.getElementById('editor-category');
+        const newCatContainer = document.getElementById('editor-new-cat-container');
+        const newCatInput = document.getElementById('editor-new-cat-input');
 
-            const catSelect = document.getElementById('item-category');
-            if (catSelect) {
-                catSelect.innerHTML = '';
-                currentCats.forEach(c => {
-                    const opt = document.createElement('option');
-                    opt.value = c;
-                    opt.textContent = c;
-                    catSelect.appendChild(opt);
-                });
-            }
+        // Reset Inputs
+        if (editorId) editorId.value = isEdit ? item.id : '';
+        if (nameInput) nameInput.value = isEdit ? item.name : '';
+        if (qtyInput) qtyInput.value = isEdit ? (item.quantity || 1) : 1;
+        if (priceInput) priceInput.value = (isEdit && item.price) ? item.price : '';
+        if (noteInput) noteInput.value = (isEdit && item.note) ? item.note : '';
+        if (boughtCheck) boughtCheck.checked = isEdit ? item.isBought : false;
+        if (newCatContainer) newCatContainer.classList.add('hidden');
+        if (newCatInput) newCatInput.value = '';
 
-            const elId = document.getElementById('edit-id');
-            const elName = document.getElementById('item-name');
-            const elQty = document.getElementById('item-quantity');
-            const elPrice = document.getElementById('item-price');
-            const elBought = document.getElementById('item-bought');
-            const elNote = document.getElementById('item-note');
+        // Title
+        if (editorTitle) editorTitle.textContent = isEdit ? 'Ürünü Düzenle ✏️' : 'Yeni Ürün Ekle ✨';
 
-            if (elId) elId.value = isEdit ? item.id : '';
-            if (elName) elName.value = isEdit ? item.name : '';
-            if (elQty) elQty.value = isEdit ? item.quantity : 1;
-            if (elPrice) elPrice.value = (isEdit && item.price !== undefined) ? item.price : '';
-            if (elBought) elBought.checked = isEdit ? item.isBought : false;
-            if (elNote) elNote.value = (isEdit && item.note) ? item.note : '';
+        // Populate Categories
+        const type = isEdit ? item.type : currentTab;
+        const targetType = (type === 'stats' || type === 'home') ? 'ceyiz' : type;
+        const cats = getCategories(targetType);
 
-            if (isEdit && catSelect) {
-                catSelect.value = item.category;
-                lastSelectedCategory = item.category;
-            }
+        if (catSelect) {
+            catSelect.innerHTML = '<option value="" disabled selected>Seçiniz</option>';
+            cats.forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c;
+                opt.textContent = c;
+                catSelect.appendChild(opt);
+            });
+            // Add "Add New" option logic
+            const addNewOpt = document.createElement('option');
+            addNewOpt.value = 'ADD_NEW';
+            addNewOpt.textContent = '+ Yeni Kategori Ekle';
+            addNewOpt.style.color = 'var(--primary-color)';
+            addNewOpt.style.fontWeight = 'bold';
+            catSelect.appendChild(addNewOpt);
 
-            const title = document.getElementById('modal-title');
-            if (title) title.textContent = isEdit ? '\u00DCr\u00FCn\u00FC D\u00FCzenle \u011FÅ¸â€“Å Ã¯Â¸Â' : 'Yeni \u00DCr\u00FCn Ekle Ã¢Å“Â¨';
+            if (isEdit) catSelect.value = item.category;
 
-        } catch (err) {
-            console.error("Edit Modal Error:", err);
-            alert("Bir hata olu\u015Ftu: " + err.message);
+            // Listener for new category
+            catSelect.onchange = (e) => {
+                if (e.target.value === 'ADD_NEW') {
+                    newCatContainer.classList.remove('hidden');
+                    newCatInput.focus();
+                } else {
+                    newCatContainer.classList.add('hidden');
+                }
+            };
         }
+
+        // Migrate/Load Data
+        if (isEdit) {
+            // Photos
+            if (item.images && Array.isArray(item.images)) {
+                currentItemPhotos = [...item.images];
+            } else if (item.image) {
+                currentItemPhotos = [item.image];
+            }
+
+            // Links
+            if (item.links && Array.isArray(item.links)) {
+                currentItemLinks = [...item.links];
+            } else if (item.link) {
+                currentItemLinks = [item.link];
+            }
+        }
+
+        renderPhotoGrid();
+        renderLinkList();
+
+        // Show Modal
+        modal.classList.remove('hidden');
+        requestAnimationFrame(() => modal.classList.add('active'));
+        document.body.classList.add('modal-open');
     };
 
-
-
-    // --- Helper: Get Categories ---
-    // Unified updateAllCategoryDropdowns is already defined above
-
-    function openQuickAddModal() {
-        const modal = document.getElementById('modal-quick-add-category');
-        if (modal) {
-            // Reset form
-            const name = document.getElementById('qa-new-product-name');
-            const qty = document.getElementById('qa-new-qty');
-            const price = document.getElementById('qa-new-price');
-            const note = document.getElementById('qa-new-note');
-            const err = document.getElementById('qa-new-error-msg');
-            const title = modal.querySelector('.modal-title');
-
-            if (title) title.textContent = '\u00DCr\u00FCn Detay\u0131 \u011FÅ¸â€œÂ';
-            delete modal.dataset.editId; // Clear edit mode
-
-            if (name) name.value = '';
-            if (qty) qty.value = 1;
-            if (price) price.value = '';
-            if (note) note.value = '';
-            const linkInput = document.getElementById('qa-new-link');
-            if (linkInput) linkInput.value = '';
-
-            // Reset Photo
-            const photoInput = document.getElementById('qa-new-photo');
-            const photoPreview = document.getElementById('qa-photo-preview');
-            const photoImg = photoPreview?.querySelector('img');
-
-            if (photoInput) photoInput.value = ''; // Reset file input
-            if (photoPreview) {
-                photoPreview.classList.add('hidden');
-                if (photoImg) photoImg.src = '';
-            }
-            if (modal) delete modal.dataset.tempImage; // Clear temp image
-
-            if (err) err.classList.add('hidden');
-
-            // Reset Inline Category
-            const newCatContainer = document.getElementById('qa-new-cat-container');
-            const newCatInput = document.getElementById('qa-new-cat-input');
-            if (newCatContainer) newCatContainer.classList.add('hidden');
-            if (newCatInput) newCatInput.value = '';
-
-            updateAllCategoryDropdowns(); // Ensure categories are up to date
-
-            modal.classList.remove('hidden');
-            requestAnimationFrame(() => modal.classList.add('active'));
-            document.body.classList.add('modal-open');
-
-            if (name) name.focus();
-        }
-    }
-
-    function closeQAModal() {
-        console.log("Closing QA Modal (Restored)");
-        const modal = document.getElementById('modal-quick-add-category');
+    window.closeItemEditor = function () {
+        const modal = document.getElementById('modal-item-editor');
         if (modal) {
             modal.classList.remove('active');
             setTimeout(() => modal.classList.add('hidden'), 200);
             document.body.classList.remove('modal-open');
-
-            // Reset state
-            delete modal.dataset.editId;
-            const title = document.getElementById('qa-title');
-            const subtitle = modal.querySelector('.sheet-subtitle');
-
-            if (title) title.textContent = 'Hızlı Ekle ✨';
-            if (subtitle) subtitle.textContent = 'Listene yeni bir ürün ekle.';
-
-            // Clear inputs if needed? No, usually explicitly cleared on open.
         }
+    };
+
+    // --- Editor Helpers ---
+
+    function renderPhotoGrid() {
+        const grid = document.getElementById('editor-photo-grid');
+        if (!grid) return;
+        grid.innerHTML = '';
+
+        currentItemPhotos.forEach((imgSrc, idx) => {
+            const div = document.createElement('div');
+            div.className = 'photo-preview-item';
+            div.innerHTML = `
+                <img src="${imgSrc}" alt="Photo ${idx}">
+                <button type="button" class="photo-remove-btn" onclick="removeEditorPhoto(${idx})">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            grid.appendChild(div);
+        });
     }
-    window.closeQAModal = closeQAModal;
 
-    let isSaving = false;
+    window.removeEditorPhoto = function (idx) {
+        currentItemPhotos.splice(idx, 1);
+        renderPhotoGrid();
+    };
 
-    function saveQuickAddItem(event) {
-        if (event) {
-            event.preventDefault();
-            event.stopPropagation();
-        }
+    function renderLinkList() {
+        const list = document.getElementById('editor-links-list');
+        if (!list) return;
+        list.innerHTML = '';
 
-        if (isSaving) {
-            console.log("⏳ Save locked: prevention of double-save");
-            return;
-        }
-        isSaving = true;
-        setTimeout(() => isSaving = false, 1000); // Reset lock after 1s
+        currentItemLinks.forEach((link, idx) => {
+            const row = document.createElement('div');
+            row.className = 'link-item-row';
+            row.innerHTML = `
+                <i class="fas fa-link" style="color:var(--text-light); font-size:0.8rem;"></i>
+                <a href="${link}" target="_blank">${link}</a>
+                <button type="button" class="link-remove-btn" onclick="removeEditorLink(${idx})">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            list.appendChild(row);
+        });
+    }
 
-        console.log("💾 saveQuickAddItem called");
+    window.removeEditorLink = function (idx) {
+        currentItemLinks.splice(idx, 1);
+        renderLinkList();
+    };
 
-        try {
-            const modal = document.getElementById('modal-quick-add-category');
-            const nameInput = document.getElementById('qa-new-product-name');
-            const catSelect = document.getElementById('qa-new-category-select');
-            const qtyInput = document.getElementById('qa-new-qty');
-            const priceInput = document.getElementById('qa-new-price');
-            const noteInput = document.getElementById('qa-new-note');
-            const linkInput = document.getElementById('qa-new-link');
+    // --- Editor Interactions ---
 
-            // Visual feedback for debugging
-            // alert(`Debug: Name=${nameInput?.value}, Cat=${catSelect?.value}`);
-
-            if (!nameInput || !catSelect || !qtyInput) {
-                alert("Hata: Form elemanlar\u0131 bulunamad\u0131 (DOM Error)");
-                console.error("Critical: Inputs missing from DOM");
-                return;
+    // Photo Selection
+    const photoInput = document.getElementById('editor-photo-input');
+    if (photoInput) {
+        photoInput.addEventListener('change', async (e) => {
+            const files = Array.from(e.target.files);
+            for (const file of files) {
+                try {
+                    const base64 = await resizeImage(file, 800, 0.7);
+                    currentItemPhotos.push(base64);
+                } catch (err) {
+                    console.error("Image resize error", err);
+                    showToast("Fotoğraf yüklenemedi", false);
+                }
             }
+            renderPhotoGrid();
+            photoInput.value = ''; // Reset
+        });
+    }
 
-            console.log("Step 1: Reading values");
-            const name = nameInput?.value?.trim() || '';
-            let category = catSelect?.value || '';
-            const quantity = parseInt(qtyInput?.value) || 1;
-            const price = priceInput?.value ? parseFloat(priceInput.value) : 0;
-            const note = noteInput?.value?.trim() || '';
-            const link = linkInput?.value?.trim() || '';
-            const image = modal.dataset.tempImage || ''; // Get compressed base64
-            console.log("Step 2: Values read", { name, category, quantity, price, note, link, hasImage: !!image });
+    // Add Link
+    const btnAddLink = document.getElementById('btn-add-link');
+    const linkInput = document.getElementById('editor-link-input');
+    if (btnAddLink && linkInput) {
+        btnAddLink.addEventListener('click', () => {
+            const val = linkInput.value.trim();
+            if (!val) return;
+            // Simple URL fix
+            let url = val;
+            if (!url.startsWith('http')) url = 'https://' + url;
 
-            if (!name) {
-                alert("L\u00FCtfen \u00FCr\u00FCn ad\u0131 giriniz.");
-                return;
-            }
+            currentItemLinks.push(url);
+            linkInput.value = '';
+            renderLinkList();
+        });
+    }
 
-            // Check if adding a new category
-            if (category === "new" || category === "ADD_NEW") {
-                const newCatInput = document.getElementById('qa-new-cat-input');
-                const newCatName = newCatInput?.value?.trim();
+    // Save Logic
+    const btnSaveEditor = document.getElementById('btn-save-editor');
+    if (btnSaveEditor) {
+        btnSaveEditor.addEventListener('click', async () => {
+            if (btnSaveEditor.disabled) return;
 
-                if (!newCatName) {
-                    alert("Lütfen yeni kategorinin ismini yazınız.");
-                    if (newCatInput) newCatInput.focus();
+            // Gather Data
+            const idVal = document.getElementById('editor-id').value;
+            const name = document.getElementById('editor-name').value.trim();
+            const qty = parseInt(document.getElementById('editor-qty').value) || 1;
+            const price = parseFloat(document.getElementById('editor-price').value) || 0;
+            const note = document.getElementById('editor-note').value.trim();
+            const isBought = document.getElementById('editor-bought').checked;
+
+            // Category
+            const catSelect = document.getElementById('editor-category');
+            let category = catSelect.value;
+
+            if (category === 'ADD_NEW') {
+                const newCatInput = document.getElementById('editor-new-cat-input');
+                category = newCatInput.value.trim();
+                // Add new category to system
+                const type = (currentTab === 'stats' || currentTab === 'home') ? 'ceyiz' : currentTab;
+                if (category) {
+                    window.addCategory(category, type);
+                } else {
+                    alert("Lütfen kategori ismi giriniz.");
                     return;
                 }
-
-                // Call global addCategory to save it
-                if (window.addCategory) {
-                }
-
-                // Add to user categories if not exists
-                if (window.addCategory) {
-                    window.addCategory(newCatName);
-                    category = newCatName; // Use the new name for the item
-                }
             }
 
-            if (!category || category === "" || category === "Seçiniz") {
-                alert("Lütfen bir kategori seçiniz.");
+            if (!name) {
+                alert("Ürün adı zorunludur.");
+                return;
+            }
+            if (!category) {
+                alert("Kategori seçimi zorunludur.");
                 return;
             }
 
-            const editId = modal.dataset.editId;
-            // Use global currentTab, ensure defaults
-            let typeToSave = 'ceyiz';
-            if (currentTab === 'damat') typeToSave = 'damat';
-            else if (currentTab === 'ceyiz') typeToSave = 'ceyiz';
-            else if (editId) {
-                // If editing and on home/stats, try to preserve type
-                const existing = items.find(i => i.id == editId);
-                if (existing) typeToSave = existing.type;
+            // Determine ID
+            const isEdit = !!idVal;
+            const itemId = isEdit ? parseInt(idVal) : Date.now();
+
+            // Type
+            let type = (currentTab === 'stats' || currentTab === 'home') ? 'ceyiz' : currentTab;
+            if (isEdit) {
+                const existing = items.find(i => i.id === itemId);
+                if (existing) type = existing.type;
             }
 
-            if (editId) {
-                // Edit existing
-                const idx = items.findIndex(i => i.id == editId);
-                if (idx > -1) {
-                    items[idx] = {
-                        ...items[idx],
-                        name, category, quantity, price, note, link, image
-                    };
-                }
+            // Create Item Object
+
+            // Logic for dateBought
+            let existingDateBought = null;
+            if (isEdit) {
+                const existing = items.find(i => i.id === itemId);
+                if (existing) existingDateBought = existing.dateBought;
+            }
+
+            let finalDateBought = existingDateBought;
+            if (isBought && !finalDateBought) {
+                finalDateBought = new Date().toISOString();
+            } else if (!isBought) {
+                finalDateBought = undefined;
+            }
+
+            const newItem = {
+                id: itemId,
+                type: type,
+                name: name,
+                category: category,
+                quantity: qty,
+                price: price,
+                note: note,
+                isBought: isBought,
+                dateBought: finalDateBought,
+                dateAdded: isEdit ? (items.find(i => i.id === itemId)?.dateAdded || new Date().toISOString()) : new Date().toISOString(),
+                // New Fields
+                images: currentItemPhotos,
+                links: currentItemLinks,
+                // Backward Compatibility (optional, keep first one)
+                image: currentItemPhotos.length > 0 ? currentItemPhotos[0] : '',
+                link: currentItemLinks.length > 0 ? currentItemLinks[0] : ''
+            };
+
+            if (isEdit) {
+                const idx = items.findIndex(i => i.id === itemId);
+                if (idx > -1) items[idx] = newItem;
             } else {
-                // Add new
-                items.push({
-                    id: Date.now(),
-                    type: typeToSave,
-                    name,
-                    category,
-                    quantity,
-                    price,
-                    note,
-                    link,
-                    image,
-                    isBought: false,
-                    dateAdded: new Date().toISOString()
-                });
-
-                // Auto-switch tab to show the new item
-                if (currentTab !== typeToSave) {
-                    console.log(`\u011FÅ¸â€â‚¬ Auto-switching tab from ${currentTab} to ${typeToSave}`);
-                    currentTab = typeToSave;
-                    // Update header title if possible
-                    const headerTitle = document.getElementById('header-title');
-                    if (headerTitle) headerTitle.textContent = typeToSave === 'ceyiz' ? '\u00C7eyiz Listem' : 'Damat Boh\u00E7as\u0131';
-                }
+                items.push(newItem);
             }
+
+            // Save & Close
+            btnSaveEditor.disabled = true;
+            btnSaveEditor.textContent = 'Kaydediliyor...';
 
             try {
                 saveData();
-            } catch (e) {
-                console.error("Error in saveData:", e);
-                throw new Error("Veri kaydedilirken hata: " + e.message);
-            }
-
-            try {
                 renderApp();
+                closeItemEditor();
+                showToast(isEdit ? "Ürün güncellendi ✅" : "Ürün eklendi ✨");
             } catch (e) {
-                console.error("Error in renderApp:", e);
-                // Don't block saving if render fails, but alert
-                alert("Veri kaydedildi ama ekran yenilenirken hata olu\u015Ftu: " + e.message);
+                console.error(e);
+                alert("Kaydetme hatası!");
+            } finally {
+                btnSaveEditor.disabled = false;
+                btnSaveEditor.textContent = 'Kaydet';
             }
-
-            try {
-                closeQAModal();
-            } catch (e) {
-                console.error("Error in closeQAModal:", e);
-            }
-
-            showToast(editId ? '\u00DCr\u00FCn g\u00FCncellendi Ã¢Å“â€¦' : '\u00DCr\u00FCn eklendi Ã¢Å“Â¨', false);
-
-        } catch (err) {
-            console.error("Save Error:", err);
-            alert("Kaydetme hatas\u0131 olu\u015Ftu: " + err.message);
-        }
+        });
     }
 
-    window.saveQuickAddItem = saveQuickAddItem; // Expose globally for onclick
+    // Connect Global editItemModal to new system
+    window.editItemModal = window.openItemEditor;
+
+    // Connect FAB
+    const fabAdd = document.getElementById('fab-add');
+    if (fabAdd) {
+        fabAdd.onclick = () => {
+            // Determine sensible default tab
+            if (currentTab === 'home' || currentTab === 'stats') currentTab = 'ceyiz'; // Default to ceyiz
+            window.openItemEditor(); // Open empty
+        };
+    }
+
+    // Close Listeners
+    document.querySelectorAll('.close-modal-sheet').forEach(btn => {
+        btn.addEventListener('click', () => {
+            closeItemEditor();
+            // Close detail modal too if open
+            const detailModal = document.getElementById('modal-product-detail');
+            if (detailModal) {
+                detailModal.classList.remove('active');
+                setTimeout(() => detailModal.classList.add('hidden'), 200);
+            }
+            document.body.classList.remove('modal-open');
+        });
+    });
 
     // --- UI Helper Functions ---
     window.switchTab = function (tabId) {
@@ -2225,21 +2514,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log("Settings Clicked (Inline)");
 
             try {
-                // Try to reset state
-                const sheet = document.querySelector('#modal-settings .settings-sheet');
-                const body = document.querySelector('#modal-settings .settings-body');
-                if (sheet) sheet.scrollTop = 0;
-                if (body) body.scrollTop = 0;
-
-                // Collapse special message
-                const msgContent = document.getElementById('special-message-content');
-                const msgChevron = document.getElementById('message-chevron');
-                const msgCard = document.querySelector('.special-message-card');
-
-                if (msgContent) msgContent.classList.remove('expanded');
-                if (msgChevron) msgChevron.classList.remove('rotated');
-                if (msgCard) msgCard.classList.remove('active');
-
+                resetSettingsState();
             } catch (err) {
                 console.warn("Error resetting settings state:", err);
             }
@@ -2408,94 +2683,18 @@ document.addEventListener('DOMContentLoaded', () => {
                         e.preventDefault();
                         e.stopPropagation();
 
-                        // Open edit modal directly (inline implementation)
-                        const qaModal = document.getElementById('modal-quick-add-category');
-                        const qaName = document.getElementById('qa-new-product-name');
-                        const qaSelect = document.getElementById('qa-new-category-select');
-                        const qaQty = document.getElementById('qa-new-qty');
-                        const qaPrice = document.getElementById('qa-new-price');
-                        const qaNote = document.getElementById('qa-new-note');
-                        const qaError = document.getElementById('qa-new-error-msg');
-                        const modalTitle = qaModal?.querySelector('.modal-header h2');
+                        console.log("✏️ Opening Item Editor for:", item.name);
 
-                        if (!qaModal) {
-                            alert('Modal bulunamad\u0131!');
-                            return;
+                        // Use new editor
+                        if (typeof window.openItemEditor === 'function') {
+                            window.openItemEditor(item);
+                        } else if (typeof window.editItemModal === 'function') {
+                            // Fallback to alias
+                            window.editItemModal(item);
+                        } else {
+                            console.error("Critical: openItemEditor not found");
+                            alert("Hata: Editör yüklenemedi. Sayfayı yenilemeyi deneyin.");
                         }
-
-                        // Set modal to edit mode
-                        qaModal.dataset.editId = item.id;
-                        if (modalTitle) modalTitle.textContent = '\u00DCr\u00FCn\u00FC D\u00FCzenle';
-
-                        // Fill form
-                        if (qaName) qaName.value = item.name;
-                        if (qaQty) qaQty.value = item.quantity || 1;
-                        if (qaPrice) qaPrice.value = item.price || '';
-                        if (qaNote) qaNote.value = item.note || '';
-                        const qaLink = document.getElementById('qa-new-link');
-                        if (qaLink) qaLink.value = item.link || '';
-
-                        // Populate Photo Preview (Delegation Block)
-                        const qaPhotoInput = document.getElementById('qa-new-photo');
-                        const qaPhotoPreview = document.getElementById('qa-photo-preview');
-                        const qaPhotoImg = qaPhotoPreview?.querySelector('img');
-
-                        if (qaPhotoPreview && qaPhotoImg) {
-                            if (item.image) {
-                                qaPhotoImg.src = item.image;
-                                qaPhotoPreview.classList.remove('hidden');
-                                qaModal.dataset.tempImage = item.image;
-                            } else {
-                                qaPhotoPreview.classList.add('hidden');
-                                qaPhotoImg.src = '';
-                                delete qaModal.dataset.tempImage;
-                            }
-                            if (qaPhotoInput) qaPhotoInput.value = '';
-                        }
-
-                        if (qaError) qaError.classList.add('hidden');
-
-                        // Populate categories
-                        if (qaSelect) {
-                            qaSelect.innerHTML = '<option value="" disabled>Kategori Se\u00E7iniz</option>';
-                            let cats = (item.type === 'damat' ? userCategories.damat : userCategories.ceyiz) || [];
-
-                            // Fallback to defaults if empty
-                            if (cats.length === 0) {
-                                cats = (item.type === 'damat' ? defaultCategories.damat : defaultCategories.ceyiz);
-                            }
-
-                            cats.forEach(c => {
-                                const opt = document.createElement('option');
-                                opt.value = c;
-                                opt.textContent = c;
-                                if (c === item.category) opt.selected = true;
-                                qaSelect.appendChild(opt);
-                            });
-                        }
-
-                        // This block was added by the user's instruction
-                        if (qaSelect) {
-                            qaSelect.addEventListener('change', (e) => {
-                                const newCatContainer = document.getElementById('qa-new-cat-container');
-                                if (e.target.value === 'new' || e.target.value === 'ADD_NEW') {
-                                    if (newCatContainer) {
-                                        newCatContainer.classList.remove('hidden');
-                                        document.getElementById('qa-new-cat-input')?.focus();
-                                    }
-                                } else {
-                                    if (newCatContainer) newCatContainer.classList.add('hidden');
-                                }
-                            });
-                        }
-                        // End of user-added block
-
-                        // Open modal
-                        qaModal.classList.remove('hidden');
-                        requestAnimationFrame(() => qaModal.classList.add('active'));
-                        document.body.classList.add('modal-open');
-
-                        if (qaName) qaName.focus();
                     } else {
                         console.error('Item not found for ID:', id);
                     }
@@ -2592,40 +2791,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        // Settings SAVE
-        const btnSaveProfile = document.getElementById('btn-save-profile');
-        if (btnSaveProfile) {
-            btnSaveProfile.addEventListener('click', () => {
-                if (sNikah && sNikah.value) {
-                    const nikahDate = new Date(sNikah.value);
-                    if (isNaN(nikahDate.getTime())) {
-                        alert('Ge\u00E7ersiz nikah tarihi! L\u00FCtfen do\u011Fru bir tarih girin.');
-                        return;
-                    }
-                }
-
-                // Check if nikah is after nisan
-                if (sNisan && sNisan.value && sNikah && sNikah.value) {
-                    const nisanDate = new Date(sNisan.value);
-                    const nikahDate = new Date(sNikah.value);
-                    if (nikahDate < nisanDate) {
-                        alert('Nikah tarihi ni\u015Fan tarihinden \u00F6nce olamaz!');
-                        return;
-                    }
-                }
-
-                // Save values
-                if (sNisan && sNisan.value) settings.dates.engagement = sNisan.value;
-                if (sNikah && sNikah.value) settings.dates.wedding = sNikah.value;
-
-                saveSettings();
-
-                // CRITICAL: Update home screen countdowns immediately
-                updateHomeCountdowns();
-
-                showToast('Ayarlar kaydedildi Ã¢Å“Â¨', false);
-            });
-        }
 
         // Font size settings removed
 
@@ -2645,7 +2810,7 @@ document.addEventListener('DOMContentLoaded', () => {
             "Gecenin bu vaktinde bile seni düşünmek kalbimi ısıtıyor, her hayalim seninle süslü. ✨", // 00
             "Rüyalarımda bile seninle kuracağımız yuvayı görüyorum, seni seviyorum. 🌙", // 01
             "Evi senin sesinle, senin gülüşünle dolduracağımız günü sabırsızlıkla bekliyorum. 🏠", // 02
-            "Uykumda bile kalbim senin ismini fısıldıyor Şevval'im. 💖", // 03
+            "Uykumda bile kalbim senin ismini fısıldıyor ŞŞevval'im. 💖", // 03
             "Yeni bir günün şafağında, seninle uyanacağımız sabahların hayaliyle doluyum. 🌅", // 04
             "Her sabah senin sevginle uyanmak, ömrümün en büyük ödülü olacak. 🌸", // 05
             "Güneş doğarken aklıma ilk gelen sensin, her saniyem seninle güzel. ☀️", // 06
@@ -2659,7 +2824,7 @@ document.addEventListener('DOMContentLoaded', () => {
             "Birlikte seçeceğimiz her detay, evimizin ruhuna senden bir parça katacak. 🎨", // 14
             "Gelecekteki her anımızda seninle yan yana, can cana olmayı diliyorum. 💞", // 15
             "Zaman akıp gidiyor ama sana olan aşkım her saat daha da büyüyor. ⏳", // 16
-            "Evimizin her köşesinde senin zarafetin ve imzan olacak Şevval'im. 🌺", // 17
+            "Evimizin her köşesinde senin zarafetin ve imzan olacak ŞŞevval'im. 🌺", // 17
             "Günün yorgunluğunu seninle eve döndüğümüzde unutacağımız günlere az kaldı. ☕", // 18
             "Paylaşacağımız her akşam yemeği, senin sevginle daha da lezzetlenecek. 🍽️", // 19
             "Yıldızlar çıkarken seni düşünmek, karanlık gecelerimi aydınlatıyor. 🌠", // 20
@@ -2668,26 +2833,24 @@ document.addEventListener('DOMContentLoaded', () => {
             "Yatmadan önce son duam; seninle, sevgi dolu, mutlu bir ömür sürdürmek. 🙏" // 23
         ];
 
-        function refreshSpecialMessage() {
+        // --- Special Message Functions ---
+        window.refreshSpecialMessage = function () {
             const textEl = document.getElementById('special-message-text');
-            if (textEl) {
+            if (textEl && romanticMessages) {
                 const hour = new Date().getHours();
                 textEl.textContent = romanticMessages[hour] || romanticMessages[12];
             }
-        }
+        };
 
-        // --- Special Message Toggle (Global Function) ---
         window.toggleSpecialMessage = function () {
-            console.log("\u011FÅ¸â€™Å’ toggleSpecialMessage CALLED");
-            refreshSpecialMessage(); // Update content based on hour
+            console.log("💌 toggleSpecialMessage CALLED");
+            if (typeof window.refreshSpecialMessage === 'function') window.refreshSpecialMessage();
+
             const messageContent = document.getElementById('special-message-content');
             const messageChevron = document.getElementById('message-chevron');
             const messageCard = document.querySelector('.special-message-card');
 
-            if (!messageContent) {
-                console.error("Special message content not found");
-                return;
-            }
+            if (!messageContent) return;
 
             const isExpanded = messageContent.classList.contains('expanded');
 
@@ -2702,51 +2865,98 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         };
 
-        // Safety check just in case onclick isn't enough (Event Listener Backup)
-        const mh = document.getElementById('special-message-header');
-        if (mh) {
-            mh.onclick = window.toggleSpecialMessage;
-        }
+        window.closeCategoryModal = function () {
+            const modal = document.getElementById('modal-categories');
+            if (modal) {
+                modal.classList.remove('active');
+                setTimeout(() => modal.classList.add('hidden'), 200);
+                document.body.classList.remove('modal-open');
+            }
+        };
 
 
         // Data Management
-        document.getElementById('btn-backup-copy').addEventListener('click', () => {
-            const dataStr = JSON.stringify(items);
+        // --- NEW ALL-IN-ONE SETTINGS SAVE ---
+        const btnSaveAllSettings = document.getElementById('btn-save-all-settings');
+        if (btnSaveAllSettings) {
+            btnSaveAllSettings.addEventListener('click', () => {
+                const nameInput = document.getElementById('setting-user-name');
+                const partnerInput = document.getElementById('setting-partner-name');
+                const animToggle = document.getElementById('animations-toggle');
+                const modal = document.getElementById('modal-settings');
+
+                if (nameInput) settings.name = nameInput.value.trim() || 'Şevval';
+                if (partnerInput) settings.partnerName = partnerInput.value.trim() || 'Yusuf';
+                if (animToggle) settings.appearance.animations = animToggle.checked;
+
+                saveSettings();
+                applySettings();
+
+                // Close Modal
+                if (modal) {
+                    modal.classList.remove('active');
+                    setTimeout(() => modal.classList.add('hidden'), 200);
+                    document.body.classList.remove('modal-open');
+                }
+
+                showToast('Ayarlar başarıyla kaydedildi! ✅', false);
+            });
+        }
+
+        // --- Data Management ---
+        document.getElementById('btn-backup-copy')?.addEventListener('click', () => {
+            const data = {
+                items: items,
+                settings: settings,
+                userCategories: userCategories
+            };
+            const dataStr = JSON.stringify(data);
             navigator.clipboard.writeText(dataStr).then(() => {
-                showToast('Yedek kopyaland\u0131 ğŸ“‹', false);
+                showToast('Tüm veriler yedeğe kopyalandı! 📋✨', false);
             });
         });
 
-        document.getElementById('btn-import-paste').addEventListener('click', () => {
+        document.getElementById('btn-import-paste')?.addEventListener('click', () => {
             const area = document.getElementById('import-area');
+            const btn = document.getElementById('btn-import-paste');
             if (area.classList.contains('hidden')) {
                 area.classList.remove('hidden');
                 area.focus();
-                document.getElementById('btn-import-paste').innerHTML = '<i class="fas fa-check"></i> Onayla ve Y\u00FCkle';
+                btn.innerHTML = '<i class="fas fa-check"></i> Veriyi Yükle';
             } else {
                 try {
                     const val = area.value.trim();
-                    if (!val) return;
-                    const data = JSON.parse(val);
-                    if (Array.isArray(data) && confirm('Geri y\u00FCkleme yap\u0131ls\u0131n m\u0131? Mevcut liste silinecek.')) {
-                        items = data;
-                        saveData();
-                        renderApp();
-                        showToast('Yedek ba\u015Far\u0131yla y\u00FCklendi âœ…', false);
-                        area.value = '';
+                    if (!val) {
                         area.classList.add('hidden');
-                        document.getElementById('btn-import-paste').innerHTML = '<i class="fas fa-paste"></i> \u0130\u00E7e Aktar (Yap\u0131\u015Ft\u0131r)';
+                        btn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> Yedek Yükle';
+                        return;
                     }
-                } catch (e) { alert('Hatal\u0131 veri format\u0131!'); }
+                    const data = JSON.parse(val);
+                    if (confirm('Tüm verileriniz yüklenecek ve mevcut veriler silinecek. Emin misiniz?')) {
+                        if (data.items) items = data.items;
+                        if (data.settings) Object.assign(settings, data.settings);
+                        if (data.userCategories) Object.assign(userCategories, data.userCategories);
+
+                        saveData();
+                        saveSettings();
+                        saveUserCategories();
+
+                        showToast('Veriler başarıyla yüklendi! 🔄', false);
+                        setTimeout(() => location.reload(), 1000);
+                    }
+                } catch (err) {
+                    showToast('Hatalı veri formatı! ❌', true);
+                    console.error(err);
+                }
             }
         });
 
-        document.getElementById('btn-reset-data').addEventListener('click', () => {
-            if (confirm('D\u0130KKAT! T\u00FCm liste kal\u0131c\u0131 olarak silinecek. Emin misiniz?')) {
-                items = [];
-                saveData();
-                renderApp();
-                showToast('T\u00FCm veriler s\u0131f\u0131rland\u0131.', false);
+        // --- RESET DATA ---
+        document.getElementById('btn-reset-app-data')?.addEventListener('click', () => {
+            if (confirm('DİKKAT! Tüm verileriniz (listeler, bütçe, hedefler) kalıcı olarak silinecek. Devam etmek istiyor musunuz?')) {
+                localStorage.clear();
+                showToast('Tüm veriler sıfırlandı. Sayfa yenileniyor...', false);
+                setTimeout(() => location.reload(), 1500);
             }
         });
 
@@ -2778,7 +2988,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(items));
                 const dl = document.createElement('a');
                 dl.setAttribute("href", dataStr);
-                dl.setAttribute("download", "sevval_ceyiz_yedek.json");
+                dl.setAttribute("download", "sŞevval_ceyiz_yedek.json");
                 document.body.appendChild(dl); dl.click(); dl.remove();
             });
         }
@@ -3761,7 +3971,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(0,0,0,0.03); padding: 6px 10px; border-radius: 8px;">
                             <div style="display: flex; align-items: center; gap: 8px;">
                                 <div style="width: 24px; height: 24px; background: white; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 700; color: ${ev.color === '#a29bfe' ? '#6c5ce7' : 'var(--primary-color)'}; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">${day}/${month}</div>
-                                <span style="font-size: 0.8rem; color: var(--text-dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 140px;">${ev.msg}</span>
+                                <span style="font-size: 0.82rem; color: var(--text-dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1;">${ev.msg}</span>
                             </div>
                             <span style="font-size: 0.7rem; color: var(--text-muted); font-weight: 500;">${Math.ceil((ev.date - today) / (1000 * 60 * 60 * 24))} gün</span>
                         </div>
@@ -3787,39 +3997,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Elements
         const title = document.getElementById('detail-title');
-        const imgBox = document.getElementById('detail-image-container');
-        const imgEl = document.getElementById('detail-image');
         const catBadge = document.getElementById('detail-category');
         const priceEl = document.getElementById('detail-price');
-        const linkBtn = document.getElementById('detail-link');
         const noteEl = document.getElementById('detail-note');
         const statusText = document.getElementById('detail-status-text');
         const btnEdit = document.getElementById('btn-edit-detail');
         const btnClose = modal.querySelector('.close-detail-modal');
 
-        // Populate
+        // Gallery Elements
+        const galleryTrack = document.getElementById('detail-gallery-track');
+        const galleryDots = document.getElementById('detail-gallery-dots');
+        const singleImgContainer = document.getElementById('detail-image-container'); // Legacy/Fallback
+        const singleImg = document.getElementById('detail-image');
+
+        // Link Elements
+        const linksList = document.getElementById('detail-links-list');
+        const singleLinkBtn = document.getElementById('detail-link'); // Legacy/Fallback
+
+        // 1. Basic Info
         if (title) title.textContent = item.name;
-
-        if (item.image) {
-            imgBox.classList.remove('hidden');
-            imgEl.src = item.image;
-            // ImageView on click inner
-            imgEl.onclick = () => window.viewImage(item.image);
-        } else {
-            imgBox.classList.add('hidden');
-        }
-
         if (catBadge) catBadge.textContent = item.category;
 
         const totalP = (item.price || 0) * (item.quantity || 1);
         if (priceEl) priceEl.textContent = totalP > 0 ? currencyFormatter.format(totalP) : '';
-
-        if (item.link) {
-            linkBtn.classList.remove('hidden');
-            linkBtn.href = item.link;
-        } else {
-            linkBtn.classList.add('hidden');
-        }
 
         if (noteEl) {
             noteEl.textContent = item.note || 'Henüz bir not eklenmemiş.';
@@ -3828,46 +4028,525 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (statusText) {
-            statusText.textContent = item.isBought ? 'Tamamlandı ✅' : 'Satın Alınacak ⏳';
+            statusText.textContent = item.isBought ? 'Tamamland\u0131 \u2705' : 'Sat\u0131n Al\u0131nacak \u23F3';
             statusText.style.color = item.isBought ? 'var(--success-color)' : 'var(--primary-color)';
         }
 
+        // 2. Gallery Logic
+        let images = [];
+        if (item.images && Array.isArray(item.images)) images = item.images;
+        else if (item.image) images = [item.image];
+
+        if (images.length > 0) {
+            // Prefer Gallery Track if exists
+            if (galleryTrack && galleryDots) {
+                // Hide single view
+                if (singleImgContainer) singleImgContainer.classList.add('hidden');
+
+                // Show Gallery
+                galleryTrack.parentElement.classList.remove('hidden');
+                galleryTrack.innerHTML = '';
+                galleryDots.innerHTML = '';
+                galleryTrack.style.transform = 'translateX(0)'; // Reset
+
+                images.forEach((imgSrc, idx) => {
+                    // Slide
+                    const slide = document.createElement('div');
+                    slide.className = 'detail-slide';
+                    const img = document.createElement('img');
+                    img.src = imgSrc;
+                    img.onclick = () => window.viewImage(imgSrc);
+                    slide.appendChild(img);
+                    galleryTrack.appendChild(slide);
+
+                    // Dot
+                    const dot = document.createElement('div');
+                    dot.className = 'd-dot' + (idx === 0 ? ' active' : '');
+                    galleryDots.appendChild(dot);
+                });
+
+                // Init Carousel if > 1
+                if (images.length > 1) {
+                    initDetailCarousel(galleryTrack, galleryDots, images.length);
+                }
+            } else {
+                // Fallback to Single Image
+                if (singleImgContainer) {
+                    singleImgContainer.classList.remove('hidden');
+                    if (singleImg) {
+                        singleImg.src = images[0];
+                        singleImg.onclick = () => window.viewImage(images[0]);
+                    }
+                }
+            }
+        } else {
+            // No Images
+            if (singleImgContainer) singleImgContainer.classList.add('hidden');
+            if (galleryTrack) galleryTrack.parentElement.classList.add('hidden');
+        }
+
+        // 3. Links Logic
+        let links = [];
+        if (item.links && Array.isArray(item.links)) links = item.links;
+        else if (item.link) links = [item.link];
+
+        if (links.length > 0) {
+            if (linksList) {
+                if (singleLinkBtn) singleLinkBtn.classList.add('hidden'); // Hide legacy
+                linksList.classList.remove('hidden');
+                linksList.innerHTML = '';
+
+                links.forEach(link => {
+                    const a = document.createElement('a');
+                    a.href = link;
+                    a.target = '_blank';
+                    a.className = 'detail-link-item';
+                    a.innerHTML = `<i class="fas fa-link"></i> ${link}`;
+                    linksList.appendChild(a);
+                });
+            } else if (singleLinkBtn) {
+                // Fallback
+                singleLinkBtn.classList.remove('hidden');
+                singleLinkBtn.href = links[0];
+            }
+        } else {
+            if (linksList) linksList.classList.add('hidden');
+            if (singleLinkBtn) singleLinkBtn.classList.add('hidden');
+        }
+
         // Edit Action
-        btnEdit.onclick = () => {
-            modal.classList.remove('active'); // Start fade out
-            setTimeout(() => {
-                modal.classList.add('hidden'); // Hide after fade
-                if (window.editItemModal) window.editItemModal(item);
-            }, 300);
-        };
+        if (btnEdit) {
+            btnEdit.onclick = () => {
+                modal.classList.remove('active'); // Start fade out
+                setTimeout(() => {
+                    modal.classList.add('hidden'); // Hide after fade
+                    if (window.editItemModal) window.editItemModal(item);
+                }, 300);
+            };
+        }
 
         // Close Action
-        btnClose.onclick = () => {
+        if (btnClose) {
+            btnClose.onclick = () => {
+                closeDetailModal();
+            };
+        }
+
+        // Click outside
+        modal.onclick = (e) => {
+            if (e.target === modal || e.target.classList.contains('modal-backdrop')) {
+                closeDetailModal();
+            }
+        };
+
+        function closeDetailModal() {
             modal.classList.remove('active');
             document.body.classList.remove('modal-open');
             setTimeout(() => {
                 modal.classList.add('hidden');
             }, 300);
-        };
-
-        // click outside to close
-        modal.onclick = (e) => {
-            if (e.target === modal || e.target.classList.contains('modal-backdrop')) {
-                modal.classList.remove('active');
-                document.body.classList.remove('modal-open');
-                setTimeout(() => {
-                    modal.classList.add('hidden');
-                }, 300);
-            }
-        };
+        }
 
         // Show
         modal.classList.remove('hidden');
-        // Trigger reflow to ensure transition happens
-        void modal.offsetWidth;
-        modal.classList.add('active');
+        requestAnimationFrame(() => modal.classList.add('active'));
         document.body.classList.add('modal-open');
     }
+
+    // Helper: Detail Carousel
+    function initDetailCarousel(track, dotsContainer, count) {
+        let current = 0;
+        let startX = 0;
+        let isDragging = false;
+        const dots = dotsContainer.children;
+
+        function update() {
+            track.style.transform = `translateX(-${current * 100}%)`;
+            Array.from(dots).forEach((d, i) => {
+                if (i === current) d.classList.add('active');
+                else d.classList.remove('active');
+            });
+        }
+
+        track.parentElement.addEventListener('touchstart', (e) => {
+            startX = e.touches[0].clientX;
+            isDragging = true;
+        }, { passive: true });
+
+        track.parentElement.addEventListener('touchend', (e) => {
+            if (!isDragging) return;
+            const diff = startX - e.changedTouches[0].clientX;
+            if (Math.abs(diff) > 50) {
+                if (diff > 0 && current < count - 1) current++;
+                else if (diff < 0 && current > 0) current--;
+                update();
+            }
+            isDragging = false;
+        });
+    }
+    function formatDateToDisplay(dateStr) {
+        if (!dateStr || !dateStr.includes('-')) return dateStr;
+        const [year, month, day] = dateStr.split('-');
+        return `${day}.${month}.${year}`;
+    }
+
+    // --- Custom Date Picker Logic ---
+    let activeDateInputId = null;
+    let calendarViewDate = new Date(); // Date being viewed in picker
+    let isYearPickerActive = false;
+
+    const monthNames = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
+
+    // --- Calendar Swipe Logic ---
+    let calTouchStartX = 0;
+    function handleCalSwipe(e) {
+        if (isYearPickerActive) return;
+        const touchEndX = e.changedTouches[0].screenX;
+        const diff = touchEndX - calTouchStartX;
+        if (Math.abs(diff) > 50) {
+            if (diff > 0) calendarViewDate.setMonth(calendarViewDate.getMonth() - 1);
+            else calendarViewDate.setMonth(calendarViewDate.getMonth() + 1);
+            renderCustomCalendar();
+        }
+    }
+
+    function renderCustomCalendar() {
+        if (isYearPickerActive) {
+            renderYearPicker();
+            return;
+        }
+
+        const grid = document.getElementById('calendar-days-grid');
+        const title = document.getElementById('calendar-month-year');
+        const daysView = document.getElementById('calendar-days-view');
+        const yearsView = document.getElementById('calendar-years-view');
+
+        if (!grid || !title || !daysView || !yearsView) return;
+
+        daysView.classList.remove('hidden');
+        yearsView.classList.add('hidden');
+
+        grid.innerHTML = '';
+        const year = calendarViewDate.getFullYear();
+        const month = calendarViewDate.getMonth();
+        title.textContent = `${monthNames[month]} ${year}`;
+
+        // Get first day of month (0 = Sunday, we want 0 = Monday for Pt)
+        let firstDay = new Date(year, month, 1).getDay();
+        firstDay = firstDay === 0 ? 6 : firstDay - 1; // Adjust to Pt-Pa
+
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+        // Empty slots
+        for (let i = 0; i < firstDay; i++) {
+            const empty = document.createElement('div');
+            empty.className = 'calendar-day empty';
+            grid.appendChild(empty);
+        }
+
+        // Days
+        const selectedDateStr = document.getElementById(activeDateInputId)?.dataset.rawDate || '';
+        const today = new Date();
+
+        for (let d = 1; d <= daysInMonth; d++) {
+            const dayEl = document.createElement('div');
+            dayEl.className = 'calendar-day';
+            dayEl.textContent = d;
+
+            const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+
+            if (dateStr === selectedDateStr) dayEl.classList.add('active');
+            if (year === today.getFullYear() && month === today.getMonth() && d === today.getDate()) {
+                dayEl.classList.add('today');
+            }
+
+            dayEl.onclick = () => {
+                const input = document.getElementById(activeDateInputId);
+                if (input) {
+                    input.value = `${String(d).padStart(2, '0')}.${String(month + 1).padStart(2, '0')}.${year}`;
+                    input.dataset.rawDate = dateStr;
+                }
+                closeCustomCalendar();
+            };
+
+            grid.appendChild(dayEl);
+        }
+    }
+
+    function renderYearPicker() {
+        const grid = document.getElementById('calendar-years-grid');
+        const title = document.getElementById('calendar-month-year');
+        const daysView = document.getElementById('calendar-days-view');
+        const yearsView = document.getElementById('calendar-years-view');
+
+        if (!grid || !title || !daysView || !yearsView) return;
+
+        daysView.classList.add('hidden');
+        yearsView.classList.remove('hidden');
+
+        grid.innerHTML = '';
+        const currentYear = new Date().getFullYear();
+        title.textContent = "Yıl Seçin";
+
+        // Show range from currentYear - 5 to currentYear + 10
+        for (let y = currentYear - 5; y <= currentYear + 10; y++) {
+            const yearEl = document.createElement('div');
+            yearEl.className = 'calendar-year';
+            if (y === calendarViewDate.getFullYear()) yearEl.classList.add('active');
+            yearEl.textContent = y;
+
+            yearEl.onclick = () => {
+                calendarViewDate.setFullYear(y);
+                isYearPickerActive = false;
+                renderCustomCalendar();
+            };
+
+            grid.appendChild(yearEl);
+        }
+    }
+
+    function openCustomCalendar(inputId) {
+        activeDateInputId = inputId;
+        const input = document.getElementById(inputId);
+        const existingDate = input?.dataset.rawDate ? new Date(input.dataset.rawDate) : new Date();
+        if (!isNaN(existingDate.getTime())) {
+            calendarViewDate = new Date(existingDate.getFullYear(), existingDate.getMonth(), 1);
+        }
+
+        const modal = document.getElementById('modal-custom-calendar');
+        modal.classList.remove('hidden');
+        requestAnimationFrame(() => modal.classList.add('active'));
+        isYearPickerActive = false; // Reset to days view
+        renderCustomCalendar();
+
+        // Attach Swipes (Once)
+        const calBody = modal.querySelector('.calendar-body-custom');
+        if (calBody && !calBody.dataset.swipeBound) {
+            calBody.addEventListener('touchstart', (e) => {
+                calTouchStartX = e.changedTouches[0].screenX;
+            }, { passive: true });
+            calBody.addEventListener('touchend', handleCalSwipe, { passive: true });
+            calBody.dataset.swipeBound = "true";
+        }
+    }
+
+    function closeCustomCalendar() {
+        const modal = document.getElementById('modal-custom-calendar');
+        modal.classList.remove('active');
+        setTimeout(() => modal.classList.add('hidden'), 200);
+    }
+
+    // Nav Listeners
+    document.getElementById('cal-prev')?.addEventListener('click', () => {
+        calendarViewDate.setMonth(calendarViewDate.getMonth() - 1);
+        renderCustomCalendar();
+    });
+    document.getElementById('cal-next')?.addEventListener('click', () => {
+        if (isYearPickerActive) return;
+        calendarViewDate.setMonth(calendarViewDate.getMonth() + 1);
+        renderCustomCalendar();
+    });
+
+    document.getElementById('calendar-month-year')?.addEventListener('click', () => {
+        isYearPickerActive = !isYearPickerActive;
+        renderCustomCalendar();
+    });
+
+    document.getElementById('close-custom-calendar')?.addEventListener('click', closeCustomCalendar);
+    document.getElementById('close-custom-calendar-btn')?.addEventListener('click', closeCustomCalendar);
+
+    // Input Listeners
+    document.addEventListener('click', (e) => {
+        const dateInput = e.target.closest('#input-date-nisan, #input-date-nikah');
+        if (dateInput) {
+            openCustomCalendar(dateInput.id);
+        }
+    });
+
+
+    // --- Edit Budget Event Listener ---
+
+    // --- Edit Budget Event Listener (Custom Modal) ---
+    document.addEventListener('click', (e) => {
+        // Budget Edit
+        const btnBudget = e.target.closest('#btn-edit-budget');
+        if (btnBudget) {
+            const modal = document.getElementById('modal-budget-editor');
+            const input = document.getElementById('budget-input');
+            const display = document.getElementById('budget-current-display');
+
+            if (modal && input) {
+                // Get Current
+                const currentBudget = (settings.budgetConf && settings.budgetConf.amount) ? settings.budgetConf.amount : 0;
+
+                // Init Display
+                if (display) display.textContent = currencyFormatter.format(currentBudget);
+                input.value = ''; // Reset input
+
+                // Store temp value for calculator
+                modal.dataset.tempBudget = currentBudget;
+
+                // Show Modal
+                modal.classList.remove('hidden');
+                requestAnimationFrame(() => modal.classList.add('active'));
+                document.body.classList.add('modal-open');
+                input.focus();
+            }
+            return;
+        }
+
+        // Weekly Goal Edit
+        const btnGoal = e.target.closest('#btn-edit-weekly-goal');
+        if (btnGoal) {
+            const modal = document.getElementById('modal-weekly-goal');
+            const textarea = document.getElementById('weekly-goal-input');
+            if (modal && textarea) {
+                textarea.value = settings.weeklyGoal || '';
+                modal.classList.remove('hidden');
+                requestAnimationFrame(() => modal.classList.add('active'));
+                document.body.classList.add('modal-open');
+                textarea.focus();
+            }
+            return;
+        }
+
+        // Countdown Edit
+        const btnCountdown = e.target.closest('.unified-countdown-card');
+        if (btnCountdown) {
+            const modal = document.getElementById('modal-dates-editor');
+            const inputNisan = document.getElementById('input-date-nisan');
+            const inputNikah = document.getElementById('input-date-nikah');
+            if (modal && inputNisan && inputNikah) {
+                const dateNisan = settings.dates.engagement || '';
+                const dateNikah = settings.dates.wedding || '';
+
+                inputNisan.value = formatDateToDisplay(dateNisan);
+                inputNisan.dataset.rawDate = dateNisan;
+
+                inputNikah.value = formatDateToDisplay(dateNikah);
+                inputNikah.dataset.rawDate = dateNikah;
+
+                modal.classList.remove('hidden');
+                requestAnimationFrame(() => modal.classList.add('active'));
+                document.body.classList.add('modal-open');
+            }
+            return;
+        }
+    });
+
+    // Save Weekly Goal
+    const btnSaveWeeklyGoal = document.getElementById('btn-save-weekly-goal');
+    if (btnSaveWeeklyGoal) {
+        btnSaveWeeklyGoal.onclick = () => {
+            const modal = document.getElementById('modal-weekly-goal');
+            const textarea = document.getElementById('weekly-goal-input');
+            if (modal && textarea) {
+                settings.weeklyGoal = textarea.value.trim() || 'Bu hafta için bir güzellik belirle...';
+                saveSettings();
+                renderWeeklyGoal();
+
+                // Close Modal
+                modal.classList.remove('active');
+                document.body.classList.remove('modal-open');
+                setTimeout(() => modal.classList.add('hidden'), 200);
+            }
+        };
+    }
+
+    // Save Dates
+    const btnSaveDates = document.getElementById('btn-save-dates');
+    if (btnSaveDates) {
+        btnSaveDates.onclick = () => {
+            const modal = document.getElementById('modal-dates-editor');
+            const inputNisan = document.getElementById('input-date-nisan');
+            const inputNikah = document.getElementById('input-date-nikah');
+
+            if (modal && inputNisan && inputNikah) {
+                settings.dates.engagement = inputNisan.dataset.rawDate || inputNisan.value;
+                settings.dates.wedding = inputNikah.dataset.rawDate || inputNikah.value;
+
+                saveSettings();
+
+                // Close Modal
+                modal.classList.remove('active');
+                document.body.classList.remove('modal-open');
+                setTimeout(() => modal.classList.add('hidden'), 200);
+            }
+        };
+    }
+
+    // Calculator Buttons
+    function updateBudgetCalc(isAdd) {
+        const modal = document.getElementById('modal-budget-editor');
+        const input = document.getElementById('budget-input');
+        const display = document.getElementById('budget-current-display');
+
+        if (!modal || !input || !display) return;
+
+        const val = parseFloat(input.value.trim());
+        if (isNaN(val) || val <= 0) return;
+
+        let current = parseFloat(modal.dataset.tempBudget || 0);
+
+        if (isAdd) current += val;
+        else current -= val;
+
+        if (current < 0) current = 0;
+
+        // Update State & UI
+        modal.dataset.tempBudget = current;
+        display.textContent = currencyFormatter.format(current);
+        input.value = ''; // Reset input after op
+        input.focus();
+    }
+
+    const btnAdd = document.getElementById('btn-budget-add');
+    const btnSub = document.getElementById('btn-budget-sub');
+
+    if (btnAdd) btnAdd.onclick = () => updateBudgetCalc(true);
+    if (btnSub) btnSub.onclick = () => updateBudgetCalc(false);
+
+    // Save Budget Button
+    const btnSaveBudget = document.getElementById('btn-save-budget');
+    if (btnSaveBudget) {
+        btnSaveBudget.onclick = () => {
+            const modal = document.getElementById('modal-budget-editor');
+            const input = document.getElementById('budget-input');
+
+            if (modal) {
+                // If user typed something but didn't press +/-, we treat it as the NEW total or just ignore?
+                // Request implies calculator. But user might just want to set it.
+                // Let's assume if input has value, we treat it as an OVERWRITE (classic behavior) 
+                // OR we can't be sure. 
+                // "İşlem yapmadan direkt yeni tutarı kaydetmek için 'Kaydet'i kullanabilirsiniz."
+                // This implies input value = NEW TOTAL.
+
+                let finalAmount = parseFloat(modal.dataset.tempBudget || 0);
+
+                if (input && input.value.trim() !== '') {
+                    const directVal = parseFloat(input.value.trim());
+                    if (!isNaN(directVal) && directVal >= 0) {
+                        finalAmount = directVal;
+                    }
+                }
+
+                if (!settings.budgetConf) settings.budgetConf = {};
+                settings.budgetConf.amount = finalAmount;
+                const now = new Date();
+                settings.budgetConf.lastMonth = now.getMonth();
+                settings.budgetConf.lastYear = now.getFullYear();
+
+                saveSettings();
+                renderStats();
+
+                // Close Modal
+                modal.classList.remove('active');
+                document.body.classList.remove('modal-open');
+                setTimeout(() => modal.classList.add('hidden'), 300);
+            }
+        };
+    }
+
     // Expose for potential external use
     window.openProductDetailModal = openProductDetailModal;
 

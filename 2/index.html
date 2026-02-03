@@ -51,12 +51,27 @@
 
         <div class="splash-content">
             <div class="splash-icon">
-                <!-- Icon created via CSS locally -->
+                <svg viewBox="0 0 200 200" class="puffy-heart-svg">
+                    <defs>
+                        <linearGradient id="heartGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#ffffff" />
+                            <stop offset="45%" style="stop-color:var(--primary-color)" />
+                            <stop offset="100%" style="stop-color:var(--primary-dark)" />
+                        </linearGradient>
+                        <filter id="puffy-glow">
+                            <feGaussianBlur stdDeviation="5" result="blur" />
+                            <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                        </filter>
+                    </defs>
+                    <path
+                        d="M100 180c-5-5-95-55-95-115 0-35 25-60 55-60 15 0 30 10 40 25 10-15 25-25 40-25 30 0 55 25 55 60 0 60-90 110-95 115z"
+                        fill="url(#heartGradient)" filter="url(#puffy-glow)" />
+                </svg>
             </div>
             <h1 class="splash-names">
-                <span class="name-line">Şevval</span>
+                <span class="name-line" id="splash-name-bride">Şevval</span>
                 <span class="infinity-symbol">&infin;</span>
-                <span class="name-line">Yusuf</span>
+                <span class="name-line" id="splash-name-groom">Yusuf</span>
             </h1>
             <!-- Decorative Heart Separator -->
             <div class="splash-separator">
@@ -94,7 +109,6 @@
 
             <div class="splash-hint">
                 <i class="fas fa-chevron-up"></i>
-                <span>Mutlulu&#287;a do&#287;ru kayd&#305;r&#305;n</span>
             </div>
 
 
@@ -183,11 +197,11 @@
                                     <div class="unified-countdown-card upcoming-mode"
                                         style="flex-direction: column; align-items: flex-start; padding: 12px 16px !important; gap: 8px !important;">
                                         <div
-                                            style="display: flex; align-items: center; gap: 8px; width: 100%; margin-bottom: 4px;">
-                                            <i class="fas fa-calendar-alt"
-                                                style="color: var(--primary-color); font-size: 0.9rem;"></i>
+                                            style="display: flex; align-items: center; gap: 10px; width: 100%; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid rgba(0,0,0,0.03);">
+                                            <i class="fas fa-calendar-star"
+                                                style="color: var(--primary-color); font-size: 1rem;"></i>
                                             <span
-                                                style="font-size: 0.75rem; font-weight: 700; color: var(--primary-color); text-transform: uppercase; letter-spacing: 0.5px;">Yaklaşan
+                                                style="font-size: 0.85rem; font-weight: 700; color: var(--primary-color); text-transform: uppercase; letter-spacing: 0.8px;">Yaklaşan
                                                 Tarihler</span>
                                         </div>
                                         <div id="home-upcoming-list"
@@ -206,31 +220,21 @@
                                 <div class="c-dot" data-slide="1"></div>
                                 <div class="c-dot" data-slide="2"></div>
                             </div>
+
+                            <!-- Weekly Goal Section -->
+                            <div class="weekly-goal-card" id="btn-edit-weekly-goal">
+                                <div class="weekly-goal-header">
+                                    <i class="fas fa-star-shooting"></i>
+                                    <span>Haftalık Hedefimiz</span>
+                                </div>
+                                <div class="weekly-goal-content" id="weekly-goal-text">
+                                    Bu hafta için bir güzellik belirle...
+                                </div>
+                            </div>
                         </div>
 
-                        <!-- Mini Dashboard (Status at a glance) -->
-                        <div class="mini-dashboard">
-                            <div class="mini-stat-card ceyiz-stat">
-                                <div class="mini-stat-icon"><i class="fas fa-ring"></i></div>
-                                <div class="mini-stat-info">
-                                    <span class="mini-stat-label">&Ccedil;eyiz</span>
-                                    <span class="mini-stat-val" id="mini-ceyiz-percent">0%</span>
-                                </div>
-                                <div class="mini-stat-bar">
-                                    <div class="mini-stat-fill" id="mini-ceyiz-fill" style="width:0%"></div>
-                                </div>
-                            </div>
-                            <div class="mini-stat-card damat-stat">
-                                <div class="mini-stat-icon"><i class="fas fa-user-tie"></i></div>
-                                <div class="mini-stat-info">
-                                    <span class="mini-stat-label">Boh&ccedil;a</span>
-                                    <span class="mini-stat-val" id="mini-damat-percent">0%</span>
-                                </div>
-                                <div class="mini-stat-bar">
-                                    <div class="mini-stat-fill" id="mini-damat-fill" style="width:0%"></div>
-                                </div>
-                            </div>
-                        </div>
+                        <!-- Mini Dashboard Removed per user request -->
+
 
                         <!-- Content from original home section -->
                         <div class="home-actions-wrapper">
@@ -318,69 +322,112 @@
                         </div>
                     </section>
 
-                    <!-- Section: Istatistik -->
+                    <!-- Section: Istatistikler (Redesigned) -->
                     <section id="stats-section" class="swipe-section">
+                        <div class="stats-container" style="padding: 20px; padding-bottom: 150px;">
 
-                        <!-- Financial Stats -->
-                        <div class="stats-card financial-card">
-                            <h3>B&uuml;t&ccedil;e &Ouml;zeti</h3>
-                            <div class="stats-grid">
-                                <div class="stat-item total">
-                                    <span class="stat-label">Toplam Tahmini</span>
-                                    <span class="stat-value money" id="money-total">0 â‚º</span>
+                            <!-- 1. Hero Budget Card -->
+                            <div class="stat-hero-card">
+                                <div class="hero-header">
+                                    <h3>Bütçe Özeti</h3>
+                                    <div class="hero-actions" style="display: flex; gap: 10px;">
+                                        <div class="hero-icon" id="btn-edit-budget" style="cursor: pointer;"><i
+                                                class="fas fa-pencil-alt"></i></div>
+                                        <div class="hero-icon"><i class="fas fa-wallet"></i></div>
+                                    </div>
                                 </div>
-                                <div class="stat-item bought">
-                                    <span class="stat-label">Harcanan</span>
-                                    <span class="stat-value money" id="money-spent">0 â‚º</span>
+                                <div class="hero-main-val">
+                                    <span class="currency">₺</span><span id="stat-total-money">0</span>
+                                    <span class="label">Tahmini Toplam</span>
                                 </div>
-                                <div class="stat-item remaining">
-                                    <span class="stat-label">Kalan &#304;htiya&ccedil;</span>
-                                    <span class="stat-value money" id="money-remaining">0 â‚º</span>
+                                <div class="hero-grid">
+                                    <div class="hero-item spent">
+                                        <span class="label">Harcanan ve alınanlar</span>
+                                        <span class="val" id="stat-spent-money">₺0</span>
+                                    </div>
+                                    <div class="hero-separator"></div>
+                                    <div class="hero-item remaining">
+                                        <span class="label">Kalan İhtiyaç</span>
+                                        <span class="val" id="stat-remaining-money">₺0</span>
+                                    </div>
+                                </div>
+                                <div class="budget-gauge">
+                                    <div class="gauge-fill" id="budget-gauge-fill" style="width: 0%"></div>
                                 </div>
                             </div>
-                        </div>
 
+                            <!-- 2. Main Progress Cards -->
+                            <div class="stat-grid-2">
+                                <!-- General Status -->
+                                <div class="stat-card modern">
+                                    <div class="stat-card-header">
+                                        <h4>Genel Durum</h4>
+                                        <span class="badge-pill" id="total-pct-badge">%0</span>
+                                    </div>
+                                    <div class="circular-progress-container">
+                                        <svg class="progress-ring" width="80" height="80">
+                                            <circle class="progress-ring-bg" stroke="var(--border-color)"
+                                                stroke-width="6" fill="transparent" r="34" cx="40" cy="40" />
+                                            <circle class="progress-ring-circle" id="total-progress-ring"
+                                                stroke="var(--primary-color)" stroke-width="6" fill="transparent" r="34"
+                                                cx="40" cy="40" />
+                                        </svg>
+                                        <div class="progress-inner-text">
+                                            <span id="total-items-count">0</span>
+                                            <small>Ürün</small>
+                                        </div>
+                                    </div>
+                                    <div class="stat-footer-text">
+                                        <span class="success-text"><i class="fas fa-check"></i> <span
+                                                id="total-bought-count">0</span> Alındı</span>
+                                    </div>
+                                </div>
 
-
-                        <div class="stats-card">
-                            <h3>Genel Durum</h3>
-                            <div class="chart-container">
-                                <div class="pie-chart" id="total-progress">
-                                    <span id="total-percentage">0%</span>
+                                <!-- Lists Breakdown -->
+                                <div class="stat-card modern"
+                                    style="display:flex; flex-direction:column; justify-content:center; gap:10px;">
+                                    <div class="mini-list-stat">
+                                        <div class="mls-header">
+                                            <span class="mls-icon ceyiza"><i class="fas fa-home"></i></span>
+                                            <span>Çeyiz</span>
+                                        </div>
+                                        <div class="mls-bar-bg">
+                                            <div class="mls-bar-fill" id="stat-ceyiz-bar" style="width:0%"></div>
+                                        </div>
+                                        <div class="mls-val" id="stat-ceyiz-ratio">0/0</div>
+                                    </div>
+                                    <div class="mini-list-stat">
+                                        <div class="mls-header">
+                                            <span class="mls-icon damata"><i class="fas fa-user-tie"></i></span>
+                                            <span>Bohça</span>
+                                        </div>
+                                        <div class="mls-bar-bg">
+                                            <div class="mls-bar-fill" id="stat-damat-bar" style="width:0%"></div>
+                                        </div>
+                                        <div class="mls-val" id="stat-damat-ratio">0/0</div>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="stats-grid">
-                                <div class="stat-item total">
-                                    <span class="stat-label">Toplam &Uuml;r&uuml;n</span>
-                                    <span class="stat-value" id="stat-total">0</span>
-                                </div>
-                                <div class="stat-item bought">
-                                    <span class="stat-label">Al&#305;nan</span>
-                                    <span class="stat-value" id="stat-bought">0</span>
-                                </div>
-                                <div class="stat-item remaining">
-                                    <span class="stat-label">Kalan</span>
-                                    <span class="stat-value" id="stat-remaining">0</span>
-                                </div>
-                            </div>
-                        </div>
 
-                        <div class="stats-card">
-                            <h3>&Ccedil;eyiz Listesi</h3>
-                            <div class="progress-bar-container">
-                                <div class="progress-bar" id="ceyiz-progress"></div>
+                            <!-- 3. Category Breakdown -->
+                            <div class="stat-section-title">
+                                <h3>Harcama Dağılımı</h3>
+                                <small>Kategorilere göre harcamalar</small>
                             </div>
-                            <p class="stats-text" id="ceyiz-stats-text">0/0 tamamland&#305;</p>
-                            <p class="money-text" id="ceyiz-money-text">Harcama: 0 â‚º</p>
-                        </div>
+                            <div class="stat-card modern" id="category-breakdown-container">
+                                <!-- Injected via JS -->
+                                <div class="empty-chart-msg">Veri yok</div>
+                            </div>
 
-                        <div class="stats-card">
-                            <h3>Boh&ccedil;a</h3>
-                            <div class="progress-bar-container">
-                                <div class="progress-bar" id="damat-progress"></div>
+                            <!-- 4. Recent Activity -->
+                            <div class="stat-section-title" style="margin-top: 20px;">
+                                <h3>Son İşlemler</h3>
+                                <small>Yakın zamanda alınanlar</small>
                             </div>
-                            <p class="stats-text" id="damat-stats-text">0/0 tamamland&#305;</p>
-                            <p class="money-text" id="damat-money-text">Harcama: 0 â‚º</p>
+                            <div class="recent-activity-list" id="recent-activity-list">
+                                <!-- Injected via JS -->
+                            </div>
+
                         </div>
                     </section>
 
@@ -507,173 +554,252 @@
     </div>
 
     <!-- Start Add/Edit Modal (Modern Sheet Design) -->
-    <div id="modal-form" class="modal hidden">
+    <!-- Unified Item Editor Modal (New) -->
+    <div id="modal-item-editor" class="modal hidden">
         <div class="modal-backdrop"></div>
-        <div class="modal-content-sheet">
-            <!-- Header -->
+        <div class="modal-content-sheet editor-sheet">
             <div class="modal-sheet-header">
                 <div class="sheet-title-area">
-                    <h2 id="modal-title">Yeni &Uuml;r&uuml;n Ekle âœ¨</h2>
-                    <p class="sheet-subtitle">Detaylar&#305; girerek listeni zenginle&#351;tir.</p>
+                    <h2 class="modal-title" id="editor-title">Ürün Ekle/Düzenle</h2>
+                    <p class="sheet-subtitle">Ürün detaylarını aşağıdan yönetebilirsiniz.</p>
                 </div>
                 <button class="close-modal-sheet" type="button"><i class="fas fa-times"></i></button>
             </div>
 
-            <!-- Body (Scrollable Form) -->
-            <div class="sheet-body" style="padding: 1.5rem; overflow-y: auto;">
-                <form id="item-form">
-                    <input type="hidden" id="edit-id">
+            <div class="sheet-body editor-body" style="padding: 1.5rem; overflow-y: auto;">
+                <input type="hidden" id="editor-id">
 
-                    <!-- &Uuml;r&uuml;n Ad&#305; -->
-                    <div class="form-group" style="margin-bottom: 1rem;">
-                        <label
-                            style="display:block; margin-bottom:0.5rem; font-weight:500; color:var(--text-light);">&Uuml;r&uuml;n
-                            Ad&#305;</label>
-                        <input type="text" id="item-name" class="modern-input" required
-                            placeholder="&Ouml;rn: Yemek Tak&#305;m&#305;">
-                    </div>
-
-                    <!-- Kategori -->
-                    <div class="form-group" style="margin-bottom: 1rem;">
-                        <label
-                            style="display:block; margin-bottom:0.5rem; font-weight:500; color:var(--text-light);">Kategori</label>
-                        <select id="item-category" class="modern-input" required>
-                            <!-- Dynamic options -->
-                        </select>
-                    </div>
-
-                    <!-- Row: Adet & Fiyat -->
-                    <div class="form-row" style="display:flex; gap:12px; margin-bottom: 1rem;">
-                        <div class="form-group half" style="flex:1;">
-                            <label
-                                style="display:block; margin-bottom:0.5rem; font-weight:500; color:var(--text-light);">Adet</label>
-                            <input type="number" id="item-quantity" class="modern-input" value="1" min="1" required>
+                <!-- Section: Basic Info -->
+                <div class="editor-section">
+                    <h3 class="section-label">Temel Bilgiler</h3>
+                    <div class="form-grid">
+                        <div class="field">
+                            <span>Ürün Adı</span>
+                            <input type="text" id="editor-name" placeholder="Örn: Yemek Takımı" class="modern-input">
                         </div>
-                        <div class="form-group half" style="flex:1;">
-                            <label
-                                style="display:block; margin-bottom:0.5rem; font-weight:500; color:var(--text-light);">Birim
-                                Fiyat (TL)</label>
-                            <input type="number" id="item-price" class="modern-input" min="0" step="0.01"
-                                placeholder="0.00">
+                        <div class="field">
+                            <span>Kategori</span>
+                            <select id="editor-category" class="modern-input">
+                                <option value="" disabled selected>Seçiniz</option>
+                            </select>
+                            <!-- Inline New Category Input -->
+                            <div id="editor-new-cat-container" class="hidden" style="margin-top: 5px;">
+                                <input type="text" id="editor-new-cat-input" placeholder="Yeni kategori ismi..."
+                                    class="modern-input" style="border-color: var(--primary-color);">
+                            </div>
                         </div>
                     </div>
-
-                    <!-- Checkbox -->
+                    <div class="form-grid" style="margin-top: 10px;">
+                        <div class="field">
+                            <span>Adet</span>
+                            <input type="number" id="editor-qty" value="1" min="1" class="modern-input">
+                        </div>
+                        <div class="field">
+                            <span>Birim Fiyat (TL)</span>
+                            <input type="number" id="editor-price" placeholder="0.00" class="modern-input">
+                        </div>
+                    </div>
                     <div class="form-group checkbox-group"
-                        style="margin-bottom: 1rem; display:flex; align-items:center; gap:8px;">
-                        <input type="checkbox" id="item-bought"
+                        style="margin-top: 15px; display:flex; align-items:center; gap:8px;">
+                        <input type="checkbox" id="editor-bought"
                             style="width:18px; height:18px; accent-color:var(--primary-color);">
-                        <label for="item-bought" style="cursor:pointer; color:var(--text-color);">Al&#305;nd&#305;
-                            olarak
-                            i&#351;aretle</label>
+                        <label for="editor-bought" style="cursor:pointer; color:var(--text-color);">Alındı olarak
+                            işaretle</label>
+                    </div>
+                </div>
+
+                <!-- Section: Media -->
+                <div class="editor-section">
+                    <h3 class="section-label">Fotoğraflar 📷</h3>
+                    <div class="photo-upload-area" id="editor-drop-zone">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p>Fotoğrafları buraya sürükleyin veya seçin</p>
+                        <input type="file" id="editor-photo-input" accept="image/*" multiple hidden>
+                        <button type="button" class="btn-ghost-sm"
+                            onclick="document.getElementById('editor-photo-input').click()">Fotoğraf Seç</button>
+                    </div>
+                    <div id="editor-photo-grid" class="photo-grid">
+                        <!-- Photos injected here -->
+                    </div>
+                </div>
+
+                <!-- Section: Details (Notes & Links) -->
+                <div class="editor-section">
+                    <h3 class="section-label">Detaylar & Bağlantılar 🔗</h3>
+
+                    <div class="field" style="margin-bottom: 10px;">
+                        <span>Notlar</span>
+                        <textarea id="editor-note" rows="3" class="modern-textarea"
+                            placeholder="Renk, model, mağaza vb. notlar..."></textarea>
                     </div>
 
-                    <!-- Not -->
-                    <div class="form-group" style="margin-bottom: 1rem;">
-                        <label
-                            style="display:block; margin-bottom:0.5rem; font-weight:500; color:var(--text-light);">Not</label>
-                        <textarea id="item-note" class="modern-input" rows="3"
-                            placeholder="Marka, model, renk vb."></textarea>
+                    <div class="links-manager">
+                        <label>Alışveriş Linkleri</label>
+                        <div id="editor-links-list" class="links-list">
+                            <!-- Links injected here -->
+                        </div>
+                        <div class="add-link-row">
+                            <input type="url" id="editor-link-input" placeholder="https://..." class="modern-input sm">
+                            <button type="button" id="btn-add-link" class="btn-icon-turn"><i
+                                    class="fas fa-plus"></i></button>
+                        </div>
                     </div>
+                </div>
 
-                    <!-- Footer Actions (Inside form to submit) -->
-                    <div class="sheet-footer"
-                        style="margin-top:2rem; display:flex; justify-content:flex-end; gap:10px; border-top:1px solid var(--border-color); padding-top:1rem;">
-                        <button type="button" class="btn-ghost close-modal-sheet"
-                            style="padding:10px 20px; border-radius:30px; border:none; background:transparent; cursor:pointer; color:var(--text-light);">Vazge&ccedil;</button>
-                        <button type="submit" class="btn-primary"
-                            style="padding:10px 24px; border-radius:30px; border:none; background:var(--primary-color); color:white; font-weight:600; cursor:pointer; box-shadow:0 4px 12px rgba(216,138,154,0.4);">Kaydet</button>
-                    </div>
-                </form>
+            </div>
+
+            <div class="sheet-footer modal-actions">
+                <button class="btn-ghost close-modal-sheet">Vazgeç</button>
+                <button id="btn-save-editor" class="btn-primary">Kaydet</button>
             </div>
         </div>
     </div>
-    <!-- End Add/Edit Modal -->
 
-    <!-- Quick Add Modal (Restored) -->
-    <div id="modal-quick-add-category" class="modal hidden">
+    <!-- Budget Editor Modal -->
+    <div id="modal-budget-editor" class="modal hidden">
         <div class="modal-backdrop"></div>
-        <div class="modal-content-sheet">
+        <div class="modal-content-sheet glass-sheet">
             <div class="modal-sheet-header">
                 <div class="sheet-title-area">
-                    <h2 class="modal-title" id="qa-title">Hızlı Ekle ✨</h2>
-                    <p class="sheet-subtitle">Listene yeni bir ürün ekle.</p>
+                    <h2 class="modal-title">Bu Ayki Bütçe</h2>
+                    <p class="sheet-subtitle">Bu ay harcayabileceğiniz limiti girin.</p>
                 </div>
-                <button class="close-modal-sheet" type="button" onclick="closeQAModal()"><i
-                        class="fas fa-times"></i></button>
+                <button class="close-modal-sheet" type="button"><i class="fas fa-times"></i></button>
             </div>
-
-            <div class="sheet-body" style="padding: 1.5rem; overflow-y: auto;">
-                <div class="form-grid">
-                    <div class="field">
-                        <span>Ürün Adı</span>
-                        <input type="text" id="qa-new-product-name" placeholder="Ürün adı giriniz..."
-                            class="modern-input">
-                    </div>
-                    <div class="field">
-                        <span>Kategori</span>
-                        <select id="qa-new-category-select" class="modern-input">
-                            <option value="" disabled selected>Kategori Seçiniz</option>
-                        </select>
-                    </div>
-                </div>
-
-                <!-- Missing Container REMOVED per user request -->
-
-
-                <div class="form-grid" style="margin-top:10px;">
-                    <div class="field">
-                        <span>Adet</span>
-                        <input type="number" id="qa-new-qty" value="1" min="1" class="modern-input">
-                    </div>
-                    <div class="field">
-                        <span>Birim Fiyat (TL)</span>
-                        <input type="number" id="qa-new-price" placeholder="0" class="modern-input">
-                    </div>
-                </div>
-
+            <div class="sheet-body" style="padding: 1.5rem;">
                 <div class="field">
-                    <span>Not</span>
-                    <textarea id="qa-new-note" rows="2" placeholder="Renk, marka vb. ufak bir not..."
-                        style="width:100%; border:2px solid #eee; border-radius:12px; padding:10px; resize:none; font-family:inherit;"></textarea>
-                </div>
+                    <span>Mevcut Bütçe</span>
+                    <div style="font-size: 1.5rem; font-weight: 700; color: var(--primary-color); margin-bottom: 15px;"
+                        id="budget-current-display">0 TL</div>
 
-                <div class="field">
-                    <span>Ürün Linki 🔗</span>
-                    <input type="url" id="qa-new-link" placeholder="https://trendyol.com/..."
-                        style="width:100%; border:2px solid #eee; border-radius:12px; padding:10px; font-family:inherit;">
-                </div>
+                    <span>İşlem Tutarı (TL)</span>
+                    <input type="number" id="budget-input" placeholder="Örn: 10000" class="modern-input"
+                        style="font-size: 1.2rem; font-weight: 600;">
 
-                <div class="field">
-                    <span>Fotoğraf Ekle 📷</span>
-                    <label for="qa-new-photo" class="upload-btn"
-                        style="display:block; width:100%; border:2px dashed #eee; border-radius:12px; padding:15px; text-align:center; cursor:pointer; color:#888;">
-                        <i class="fas fa-camera" style="font-size:1.5rem; display:block; margin-bottom:5px;"></i>
-                        Fotoğraf Seç
-                    </label>
-                    <input type="file" id="qa-new-photo" accept="image/*" style="display:none;">
-                    <div id="qa-photo-preview" class="hidden" style="margin-top:10px; text-align:center;">
-                        <img src="" alt="&Ouml;nizleme" onclick="window.viewImage(this.src)"
-                            style="max-height:80px; width:80px; object-fit:cover; border-radius:12px; box-shadow:0 2px 5px rgba(0,0,0,0.1); cursor:zoom-in; border:1px solid #ddd;">
-                        <button type="button" id="btn-remove-photo"
-                            style="display:block; margin:5px auto; background:none; border:none; color:salmon; cursor:pointer;">Kald&#305;r
-                            âŒ</button>
+                    <div style="display: flex; gap: 10px; margin-top: 10px;">
+                        <button id="btn-budget-add" class="btn-secondary budget-calc-btn add">
+                            <i class="fas fa-plus"></i> Ekle
+                        </button>
+                        <button id="btn-budget-sub" class="btn-secondary budget-calc-btn sub">
+                            <i class="fas fa-minus"></i> Çıkar
+                        </button>
                     </div>
-                </div>
 
-                <p id="qa-new-error-msg" class="hidden"
-                    style="color:var(--danger-color); font-size:0.85rem; margin-top:5px;"><i
-                        class="fas fa-exclamation-circle"></i> L&uuml;tfen &uuml;r&uuml;n ad&#305; ve kategori giriniz.
-                </p>
-            </div>
-            <div class="modal-actions">
-                <button class="btn-ghost modal-close-btn">Vazge&ccedil;</button>
-                <button id="btn-save-qa" class="btn-primary">Kaydet ve Ekle</button>
+                    <small style="display:block; margin-top:12px; color:var(--text-light);">
+                        İşlem yapmadan direkt yeni tutarı kaydetmek için "Kaydet"i kullanabilirsiniz.
+                    </small>
+                </div>
+                <div style="margin-top: 20px;">
+                    <button id="btn-save-budget" class="btn-primary" style="width: 100%;">Kaydet</button>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Product Detail Modal (New) -->
+    <!-- Weekly Goal Editor Modal -->
+    <div id="modal-weekly-goal" class="modal hidden">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content-sheet glass-sheet">
+            <div class="modal-sheet-header">
+                <div class="sheet-title-area">
+                    <h2 class="modal-title">Haftalık Hedefimiz</h2>
+                    <p class="sheet-subtitle">Bu hafta odaklanacağımız güzel bir hedef belirleyelim.</p>
+                </div>
+                <button class="close-modal-sheet" type="button"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="sheet-body" style="padding: 1.5rem;">
+                <div class="field">
+                    <label
+                        style="font-size: 0.75rem; color: var(--text-light); text-transform: uppercase; margin-bottom: 8px; display: block;">Hedefini
+                        Yaz</label>
+                    <textarea id="weekly-goal-input" class="modern-input"
+                        placeholder="Örn: Bu hafta davetiyeleri seçeceğiz..."
+                        style="width: 100%; min-height: 100px; padding: 12px; font-size: 1rem; border-radius: 12px; resize: none;"></textarea>
+                </div>
+                <div style="margin-top: 20px;">
+                    <button id="btn-save-weekly-goal" class="btn-primary" style="width: 100%;">Hedefi Kaydet</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dates Editor Modal -->
+    <div id="modal-dates-editor" class="modal hidden">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content-sheet glass-sheet">
+            <div class="modal-sheet-header">
+                <div class="sheet-title-area">
+                    <h2 class="modal-title">Geri Sayım Ayarları</h2>
+                    <p class="sheet-subtitle">Nişan ve Nikah tarihlerini buradan güncelleyebilirsin.</p>
+                </div>
+                <button class="close-modal-sheet" type="button"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="sheet-body" style="padding: 1.5rem;">
+                <div class="field" style="margin-bottom: 20px;">
+                    <label
+                        style="font-size: 0.75rem; color: var(--text-light); text-transform: uppercase; margin-bottom: 8px; display: block;">Nişan
+                        Tarihi</label>
+                    <div class="input-with-icon">
+                        <input type="text" id="input-date-nisan" class="modern-input" readonly
+                            placeholder="Tarih Seçin..." style="width: 100%; cursor: pointer;">
+                        <i class="fas fa-calendar-alt input-icon"></i>
+                    </div>
+                </div>
+                <div class="field" style="margin-bottom: 20px;">
+                    <label
+                        style="font-size: 0.75rem; color: var(--text-light); text-transform: uppercase; margin-bottom: 8px; display: block;">Nikah
+                        Tarihi</label>
+                    <div class="input-with-icon">
+                        <input type="text" id="input-date-nikah" class="modern-input" readonly
+                            placeholder="Tarih Seçin..." style="width: 100%; cursor: pointer;">
+                        <i class="fas fa-calendar-alt input-icon"></i>
+                    </div>
+                </div>
+                <div style="margin-top: 30px;">
+                    <button id="btn-save-dates" class="btn-primary" style="width: 100%;">Tarihleri Güncelle</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Calendar Modal (Premium Picker) -->
+    <div id="modal-custom-calendar" class="modal hidden">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content-sheet glass-sheet calendar-modal-fixed">
+            <div class="modal-sheet-header">
+                <div class="sheet-title-area">
+                    <h2 class="modal-title" id="calendar-month-year" style="cursor: pointer;">Ocak 2026</h2>
+                </div>
+                <div class="calendar-nav">
+                    <button class="cal-nav-btn" id="cal-prev"><i class="fas fa-arrow-left"></i></button>
+                    <button class="cal-nav-btn" id="cal-next"><i class="fas fa-arrow-right"></i></button>
+                </div>
+            </div>
+            <div class="sheet-body calendar-body-custom">
+                <!-- Days View -->
+                <div id="calendar-days-view">
+                    <div class="calendar-weekdays">
+                        <span>Pt</span><span>Sa</span><span>Ça</span><span>Pe</span><span>Cu</span><span>Ct</span><span>Pa</span>
+                    </div>
+                    <div class="calendar-days" id="calendar-days-grid">
+                        <!-- Days injected via JS -->
+                    </div>
+                </div>
+                <!-- Years View -->
+                <div id="calendar-years-view" class="hidden">
+                    <div class="calendar-years" id="calendar-years-grid">
+                        <!-- Years injected via JS -->
+                    </div>
+                </div>
+            </div>
+            <div class="calendar-footer" style="padding: 1rem; border-top: 1px solid var(--border-color);">
+                <button id="close-custom-calendar" class="btn-primary sm" style="width: 100%;"
+                    type="button">Kapat</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Product Detail Modal (Updated) -->
     <div id="modal-product-detail" class="modal hidden">
         <div class="modal-backdrop"></div>
         <div class="modal-content-sheet detail-sheet">
@@ -693,9 +819,13 @@
             </div>
 
             <div class="sheet-body detail-body" style="padding: 1.5rem; overflow-y: auto;">
-                <!-- Image Widget -->
-                <div id="detail-image-container" class="detail-image-box hidden">
-                    <img id="detail-image" src="" alt="Ürün Görseli">
+
+                <!-- Gallery Widget -->
+                <div id="detail-gallery" class="detail-gallery-container hidden">
+                    <div class="gallery-wrapper" id="gallery-track">
+                        <!-- Images injected here -->
+                    </div>
+                    <div class="gallery-dots" id="gallery-dots"></div>
                 </div>
 
                 <!-- Info Header -->
@@ -704,10 +834,11 @@
                     <span id="detail-price" class="detail-price">₺0</span>
                 </div>
 
-                <!-- Link Button if exists -->
-                <a id="detail-link" href="#" target="_blank" class="detail-link-btn hidden">
-                    <i class="fas fa-link"></i> Ürüne Git
-                </a>
+                <!-- Links Section -->
+                <div id="detail-links-section" class="detail-links-box hidden">
+                    <label>Bağlantılar</label>
+                    <div id="detail-links-list" class="detail-links-list"></div>
+                </div>
 
                 <!-- Note Section -->
                 <div class="detail-note-box">
@@ -743,79 +874,74 @@
 
             <div class="sheet-body settings-body" style="padding: 1.5rem; overflow-y: auto;">
 
-                <!-- Profile Section -->
+                <!-- 1. Profile & Name -->
                 <div class="settings-section" style="margin-bottom: 2rem;">
-                    <h3
-                        style="font-size: 1rem; margin-bottom: 1rem; color: var(--primary-color); display: flex; align-items: center; gap: 8px;">
-                        <i class="fas fa-user-circle"></i> Profil & Tarihler
+                    <h3 class="settings-section-title">
+                        <i class="fas fa-user-edit"></i> Profil Bilgileri
                     </h3>
+                    <div class="form-group">
+                        <label class="settings-label">Sizin İsminiz</label>
+                        <div class="input-with-icon" style="position: relative; margin-bottom: 1rem;">
+                            <input type="text" id="setting-user-name" class="modern-input"
+                                placeholder="İsminizi girin..." style="padding-left: 40px; width: 100%;">
+                            <i class="fas fa-signature"
+                                style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--primary-color);"></i>
+                        </div>
 
-                    <div class="form-group" style="margin-bottom: 1rem;">
-                        <label
-                            style="display:block; margin-bottom:0.5rem; font-size: 0.85rem; font-weight: 500;">Ni&#351;an
-                            Tarihi</label>
-                        <input type="date" id="setting-date-nisan" class="modern-input">
+                        <label class="settings-label">Eşinizin İsmi</label>
+                        <div class="input-with-icon" style="position: relative;">
+                            <input type="text" id="setting-partner-name" class="modern-input"
+                                placeholder="Eşinizin ismini girin..." style="padding-left: 40px; width: 100%;">
+                            <i class="fas fa-heart-pulse"
+                                style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--primary-color);"></i>
+                        </div>
+                        <p class="settings-help">Uygulama ve giriş ekranındaki isimleri değiştirir.</p>
                     </div>
-
-                    <div class="form-group" style="margin-bottom: 1.5rem;">
-                        <label style="display:block; margin-bottom:0.5rem; font-size: 0.85rem; font-weight: 500;">Nikah
-                            Tarihi</label>
-                        <input type="date" id="setting-date-nikah" class="modern-input">
-                    </div>
-
-                    <button id="btn-save-profile" class="btn-primary" style="width: 100%;">Ayarlar&#305;
-                        G&uuml;ncelle</button>
                 </div>
 
-
-                <!-- Appearance Section -->
+                <!-- 2. Görüntü Ayarları -->
                 <div class="settings-section"
                     style="margin-bottom: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color);">
-                    <h3
-                        style="font-size: 1rem; margin-bottom: 1rem; color: var(--primary-color); display: flex; align-items: center; gap: 8px;">
-                        <i class="fas fa-paint-brush"></i> G&ouml;r&uuml;n&uuml;m
+                    <h3 class="settings-section-title">
+                        <i class="fas fa-magic"></i> Görünüm & Stil
                     </h3>
 
-
                     <!-- Background Selection -->
-                    <div class="form-group" style="margin-bottom: 2rem;">
-                        <label style="display:block; margin-bottom:1rem; font-size: 0.9rem; font-weight: 500;">Arka
-                            Plan</label>
-                        <div class="bg-picker" style="display: flex; gap: 15px;">
-                            <!-- Simple/Sade Option -->
-                            <div class="bg-option active" data-bg="simple"
-                                style="flex: 1; padding: 10px; border: 2px solid transparent; border-radius: 12px; cursor: pointer; text-align: center; background: rgba(0,0,0,0.05); transition: all 0.2s;">
-                                <div style="font-size: 1.5rem; margin-bottom: 5px;">✨</div>
-                                <span style="font-size: 0.85rem; font-weight: 500;">Sade</span>
+                    <div class="form-group" style="margin-bottom: 1.5rem;">
+                        <label class="settings-label">Tema Arka Planı</label>
+                        <div class="bg-picker premium-bg-picker" id="bg-picker-container">
+                            <div class="bg-option active" data-bg="simple">
+                                <span class="bg-emoji">✨</span>
+                                <span class="bg-label">Sade</span>
                             </div>
-                            <!-- Floral/Pastel Bahar Option -->
-                            <div class="bg-option" data-bg="floral"
-                                style="flex: 1; padding: 10px; border: 2px solid transparent; border-radius: 12px; cursor: pointer; text-align: center; background: rgba(0,0,0,0.05); transition: all 0.2s;">
-                                <div style="font-size: 1.5rem; margin-bottom: 5px;">🪻</div>
-                                <span style="font-size: 0.85rem; font-weight: 500;">Pastel Bahar</span>
+                            <div class="bg-option" data-bg="floral">
+                                <span class="bg-emoji">🪻</span>
+                                <span class="bg-label">Bahar</span>
                             </div>
-                            <!-- Piknik Option -->
-                            <div class="bg-option" data-bg="picnic"
-                                style="flex: 1; padding: 10px; border: 2px solid transparent; border-radius: 12px; cursor: pointer; text-align: center; background: rgba(0,0,0,0.05); transition: all 0.2s;">
-                                <div style="font-size: 1.5rem; margin-bottom: 5px;">🧺</div>
-                                <span style="font-size: 0.85rem; font-weight: 500;">Piknik</span>
+                            <div class="bg-option" data-bg="picnic">
+                                <span class="bg-emoji">🧺</span>
+                                <span class="bg-label">Piknik</span>
                             </div>
                         </div>
                     </div>
 
-                    <div class="form-group"
-                        style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                        <span style="font-size: 0.9rem;">Gece Modu</span>
+                    <!-- Toggles -->
+                    <div class="settings-toggle-row">
+                        <div class="toggle-info">
+                            <span class="toggle-title">Gece Modu</span>
+                            <span class="toggle-desc">Göz yormayan koyu tema</span>
+                        </div>
                         <label class="switch">
                             <input type="checkbox" id="darkModeToggle">
                             <span class="slider round"></span>
                         </label>
                     </div>
 
-
-
-                    <div class="form-group" style="display:flex; justify-content: space-between; align-items: center;">
-                        <span style="font-size: 0.9rem;">Animasyonlar</span>
+                    <div class="settings-toggle-row">
+                        <div class="toggle-info">
+                            <span class="toggle-title">Efektler</span>
+                            <span class="toggle-desc">Görsel animasyonları aç/kapat</span>
+                        </div>
                         <label class="switch">
                             <input type="checkbox" id="animations-toggle" checked>
                             <span class="slider round"></span>
@@ -823,42 +949,40 @@
                     </div>
                 </div>
 
-                <!-- Category Management Section (New) -->
-                <div class="settings-section" style="padding-top: 1.5rem; border-top: 1px solid var(--border-color);">
-                    <h3
-                        style="font-size: 1rem; margin-bottom: 1rem; color: var(--primary-color); display: flex; align-items: center; gap: 8px;">
-                        <i class="fas fa-tags"></i> Kategoriler
+                <!-- 3. Kategori Yönetimi -->
+                <div class="settings-section"
+                    style="margin-bottom: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color);">
+                    <h3 class="settings-section-title">
+                        <i class="fas fa-folder-open"></i> İçerik Yönetimi
                     </h3>
-                    <p style="font-size: 0.85rem; color: var(--text-light); margin-bottom: 1rem;">
-                        Kendi eklediğiniz kategorileri buradan düzenleyebilirsiniz.
-                    </p>
-                    <button id="btn-settings-manage-cats" class="btn-primary" style="width: 100%; margin-bottom: 1rem;">
-                        <i class="fas fa-edit"></i> Kategorileri Düzenle
+                    <button id="btn-settings-manage-cats" class="btn-ghost-full">
+                        <i class="fas fa-tags"></i> Liste Kategorilerini Düzenle
                     </button>
                 </div>
 
-                <!-- Data Management Section -->
-                <div class="settings-section" style="padding-top: 1.5rem; border-top: 1px solid var(--border-color);">
-                    <h3
-                        style="font-size: 1rem; margin-bottom: 1rem; color: var(--primary-color); display: flex; align-items: center; gap: 8px;">
-                        <i class="fas fa-database"></i> Veri Y&ouml;netimi
+                <!-- 4. Veri ve Güvenlik -->
+                <div class="settings-section"
+                    style="margin-bottom: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color);">
+                    <h3 class="settings-section-title">
+                        <i class="fas fa-shield-alt"></i> Veri & Yedekleme
                     </h3>
-                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
-                        <button id="btn-backup-copy" class="btn-ghost"
-                            style="border-radius: 12px; font-size: 0.85rem;"><i class="fas fa-copy"></i>
-                            Yedekle</button>
-                        <button id="btn-import-paste" class="btn-ghost"
-                            style="border-radius: 12px; font-size: 0.85rem;"><i class="fas fa-paste"></i>
-                            Yükle</button>
+                    <div class="data-actions-grid">
+                        <button id="btn-backup-copy" class="action-btn-mini">
+                            <i class="fas fa-cloud-download-alt"></i> Yedek Oluştur
+                        </button>
+                        <button id="btn-import-paste" class="action-btn-mini">
+                            <i class="fas fa-cloud-upload-alt"></i> Yedek Yükle
+                        </button>
                     </div>
                     <textarea id="import-area" class="modern-input hidden" rows="3"
-                        placeholder="Yedek kodunu buraya yap&#305;&#351;t&#305;r&#305;n..."></textarea>
-                    <button id="btn-reset-data" class="btn-ghost danger"
-                        style="width: 100%; border-radius: 12px; color: var(--danger-color); border-color: var(--danger-color); opacity: 0.7;">T&uuml;m
-                        Verileri S&#305;f&#305;rla</button>
+                        placeholder="Yedek kodunu buraya yapıştırın..."></textarea>
+
+                    <button id="btn-reset-app-data" class="btn-danger-minimal">
+                        <i class="fas fa-undo"></i> Tüm Verileri Sıfırla
+                    </button>
                 </div>
 
-                <!-- Special Romantic Section (Moved to Bottom) -->
+                <!-- Special Romantic Section -->
                 <div class="special-message-card">
                     <div id="special-message-header" class="card-head clickable"
                         onclick="window.toggleSpecialMessage && window.toggleSpecialMessage()">
@@ -871,12 +995,22 @@
                     <div id="special-message-content" class="special-message-content">
                         <div class="message-inner">
                             <p id="special-message-text">Canım Şevval'im... ✨</p>
-                            <p class="yusuf-sig">- Yusuf</p>
+                            <p class="yusuf-sig" id="special-message-signature">- Yusuf</p>
                         </div>
                     </div>
                 </div>
 
+                <!-- 5. Bilgi -->
+                <div class="settings-footer-info" style="margin-top: 2rem; margin-bottom: 1rem;">
+                    <p>Versiyon 2.5.0 • Sevgiyle hazırlandı ❤️</p>
+                </div>
             </div>
+
+            <div class="modal-sheet-footer"
+                style="padding: 1rem; border-top: 1px solid var(--border-color); background: var(--bg-color); border-bottom-left-radius: 24px; border-bottom-right-radius: 24px;">
+                <button id="btn-save-all-settings" class="btn-primary" style="width: 100%;">Tüm Ayarları Kaydet</button>
+            </div>
+
         </div>
     </div>
 
