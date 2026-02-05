@@ -4995,6 +4995,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         modal.classList.remove('hidden');
         requestAnimationFrame(() => modal.classList.add('active'));
+        document.body.classList.add('modal-open');
     };
 
     // Lightbox Controls
@@ -5046,6 +5047,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (lightboxModal) {
             lightboxModal.classList.remove('active');
             setTimeout(() => lightboxModal.classList.add('hidden'), 200);
+
+            // Check if any other modal is active (e.g. product detail) before removing lock
+            const otherActive = document.querySelector('.modal.active:not(#modal-lightbox)');
+            if (!otherActive) document.body.classList.remove('modal-open');
         }
     }
 
