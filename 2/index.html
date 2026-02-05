@@ -359,7 +359,7 @@
                             <!-- 2. Main Progress Cards -->
                             <div class="stat-grid-2">
                                 <!-- General Status -->
-                                <div class="stat-card modern">
+                                <div id="stat-card-general" class="stat-card modern" style="cursor: pointer;">
                                     <div class="stat-card-header">
                                         <h4>Genel Durum</h4>
                                         <span class="badge-pill" id="total-pct-badge">%0</span>
@@ -384,8 +384,8 @@
                                 </div>
 
                                 <!-- Lists Breakdown -->
-                                <div class="stat-card modern"
-                                    style="display:flex; flex-direction:column; justify-content:center; gap:10px;">
+                                <div id="stat-card-lists" class="stat-card modern"
+                                    style="display:flex; flex-direction:column; justify-content:center; gap:10px; cursor: pointer;">
                                     <div class="mini-list-stat">
                                         <div class="mls-header">
                                             <span class="mls-icon ceyiza"><i class="fas fa-home"></i></span>
@@ -414,7 +414,7 @@
                                 <h3>Harcama Dağılımı</h3>
                                 <small>Kategorilere göre harcamalar</small>
                             </div>
-                            <div class="stat-card modern" id="category-breakdown-container">
+                            <div class="stat-card modern" id="category-breakdown-container" style="cursor: pointer;">
                                 <!-- Injected via JS -->
                                 <div class="empty-chart-msg">Veri yok</div>
                             </div>
@@ -1031,6 +1031,170 @@
             <div class="sheet-body settings-body" id="category-list-container"
                 style="padding: 1.5rem; overflow-y: auto;">
                 <!-- Content injected by JS -->
+            </div>
+        </div>
+    </div>
+
+
+    <!-- General Stats Detail Modal (New) -->
+    <div id="modal-general-stats" class="modal hidden">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content-sheet detail-sheet">
+            <div class="modal-sheet-header">
+                <div class="sheet-title-area">
+                    <h2 class="modal-title">Detaylı İstatistikler</h2>
+                    <p class="sheet-subtitle">Genel durum özeti</p>
+                </div>
+                <button class="close-modal-sheet" id="btn-close-gen-stats" type="button"><i
+                        class="fas fa-times"></i></button>
+            </div>
+            <div class="sheet-body" style="padding: 1.5rem; overflow-y: auto;">
+                <div class="stats-detail-grid">
+                    <div class="detail-card-row">
+                        <div class="d-card success">
+                            <span class="d-lbl">Alınan</span>
+                            <strong class="d-val" id="gen-stat-bought">0</strong>
+                        </div>
+                        <div class="d-card warning">
+                            <span class="d-lbl">Kalan</span>
+                            <strong class="d-val" id="gen-stat-remain">0</strong>
+                        </div>
+                        <div class="d-card info">
+                            <span class="d-lbl">Toplam</span>
+                            <strong class="d-val" id="gen-stat-total">0</strong>
+                        </div>
+                    </div>
+
+                    <div class="divider-line"></div>
+
+                    <h4 style="margin-bottom:10px; font-size:0.95rem; color:var(--text-color);">Harcama Özeti</h4>
+                    <div class="spending-summary-box">
+                        <div class="spend-row">
+                            <span>Toplam Tutar:</span>
+                            <strong id="gen-stat-cost-total">0 ₺</strong>
+                        </div>
+                        <div class="spend-row">
+                            <span>Harcanan:</span>
+                            <strong id="gen-stat-cost-spent" class="text-success">0 ₺</strong>
+                        </div>
+                        <div class="spend-row">
+                            <span>Kalan Tahmini:</span>
+                            <strong id="gen-stat-cost-remain" class="text-warning">0 ₺</strong>
+                        </div>
+                    </div>
+
+                    <div class="divider-line"></div>
+
+                    <h4 style="margin-bottom:10px; font-size:0.95rem; color:var(--text-color);">Kategori Bazlı Durum
+                    </h4>
+                    <div id="gen-stat-cat-breakdown" class="cat-breakdown-list">
+                        <!-- JS injected -->
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Lists Breakdown Detail Modal (New) -->
+    <div id="modal-lists-detail" class="modal hidden">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content-sheet detail-sheet">
+            <div class="modal-sheet-header">
+                <div class="sheet-title-area">
+                    <h2 class="modal-title">Liste Detayları</h2>
+                    <p class="sheet-subtitle">Çeyiz ve Bohça durumu</p>
+                </div>
+                <button class="close-modal-sheet" id="btn-close-lists-detail" type="button"><i
+                        class="fas fa-times"></i></button>
+            </div>
+            <div class="sheet-body" style="padding: 1.5rem; overflow-y: auto;">
+
+                <!-- Çeyiz Section -->
+                <div class="list-detail-section">
+                    <div class="lds-header">
+                        <span class="lds-icon ceyiza"><i class="fas fa-home"></i></span>
+                        <h3>Çeyiz Listesi</h3>
+                    </div>
+                    <div class="lds-stats">
+                        <div class="lds-card">
+                            <span>Toplam</span>
+                            <strong id="ld-ceyiz-total">0</strong>
+                        </div>
+                        <div class="lds-card success">
+                            <span>Alınan</span>
+                            <strong id="ld-ceyiz-bought">0</strong>
+                        </div>
+                        <div class="lds-card warning">
+                            <span>Kalan</span>
+                            <strong id="ld-ceyiz-remain">0</strong>
+                        </div>
+                    </div>
+                    <div class="lds-cost-row">
+                        <span>Harcama:</span>
+                        <strong id="ld-ceyiz-cost">0 ₺</strong>
+                    </div>
+                </div>
+
+                <div class="divider-line"></div>
+
+                <!-- Bohça Section -->
+                <div class="list-detail-section">
+                    <div class="lds-header">
+                        <span class="lds-icon damata"><i class="fas fa-user-tie"></i></span>
+                        <h3>Bohça Listesi</h3>
+                    </div>
+                    <div class="lds-stats">
+                        <div class="lds-card">
+                            <span>Toplam</span>
+                            <strong id="ld-damat-total">0</strong>
+                        </div>
+                        <div class="lds-card success">
+                            <span>Alınan</span>
+                            <strong id="ld-damat-bought">0</strong>
+                        </div>
+                        <div class="lds-card warning">
+                            <span>Kalan</span>
+                            <strong id="ld-damat-remain">0</strong>
+                        </div>
+                    </div>
+                    <div class="lds-cost-row">
+                        <span>Harcama:</span>
+                        <strong id="ld-damat-cost">0 ₺</strong>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Category Spend Detail Modal (New) -->
+    <div id="modal-cat-spend-detail" class="modal hidden">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content-sheet detail-sheet">
+            <div class="modal-sheet-header">
+                <div class="sheet-title-area">
+                    <h2 class="modal-title">Harcama Detayı</h2>
+                    <p class="sheet-subtitle">Kategori bazlı maliyetler</p>
+                </div>
+                <button class="close-modal-sheet" id="btn-close-cat-spend" type="button"><i
+                        class="fas fa-times"></i></button>
+            </div>
+            <div class="sheet-body" style="padding: 1.5rem; overflow-y: auto;">
+
+                <div class="spending-summary-box" style="margin-bottom:1.5rem;">
+                    <div class="spend-row" style="font-size:1.1rem; border-bottom:none;">
+                        <span>Tüm Kategoriler Toplamı:</span>
+                        <strong id="csd-total-cost" class="text-primary">0 ₺</strong>
+                    </div>
+                </div>
+
+                <div id="csd-list" class="cat-breakdown-list">
+                    <!-- JS Injected -->
+                </div>
+
             </div>
         </div>
     </div>

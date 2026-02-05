@@ -1714,9 +1714,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function openCategoryModal() {
-        if (modalSettings) modalSettings.classList.remove('active'); // Close settings if open
-        setTimeout(() => { if (modalSettings) modalSettings.classList.add('hidden'); }, 300);
+    let returnToSettingsOnClose = false;
+
+    function openCategoryModal(fromSettings = false) {
+        returnToSettingsOnClose = fromSettings;
+
+        if (modalSettings) {
+            modalSettings.classList.remove('active'); // Close settings if open
+            // Do not hide immediately if we want to preserve state? 
+            // Actually, hiding is fine, we just reopen it later.
+            setTimeout(() => { if (modalSettings) modalSettings.classList.add('hidden'); }, 300);
+        }
 
         if (modalCats) {
             modalCats.classList.remove('hidden');
@@ -1736,11 +1744,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // Listener for Settings Button
     const btnSettingsManageCats = document.getElementById('btn-settings-manage-cats');
     if (btnSettingsManageCats) {
-        btnSettingsManageCats.addEventListener('click', openCategoryModal);
+        btnSettingsManageCats.addEventListener('click', () => openCategoryModal(true));
     }
     // Listener for Main Button (Using existing references)
     if (btnManageCats) {
-        btnManageCats.onclick = openCategoryModal; // Avoid duplicate listeners if added before
+        btnManageCats.onclick = () => openCategoryModal(false);
     }
 
     function showToast(msg, allowUndo = false) {
@@ -2293,6 +2301,204 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
+    // --- General Stats Detail Modal Logic ---
+    function renderGeneralStatsDetail() {
+        const totalItems = items.length;
+        const boughtItems = items.filter(i => i.isBought).length;
+        const remainItems = totalItems - boughtItems;
+
+        // Cost
+        let totalCost = 0;
+        let spentCost = 0;
+
+        items.forEach(i => {
+            const p = (i.price || 0) * (i.quantity || 1);
+            totalCost += p;
+            if (i.isBought) spentCost += p;
+        });
+
+        const remainCost = totalCost - spentCost;
+
+        // Update DOM
+        document.getElementById('gen-stat-bought').textContent = boughtItems;
+        document.getElementById('gen-stat-remain').textContent = remainItems;
+        document.getElementById('gen-stat-total').textContent = totalItems;
+
+        if (settings.budget > 0 || totalCost > 0) {
+            document.getElementById('gen-stat-cost-total').textContent = currencyFormatter.format(totalCost);
+            document.getElementById('gen-stat-cost-spent').textContent = currencyFormatter.format(spentCost);
+            document.getElementById('gen-stat-cost-remain').textContent = currencyFormatter.format(remainCost);
+        }
+
+        // Breakdown by Category (Top 5 + Others or just All)
+        const catMap = {};
+        items.forEach(i => {
+            const k = i.category || 'Diğer';
+            if (!catMap[k]) catMap[k] = { total: 0, bought: 0 };
+            catMap[k].total++;
+            if (i.isBought) catMap[k].bought++;
+        });
+
+        const sortedCats = Object.entries(catMap).sort((a, b) => b[1].total - a[1].total);
+        const listDiv = document.getElementById('gen-stat-cat-breakdown');
+        if (listDiv) {
+            listDiv.innerHTML = '';
+            sortedCats.forEach(([cat, stats]) => {
+                const pct = Math.round((stats.bought / stats.total) * 100);
+                const row = document.createElement('div');
+                row.className = 'cat-stat-row';
+                row.innerHTML = `
+                    <div class="cs-info">
+                        <span class="cs-name">${cat}</span>
+                        <span class="cs-val">${stats.bought}/${stats.total}</span>
+                    </div>
+                    <div class="cs-bar-bg">
+                        <div class="cs-bar-fill" style="width: ${pct}%"></div>
+                    </div>
+                `;
+                listDiv.appendChild(row);
+            });
+        }
+    }
+
+    const statCardGeneral = document.getElementById('stat-card-general');
+    const modalGenStats = document.getElementById('modal-general-stats');
+    const btnCloseGenStats = document.getElementById('btn-close-gen-stats');
+
+    if (statCardGeneral && modalGenStats) {
+        statCardGeneral.addEventListener('click', () => {
+            renderGeneralStatsDetail();
+            modalGenStats.classList.remove('hidden');
+            requestAnimationFrame(() => modalGenStats.classList.add('active'));
+            document.body.classList.add('modal-open');
+        });
+    }
+
+    if (btnCloseGenStats && modalGenStats) {
+        btnCloseGenStats.addEventListener('click', () => {
+            modalGenStats.classList.remove('active');
+            setTimeout(() => modalGenStats.classList.add('hidden'), 200);
+            document.body.classList.remove('modal-open');
+        });
+    }
+
+    // --- Lists Detail Modal Logic ---
+    function renderListsDetail() {
+        ['ceyiz', 'damat'].forEach(type => {
+            const listItems = items.filter(i => i.type === type);
+            const total = listItems.length;
+            const bought = listItems.filter(i => i.isBought).length;
+            const remain = total - bought;
+
+            let cost = 0;
+            listItems.forEach(i => {
+                if (i.isBought) cost += (i.price || 0) * (i.quantity || 1);
+            });
+
+            document.getElementById(`ld-${type}-total`).textContent = total;
+            document.getElementById(`ld-${type}-bought`).textContent = bought;
+            document.getElementById(`ld-${type}-remain`).textContent = remain;
+
+            // For cost, show Spent 
+            document.getElementById(`ld-${type}-cost`).textContent = currencyFormatter.format(cost);
+        });
+    }
+
+    const statCardLists = document.getElementById('stat-card-lists');
+    const modalListsDetail = document.getElementById('modal-lists-detail');
+    const btnCloseListsDetail = document.getElementById('btn-close-lists-detail');
+
+    if (statCardLists && modalListsDetail) {
+        statCardLists.addEventListener('click', () => {
+            renderListsDetail();
+            modalListsDetail.classList.remove('hidden');
+            requestAnimationFrame(() => modalListsDetail.classList.add('active'));
+            document.body.classList.add('modal-open');
+        });
+    }
+
+    if (btnCloseListsDetail && modalListsDetail) {
+        btnCloseListsDetail.addEventListener('click', () => {
+            modalListsDetail.classList.remove('active');
+            setTimeout(() => modalListsDetail.classList.add('hidden'), 200);
+            document.body.classList.remove('modal-open');
+        });
+    }
+
+    // --- Category Spend Detail Modal Logic ---
+    function renderCategorySpendDetail() {
+        const catMap = {};
+        let grandTotal = 0;
+
+        items.forEach(i => {
+            const k = i.category || 'Diğer';
+            if (!catMap[k]) catMap[k] = { cost: 0, count: 0, boughtCount: 0 };
+
+            const price = (i.price || 0) * (i.quantity || 1);
+            catMap[k].cost += price;
+            catMap[k].count++;
+            if (i.isBought) catMap[k].boughtCount++;
+
+            grandTotal += price;
+        });
+
+        document.getElementById('csd-total-cost').textContent = currencyFormatter.format(grandTotal);
+
+        const sortedCats = Object.entries(catMap).sort((a, b) => b[1].cost - a[1].cost);
+        const listDiv = document.getElementById('csd-list');
+
+        if (listDiv) {
+            listDiv.innerHTML = '';
+            sortedCats.forEach(([cat, stats]) => {
+                if (stats.cost === 0 && stats.count === 0) return; // Skip empty? No, show all if existing
+
+                const row = document.createElement('div');
+                row.className = 'cat-stat-row';
+                // Find icon based on category name roughly or default
+                // We'll use a generic tag icon
+
+                row.innerHTML = `
+                    <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-color); padding:10px; border-radius:12px; border:1px solid var(--border-color);">
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <span style="width:32px; height:32px; background:#f0f0f0; border-radius:8px; display:flex; align-items:center; justify-content:center; color:#666;">
+                                <i class="fas fa-tag"></i>
+                            </span>
+                            <div>
+                                <div style="font-weight:600; font-size:0.95rem;">${cat}</div>
+                                <div style="font-size:0.75rem; color:var(--text-light);">${stats.boughtCount}/${stats.count} Ürün</div>
+                            </div>
+                        </div>
+                        <div style="text-align:right;">
+                            <div style="font-weight:700; color:var(--primary-color); font-size:1rem;">${currencyFormatter.format(stats.cost)}</div>
+                        </div>
+                    </div>
+                `;
+                listDiv.appendChild(row);
+            });
+        }
+    }
+
+    const cardCatBreakdown = document.getElementById('category-breakdown-container');
+    const modalCatSpend = document.getElementById('modal-cat-spend-detail');
+    const btnCloseCatSpend = document.getElementById('btn-close-cat-spend');
+
+    if (cardCatBreakdown && modalCatSpend) {
+        cardCatBreakdown.addEventListener('click', () => {
+            renderCategorySpendDetail();
+            modalCatSpend.classList.remove('hidden');
+            requestAnimationFrame(() => modalCatSpend.classList.add('active'));
+            document.body.classList.add('modal-open');
+        });
+    }
+
+    if (btnCloseCatSpend && modalCatSpend) {
+        btnCloseCatSpend.addEventListener('click', () => {
+            modalCatSpend.classList.remove('active');
+            setTimeout(() => modalCatSpend.classList.add('hidden'), 200);
+            document.body.classList.remove('modal-open');
+        });
+    }
+
     // Close Listeners
     document.querySelectorAll('.close-modal-sheet').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -2305,6 +2511,46 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             document.body.classList.remove('modal-open');
         });
+    });
+
+    // Global Backdrop Click Listener
+    // This ensures that clicking the dark background (backdrop) of ANY modal closes it.
+    // Global Backdrop/Outside Click Listener
+    // This ensures that clicking the dark background (backdrop) or the empty modal container area closes the modal.
+    document.addEventListener('click', (e) => {
+        const isBackdrop = e.target.classList.contains('modal-backdrop');
+        const isModalContainer = e.target.classList.contains('modal'); // Clicking the flex container padding area
+
+        if (isBackdrop || isModalContainer) {
+            const modal = e.target.closest('.modal');
+            if (modal) {
+                // Determine which modal it is to handle specific logic
+                if (modal.id === 'modal-categories') {
+                    if (window.closeCategoryModal) window.closeCategoryModal();
+                } else if (modal.id === 'modal-item-editor') {
+                    if (window.closeItemEditor) window.closeItemEditor();
+                } else if (modal.id === 'modal-product-detail') {
+                    // Product detail modal specifically
+                    modal.classList.remove('active');
+                    setTimeout(() => modal.classList.add('hidden'), 200);
+                    document.body.classList.remove('modal-open');
+                } else {
+                    // Generic closing for all other sheet modals (General Stats, Lists Detail, Cat Spend, Settings)
+                    modal.classList.remove('active');
+                    setTimeout(() => {
+                        modal.classList.add('hidden');
+
+                        // Special case: if Settings modal is closed, do we need to reset anything? No.
+                    }, 200);
+
+                    // Cleanup body class if this was the last modal
+                    setTimeout(() => {
+                        const anyActive = document.querySelector('.modal.active');
+                        if (!anyActive) document.body.classList.remove('modal-open');
+                    }, 200);
+                }
+            }
+        }
     });
 
     // --- UI Helper Functions ---
@@ -2889,8 +3135,26 @@ document.addEventListener('DOMContentLoaded', () => {
             const modal = document.getElementById('modal-categories');
             if (modal) {
                 modal.classList.remove('active');
-                setTimeout(() => modal.classList.add('hidden'), 200);
-                document.body.classList.remove('modal-open');
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+
+                    if (returnToSettingsOnClose) {
+                        returnToSettingsOnClose = false; // Reset
+                        if (window.openSettingsModal) {
+                            window.openSettingsModal();
+                        } else {
+                            // Fallback if function not found, though it should be there
+                            const sModal = document.getElementById('modal-settings');
+                            if (sModal) {
+                                sModal.classList.remove('hidden');
+                                requestAnimationFrame(() => sModal.classList.add('active'));
+                                document.body.classList.add('modal-open');
+                            }
+                        }
+                    } else {
+                        document.body.classList.remove('modal-open');
+                    }
+                }, 200);
             }
         };
 

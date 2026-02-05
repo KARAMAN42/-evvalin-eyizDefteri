@@ -843,17 +843,20 @@ body.dark-mode .header-actions button:hover {
     position: fixed;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 9999;
-    /* Topmost */
+    right: 0;
+    bottom: 0;
+    z-index: 2147483647;
+    /* MAX SAFE INT */
     display: flex;
     justify-content: center;
     align-items: center;
     visibility: visible;
     opacity: 1;
-    pointer-events: auto;
+    pointer-events: all;
+    /* Force capture */
     transition: opacity 0.2s;
+    background: rgba(0, 0, 0, 0.01);
+    /* Tiny opacity to force hit test */
 }
 
 .modal.hidden {
@@ -913,6 +916,8 @@ body.dark-mode .header-actions button:hover {
     /* Above backdrop */
     pointer-events: auto;
     transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+    overflow: hidden;
+    /* Ensure rounded corners clip content */
 }
 
 /* Mobile: Bottom Sheet */
@@ -1668,12 +1673,36 @@ body.dark-mode .header-actions button:hover {
     display: none !important;
 }
 
-/* Scroll Lock */
+/* --- Modal Logic & Interaction Safety --- */
 body.modal-open {
-    overflow: hidden !important;
+    overflow: hidden;
+    /* Prevent background scroll */
 }
 
-/* ... previous styles ... */
+/* NUCLEAR OPTION: When modal is open, KILL all interaction with background elements */
+body.modal-open .app-header,
+body.modal-open .bottom-nav,
+body.modal-open .fab,
+body.modal-open .swipe-viewport,
+body.modal-open #main-swipe-container,
+body.modal-open .home-action-card {
+    pointer-events: none !important;
+    filter: blur(1px);
+    /* Optional: visual cue that they are inactive */
+}
+
+/* Ensure modals themselves remain interactive */
+body.modal-open .modal {
+    pointer-events: auto !important;
+}
+
+/* Ensure modal content is interactive */
+body.modal-open .modal-content,
+body.modal-open .modal-content-sheet,
+body.modal-open .detail-sheet,
+body.modal-open .settings-sheet {
+    pointer-events: auto !important;
+}
 
 /* Sheet Form */
 .sheet-form {
@@ -3467,7 +3496,7 @@ body.dark-mode .home-action-btn {
     padding: 0.5rem 0;
     padding-bottom: calc(0.5rem + env(safe-area-inset-bottom));
     box-shadow: 0 -2px 20px rgba(0, 0, 0, 0.05);
-    z-index: 100;
+    z-index: 99 !important;
 }
 
 .nav-item {
@@ -5595,50 +5624,287 @@ body.dark-mode .bg-option::before {
     font-style: italic;
     font-size: 0.9rem;
 }
+
 /* --- Custom Premium Date Picker Styles --- */
-.input-with-icon { position: relative; display: flex; align-items: center; }
-.input-icon { position: absolute; right: 14px; color: var(--primary-color); pointer-events: none; }
-.calendar-modal-fixed { max-width: 320px !important; }
-.calendar-nav { display: flex; gap: 10px; }
-.cal-nav-btn { background: var(--primary-light); border: none; width: 32px; height: 32px; border-radius: 8px; color: var(--primary-dark); cursor: pointer; transition: all 0.2s; }
-.cal-nav-btn:active { transform: scale(0.9); }
-.calendar-weekdays { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 0.75rem; font-weight: 600; color: var(--text-light); margin-bottom: 10px; }
-.calendar-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
-.calendar-day { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; border-radius: 10px; cursor: pointer; transition: all 0.2s; }
-.calendar-day:hover { background: var(--primary-light); }
-.calendar-day.active { background: var(--primary-color); color: white; font-weight: 600; }
-.calendar-day.today { border: 1px solid var(--primary-color); }
-.calendar-day.empty { cursor: default; }
-.calendar-body-custom { padding: 1rem; }
+.input-with-icon {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-icon {
+    position: absolute;
+    right: 14px;
+    color: var(--primary-color);
+    pointer-events: none;
+}
+
+.calendar-modal-fixed {
+    max-width: 320px !important;
+}
+
+.calendar-nav {
+    display: flex;
+    gap: 10px;
+}
+
+.cal-nav-btn {
+    background: var(--primary-light);
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    color: var(--primary-dark);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.cal-nav-btn:active {
+    transform: scale(0.9);
+}
+
+.calendar-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    text-align: center;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-light);
+    margin-bottom: 10px;
+}
+
+.calendar-days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+}
+
+.calendar-day {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.calendar-day:hover {
+    background: var(--primary-light);
+}
+
+.calendar-day.active {
+    background: var(--primary-color);
+    color: white;
+    font-weight: 600;
+}
+
+.calendar-day.today {
+    border: 1px solid var(--primary-color);
+}
+
+.calendar-day.empty {
+    cursor: default;
+}
+
+.calendar-body-custom {
+    padding: 1rem;
+}
 
 
-.calendar-years { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-height: 200px; overflow-y: auto; padding: 10px; }
-.calendar-year { padding: 10px; text-align: center; border-radius: 8px; cursor: pointer; transition: all 0.2s; background: var(--primary-light); color: var(--primary-dark); font-weight: 500; }
-.calendar-year:hover { background: var(--primary-color); color: white; }
-.calendar-year.active { background: var(--primary-color); color: white; border: 2px solid var(--primary-dark); }
+.calendar-years {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    max-height: 200px;
+    overflow-y: auto;
+    padding: 10px;
+}
+
+.calendar-year {
+    padding: 10px;
+    text-align: center;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: var(--primary-light);
+    color: var(--primary-dark);
+    font-weight: 500;
+}
+
+.calendar-year:hover {
+    background: var(--primary-color);
+    color: white;
+}
+
+.calendar-year.active {
+    background: var(--primary-color);
+    color: white;
+    border: 2px solid var(--primary-dark);
+}
 
 
 /* --- Premium Settings UI --- */
-.settings-section-title { font-size: 1rem; margin-bottom: 1.2rem; color: var(--primary-color); display: flex; align-items: center; gap: 10px; font-weight: 600; }
-.settings-label { display: block; margin-bottom: 0.6rem; font-size: 0.85rem; font-weight: 600; color: var(--text-color); opacity: 0.8; text-transform: uppercase; letter-spacing: 0.5px; }
-.settings-help { font-size: 0.75rem; color: var(--text-light); margin-top: 6px; }
-.premium-bg-picker { display: flex; gap: 12px; }
-.premium-bg-picker .bg-option { flex: 1; padding: 12px 8px; border-radius: 16px; background: rgba(var(--primary-rgb), 0.05); border: 2px solid transparent; text-align: center; transition: all 0.3s ease; }
-.premium-bg-picker .bg-option.active { background: var(--card-bg); border-color: var(--primary-color); box-shadow: 0 8px 16px rgba(var(--primary-rgb), 0.15); }
-.bg-emoji { font-size: 1.6rem; display: block; margin-bottom: 4px; }
-.bg-label { font-size: 0.8rem; font-weight: 600; color: var(--text-color); }
-.settings-toggle-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; }
-.toggle-info { display: flex; flex-direction: column; gap: 2px; }
-.toggle-title { font-size: 0.95rem; font-weight: 500; color: var(--text-color); }
-.toggle-desc { font-size: 0.75rem; color: var(--text-light); }
-.btn-ghost-full { width: 100%; padding: 12px; border-radius: 12px; border: 1.5px dashed var(--secondary-dark); background: transparent; color: var(--secondary-dark); font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
-.btn-ghost-full:hover { background: var(--primary-light); border-style: solid; color: var(--primary-dark); }
-.data-actions-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
-.action-btn-mini { padding: 10px; border-radius: 10px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s; }
-.action-btn-mini:hover { background: var(--primary-light); border-color: var(--primary-color); }
-.btn-danger-minimal { width: 100%; padding: 8px; background: transparent; border: none; color: #ff5f5f; font-size: 0.85rem; font-weight: 500; cursor: pointer; opacity: 0.7; margin-top: 10px; }
-.btn-danger-minimal:hover { opacity: 1; text-decoration: underline; }
-.settings-footer-info { text-align: center; padding: 20px 0 10px; opacity: 0.5; font-size: 0.75rem; line-height: 1.6; }
+.settings-section-title {
+    font-size: 1rem;
+    margin-bottom: 1.2rem;
+    color: var(--primary-color);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+}
+
+.settings-label {
+    display: block;
+    margin-bottom: 0.6rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-color);
+    opacity: 0.8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.settings-help {
+    font-size: 0.75rem;
+    color: var(--text-light);
+    margin-top: 6px;
+}
+
+.premium-bg-picker {
+    display: flex;
+    gap: 12px;
+}
+
+.premium-bg-picker .bg-option {
+    flex: 1;
+    padding: 12px 8px;
+    border-radius: 16px;
+    background: rgba(var(--primary-rgb), 0.05);
+    border: 2px solid transparent;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.premium-bg-picker .bg-option.active {
+    background: var(--card-bg);
+    border-color: var(--primary-color);
+    box-shadow: 0 8px 16px rgba(var(--primary-rgb), 0.15);
+}
+
+.bg-emoji {
+    font-size: 1.6rem;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.bg-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.settings-toggle-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+}
+
+.toggle-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.toggle-title {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--text-color);
+}
+
+.toggle-desc {
+    font-size: 0.75rem;
+    color: var(--text-light);
+}
+
+.btn-ghost-full {
+    width: 100%;
+    padding: 12px;
+    border-radius: 12px;
+    border: 1.5px dashed var(--secondary-dark);
+    background: transparent;
+    color: var(--secondary-dark);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.btn-ghost-full:hover {
+    background: var(--primary-light);
+    border-style: solid;
+    color: var(--primary-dark);
+}
+
+.data-actions-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.action-btn-mini {
+    padding: 10px;
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-color);
+    color: var(--text-color);
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: all 0.2s;
+}
+
+.action-btn-mini:hover {
+    background: var(--primary-light);
+    border-color: var(--primary-color);
+}
+
+.btn-danger-minimal {
+    width: 100%;
+    padding: 8px;
+    background: transparent;
+    border: none;
+    color: #ff5f5f;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    opacity: 0.7;
+    margin-top: 10px;
+}
+
+.btn-danger-minimal:hover {
+    opacity: 1;
+    text-decoration: underline;
+}
+
+.settings-footer-info {
+    text-align: center;
+    padding: 20px 0 10px;
+    opacity: 0.5;
+    font-size: 0.75rem;
+    line-height: 1.6;
+}
 
 
 /* --- Theme Readability Refinements (Solid Backgrounds) --- */
@@ -5659,7 +5925,7 @@ body.bg-picnic .daily-quote-widget {
     background-color: #ffffff !important;
     background: #ffffff !important;
     backdrop-filter: none !important;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.08) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08) !important;
 }
 
 body.dark-mode.bg-floral .card,
@@ -5679,7 +5945,7 @@ body.dark-mode.bg-picnic .daily-quote-widget {
     background-color: #1e1e1e !important;
     background: #1e1e1e !important;
     backdrop-filter: none !important;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.4) !important;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4) !important;
 }
 
 /* Ensure text remains readable on solid white cards in Floral/Picnic modes */
@@ -5688,4 +5954,213 @@ body.bg-floral .unified-countdown-card,
 body.bg-picnic .calendar-card,
 body.bg-picnic .unified-countdown-card {
     color: var(--text-color) !important;
+}
+
+/* --- General Stats Detail Modal Styles --- */
+.stats-detail-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.detail-card-row {
+    display: flex;
+    gap: 1rem;
+    justify-content: space-between;
+}
+
+.d-card {
+    flex: 1;
+    background: var(--bg-color);
+    padding: 1rem;
+    border-radius: var(--radius-md);
+    text-align: center;
+    border: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
+    box-shadow: var(--shadow-sm);
+}
+
+.d-card.success {
+    border-bottom: 3px solid var(--success-color);
+}
+
+.d-card.warning {
+    border-bottom: 3px solid var(--warning-color);
+}
+
+.d-card.info {
+    border-bottom: 3px solid var(--primary-color);
+}
+
+.d-lbl {
+    font-size: 0.75rem;
+    color: var(--text-light);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.d-val {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-color);
+}
+
+.spending-summary-box {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 1rem;
+}
+
+.spend-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    border-bottom: 1px dashed var(--border-color);
+    font-size: 0.9rem;
+}
+
+.spend-row:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.divider-line {
+    height: 1px;
+    background: var(--border-color);
+    margin: 0.5rem 0;
+}
+
+.cat-breakdown-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+}
+
+.cat-stat-row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.cs-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.cs-val {
+    font-family: monospace;
+    color: var(--text-light);
+}
+
+.cs-bar-bg {
+    height: 6px;
+    background: var(--bg-color);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.cs-bar-fill {
+    height: 100%;
+    background: var(--primary-color);
+    border-radius: 3px;
+    transition: width 0.5s ease-out;
+}
+
+/* --- Lists Detail Modal Styles --- */
+.list-detail-section {
+    background: var(--bg-color);
+    padding: 1rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+    margin-bottom: 1rem;
+}
+
+.lds-header {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    margin-bottom: 1rem;
+}
+
+.lds-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1rem;
+}
+
+.lds-icon.ceyiza {
+    background: linear-gradient(135deg, #ff9a9e, #fecfef);
+}
+
+.lds-icon.damata {
+    background: linear-gradient(135deg, #a18cd1, #fbc2eb);
+}
+
+.lds-header h3 {
+    font-size: 1.1rem;
+    color: var(--text-color);
+    margin: 0;
+}
+
+.lds-stats {
+    display: flex;
+    gap: 0.6rem;
+    margin-bottom: 0.8rem;
+}
+
+.lds-card {
+    flex: 1;
+    background: var(--card-bg);
+    padding: 0.8rem 0.5rem;
+    border-radius: 12px;
+    text-align: center;
+    border: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.lds-card.success {
+    background: rgba(76, 175, 80, 0.05);
+    color: var(--success-color);
+}
+
+.lds-card.warning {
+    background: rgba(255, 193, 7, 0.05);
+    color: var(--warning-color);
+}
+
+.lds-card span {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    color: var(--text-light);
+}
+
+.lds-card strong {
+    font-size: 1.2rem;
+    font-weight: 700;
+}
+
+.lds-cost-row {
+    font-size: 0.9rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 0.5rem;
+    border-top: 1px dashed var(--border-color);
+}
+
+.lds-cost-row strong {
+    color: var(--primary-color);
 }
