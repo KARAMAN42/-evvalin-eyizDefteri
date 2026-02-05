@@ -2908,8 +2908,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const btnBackup = document.getElementById('btn-backup-copy');
         if (btnBackup) {
             console.log("Backup button found, adding listener");
-            btnBackup.addEventListener('click', (e) => {
-                e.preventDefault(); // Prevent any default behavior
+            btnBackup.addEventListener('click', async (e) => {
+                e.preventDefault();
                 console.log("Backup button clicked");
                 try {
                     console.log("Preparing data...", { itemsCount: items?.length, settings: !!settings });
@@ -2922,15 +2922,36 @@ document.addEventListener('DOMContentLoaded', () => {
                     };
 
                     const dataStr = JSON.stringify(data, null, 2);
-                    console.log("Data stringified, creating blob...");
+                    const date = new Date().toISOString().split('T')[0];
+                    const fileName = `ceyiz_yedek_${date}.json`;
 
+                    // Attempt: Web Share API (iOS/Mobile)
+                    if (navigator.share && navigator.canShare) {
+                        try {
+                            const file = new File([dataStr], fileName, { type: 'application/json' });
+                            if (navigator.canShare({ files: [file] })) {
+                                await navigator.share({
+                                    files: [file],
+                                    title: 'Çeyiz Listesi Yedeği',
+                                    text: 'Uygulama yedek dosyanız hazır.'
+                                });
+                                showToast('Yedek paylaşma ekranı açıldı! 📱', false);
+                                return; // Stop here if share worked
+                            }
+                        } catch (shareErr) {
+                            console.warn("Share API failed, falling back to download:", shareErr);
+                            // Fallthrough to download method
+                        }
+                    }
+
+                    // Fallback: Desktop / Standard Download
+                    console.log("Using standard download method...");
                     const blob = new Blob([dataStr], { type: 'application/json' });
                     const url = URL.createObjectURL(blob);
 
                     const a = document.createElement('a');
                     a.href = url;
-                    const date = new Date().toISOString().split('T')[0];
-                    a.download = `ceyiz_yedek_${date}.json`;
+                    a.download = fileName;
 
                     document.body.appendChild(a);
                     a.click();
