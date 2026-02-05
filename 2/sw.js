@@ -1,9 +1,10 @@
-const CACHE_NAME = 'todo-pwa-v69';
+const CACHE_NAME = 'todo-pwa-v70';
 const ASSETS_TO_CACHE = [
     './',
     './index.html',
     './style.css',
     './app.js',
+    './sw.js',
     './manifest.json',
     './icons/icon-192.png',
     './icons/icon-512.png',
@@ -13,7 +14,11 @@ const ASSETS_TO_CACHE = [
     './checkbox-animations.css',
     './home-refinements.css',
     './special-message-animations.css',
-    'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap'
+    './dark-mode-additions.css',
+    './swipe-nav.css',
+    './splash-design.css',
+    './touch-drag-support.js',
+    './image-viewer.js'
 ];
 
 // Install Event
