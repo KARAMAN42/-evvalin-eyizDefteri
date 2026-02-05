@@ -2950,10 +2950,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         try {
                             const file = new File([dataStr], fileName, { type: 'application/json' });
                             if (navigator.canShare({ files: [file] })) {
+                                // iOS Fix: Share ONLY the file. Adding text causes "2 Items" and breaks "Save to Files".
                                 await navigator.share({
                                     files: [file],
-                                    title: 'Çeyiz Listesi Yedeği',
-                                    text: 'Uygulama yedek dosyanız hazır.'
+                                    title: 'Çeyiz Listesi Yedeği'
                                 });
                                 showToast('Yedek paylaşma ekranı açıldı! 📱', false);
                                 return; // Stop here if share worked
