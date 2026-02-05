@@ -2945,29 +2945,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     const date = new Date().toISOString().split('T')[0];
                     const fileName = `ceyiz_yedek_${date}.json`;
 
-                    // Attempt: Web Share API (iOS/Mobile)
-                    if (navigator.share && navigator.canShare) {
-                        try {
-                            // iOS Note: 'application/json' can fail in "Save to Files". 
-                            // Using 'text/plain' often resolves this, and the content remains valid JSON.
-                            const file = new File([dataStr], fileName, { type: 'text/plain' });
-
-                            if (navigator.canShare({ files: [file] })) {
-                                await navigator.share({
-                                    files: [file]
-                                    // Removed title/text completely to prevent "2 Items" or metadata conflicts
-                                });
-                                showToast('Dosya paylaşım ekranı açıldı! 📱', false);
-                                return;
-                            }
-                        } catch (shareErr) {
-                            console.warn("Share API failed, falling back to download:", shareErr);
-                        }
-                    }
-
-                    // Fallback: Desktop / Standard Download
-                    console.log("Using standard download method...");
-                    const blob = new Blob([dataStr], { type: 'application/json' });
+                    // iOS Safari Fix: Use 'application/octet-stream' to force the "Download" prompt
+                    // instead of opening in a viewer or Share Sheet which causes issues.
+                    console.log("Using octet-stream download method...");
+                    const blob = new Blob([dataStr], { type: 'application/octet-stream' });
                     const url = URL.createObjectURL(blob);
 
                     const a = document.createElement('a');
@@ -2981,12 +2962,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     URL.revokeObjectURL(url);
                     console.log("Download triggered");
 
-                    showToast('Yedek dosyası indirildi! 📥', false);
+                    showToast('Yedek dosyası indiriliyor... 📥', false);
                 } catch (err) {
                     console.error("Backup failed:", err);
                     showToast('Yedek oluşturulurken hata: ' + err.message, true);
                 }
             });
+
         } else {
             console.error("Backup button NOT found!");
         }
