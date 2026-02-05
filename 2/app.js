@@ -5007,85 +5007,127 @@ document.addEventListener('DOMContentLoaded', () => {
         btnCloseLightbox.addEventListener('click', closeLightbox);
     }
 
-    // Zoom Interaction: Press & Hold to Zoom + Pan
+    // Zoom Interaction: Pinch-to-Zoom & Pan
     if (lightboxImg) {
-        let isZooming = false;
+        let currentScale = 1;
+        let initialDist = 0;
+        let initialScale = 1;
 
-        const startZoom = (e) => {
-            if (e.pointerType === 'mouse' && e.button !== 0) return; // Only left click or touch
-            isZooming = true;
+        let isPanning = false;
+        let startX = 0;
+        let startY = 0;
+        let translateX = 0;
+        let translateY = 0;
+        let initialTranslateX = 0;
+        let initialTranslateY = 0;
 
-            lightboxImg.style.transition = 'transform 0.2s cubic-bezier(0.1, 0.9, 0.2, 1)';
-            lightboxImg.style.cursor = 'move';
-            lightboxImg.classList.add('is-zoomed');
-
-            updateZoom(e);
+        const getDistance = (touches) => {
+            if (touches.length < 2) return 0;
+            const dx = touches[0].clientX - touches[1].clientX;
+            const dy = touches[0].clientY - touches[1].clientY;
+            return Math.hypot(dx, dy);
         };
 
-        const moveZoom = (e) => {
-            if (!isZooming) return;
-            e.preventDefault(); // Prevent scroll while zooming
-            updateZoom(e);
+        const updateTransform = () => {
+            lightboxImg.style.transform = `translate(${translateX}px, ${translateY}px) scale(${currentScale})`;
         };
 
-        const endZoom = () => {
-            if (!isZooming) return;
-            isZooming = false;
-
-            // Reset
-            lightboxImg.style.transform = 'translate(0, 0) scale(1)';
-            lightboxImg.style.cursor = 'zoom-in';
-            lightboxImg.classList.remove('is-zoomed');
+        const onTouchStart = (e) => {
+            if (e.touches.length === 2) {
+                // Pinch Start
+                e.preventDefault(); // Stop browser zoom
+                initialDist = getDistance(e.touches);
+                initialScale = currentScale;
+            } else if (e.touches.length === 1 && currentScale > 1) {
+                // Pan Start (Only if zoomed)
+                isPanning = true;
+                startX = e.touches[0].clientX;
+                startY = e.touches[0].clientY;
+                initialTranslateX = translateX;
+                initialTranslateY = translateY;
+            }
         };
 
-        const updateZoom = (e) => {
-            // Get pointer position relative to viewport
-            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        const onTouchMove = (e) => {
+            if (e.touches.length === 2) {
+                // Pinch Move
+                e.preventDefault();
+                const dist = getDistance(e.touches);
+                if (dist > 0 && initialDist > 0) {
+                    const scaleDiff = dist / initialDist;
+                    let newScale = initialScale * scaleDiff;
+                    // Limits
+                    if (newScale < 1) newScale = 1; // Don't allow smaller than original
+                    if (newScale > 5) newScale = 5;
 
-            // Calculate offset to keep image under finger roughly
-            // Simple center-zoom approach:
-            // Just scale up.
-            // Pan logic needs container dims.
-            // Let's simplified: Transform Origin based on click? 
-            // Hard to do dynamically smooth.
-            // Easier: Fixed scale (2.5) + Translate equal to distance from center.
+                    currentScale = newScale;
+                    updateTransform();
+                }
+            } else if (e.touches.length === 1 && isPanning) {
+                // Pan Move
+                e.preventDefault();
+                const dx = e.touches[0].clientX - startX;
+                const dy = e.touches[0].clientY - startY;
 
-            const rect = lightboxImg.getBoundingClientRect();
-            // Important: This rect changes as we scale? 
-            // Better to use window center.
-
-            const winW = window.innerWidth;
-            const winH = window.innerHeight;
-
-            // Offset from center
-            const x = (winW / 2) - clientX;
-            const y = (winH / 2) - clientY;
-
-            // Apply translation to oppose the offset (bring touched point to center)
-            // Multiplied by scale factor to follow finger?
-            // Actually, simplified "Lens" effect:
-            // Scale = 2.5
-            // Translate = (Center - Pointer) * 1.5
-
-            const scale = 2.5;
-            const tx = x * 1.5;
-            const ty = y * 1.5;
-
-            // Use transform which is performant
-            lightboxImg.style.transform = `translate(${tx}px, ${ty}px) scale(${scale})`;
+                translateX = initialTranslateX + dx;
+                translateY = initialTranslateY + dy;
+                updateTransform();
+            }
         };
 
-        // Touch Events
-        lightboxImg.addEventListener('touchstart', startZoom, { passive: false });
-        lightboxImg.addEventListener('touchmove', moveZoom, { passive: false });
-        lightboxImg.addEventListener('touchend', endZoom);
-        lightboxImg.addEventListener('touchcancel', endZoom);
+        const onTouchEnd = (e) => {
+            if (e.touches.length < 2) {
+                // Pinch ended
+            }
+            if (e.touches.length === 0) {
+                isPanning = false;
+                // Optional: Snap back if scale is 1?
+            }
+        };
 
-        // Mouse Events (for desktop testing)
-        lightboxImg.addEventListener('mousedown', startZoom);
-        document.addEventListener('mousemove', moveZoom); // Document to track outside
-        document.addEventListener('mouseup', endZoom);
+        // Double Tap to Reset/Zoom
+        let lastTap = 0;
+        lightboxImg.addEventListener('touchend', (e) => {
+            const currentTime = new Date().getTime();
+            const tapLength = currentTime - lastTap;
+            if (tapLength < 300 && tapLength > 0 && e.changedTouches.length === 1 && currentScale === 1) {
+                // Double Tap on normal image -> Zoom to 2.5x center?
+                // Or just let user pinch?
+                // Let's implement toggle for convenience
+                e.preventDefault();
+                if (currentScale > 1) {
+                    currentScale = 1;
+                    translateX = 0;
+                    translateY = 0;
+                } else {
+                    currentScale = 2.5;
+                    translateX = 0;
+                    translateY = 0;
+                }
+                lightboxImg.style.transition = 'transform 0.3s ease';
+                updateTransform();
+                setTimeout(() => {
+                    lightboxImg.style.transition = '';
+                }, 300);
+            } else if (tapLength < 300 && tapLength > 0 && currentScale > 1 && e.changedTouches.length === 1) {
+                // Double tap to reset
+                e.preventDefault();
+                currentScale = 1;
+                translateX = 0;
+                translateY = 0;
+                lightboxImg.style.transition = 'transform 0.3s ease';
+                updateTransform();
+                setTimeout(() => {
+                    lightboxImg.style.transition = '';
+                }, 300);
+            }
+            lastTap = currentTime;
+        });
+
+        lightboxImg.addEventListener('touchstart', onTouchStart, { passive: false });
+        lightboxImg.addEventListener('touchmove', onTouchMove, { passive: false });
+        lightboxImg.addEventListener('touchend', onTouchEnd);
+        lightboxImg.addEventListener('touchcancel', onTouchEnd);
     }
 
     function closeLightbox() {
