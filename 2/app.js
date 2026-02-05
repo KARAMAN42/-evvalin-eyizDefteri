@@ -351,11 +351,11 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     const successMessages = [
-        "Harika! Bir adÄ±m daha tamam 💖",
-        "Ã‡ok gÃ¼zel gidiyorsun ÅŞevval ✨",
+        "Harika! Bir adım daha tamam 💖",
+        "Çok güzel gidiyorsun Şevval ✨",
         "Bu da tamamlandı! \u2705",
-        "Eksikler azalÄ±yor... 🤞",
-        "SÃ¼persin! 🌸"
+        "Eksikler azalıyor... 🤟",
+        "Süpersin! 🌸"
     ];
 
     // Daily Quotes - Random quote on each page load
@@ -572,9 +572,9 @@ document.addEventListener('DOMContentLoaded', () => {
             if (nikahDays > 0) {
                 els.mainNikah.textContent = `${nikahDays} g\u00FCn kald\u0131`;
             } else if (nikahDays === 0) {
-                els.mainNikah.textContent = "BugÃ¼n nikah gÃ¼nÃ¼ 🤍";
+                els.mainNikah.textContent = "Bugün nikah günü 🤍";
             } else {
-                els.mainNikah.textContent = "Mutlulukla geÃ§ti 🤍";
+                els.mainNikah.textContent = "Mutlulukla geçti 🤍";
             }
         }
     }
@@ -2648,11 +2648,11 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!button) return;
 
             const buttonId = button.id;
-            console.log('\u011FÅ¸â€Ëœ Button clicked:', buttonId, button);
+            console.log("🔘 Button clicked:", buttonId, button);
 
             // Handle close button
             if (buttonId === 'btn-close-item' || buttonId === 'btn-cancel-item' || button.classList.contains('modal-close')) {
-                console.log('Ã¢Å“â€¦ Close/Cancel button detected:', buttonId);
+                console.log("✅ Close/Cancel button detected:", buttonId);
                 e.preventDefault();
                 e.stopPropagation();
                 closeQAModal();
@@ -2661,7 +2661,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Handle save button
             if (buttonId === 'btn-save-item' || buttonId === 'btn-save-qa') {
-                console.log('Ã¢Å“â€¦ Save button detected:', buttonId);
+                console.log("✅ Save button detected:", buttonId);
                 e.preventDefault();
                 e.stopPropagation();
 
@@ -2703,7 +2703,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }, true); // Use capture phase to catch events early
 
-        console.log('Ã¢Å“â€¦ Event delegation for modal buttons is ACTIVE');
+        console.log("✅ Event delegation for modal buttons is ACTIVE");
 
         // Home Action Buttons
         // Duplicate listeners removed
@@ -2904,51 +2904,88 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // --- Data Management ---
-        document.getElementById('btn-backup-copy')?.addEventListener('click', () => {
-            const data = {
-                items: items,
-                settings: settings,
-                userCategories: userCategories
-            };
-            const dataStr = JSON.stringify(data);
-            navigator.clipboard.writeText(dataStr).then(() => {
-                showToast('Tüm veriler yedeğe kopyalandı! 📋✨', false);
+        // --- Data Management (File Based) ---
+        const btnBackup = document.getElementById('btn-backup-copy');
+        if (btnBackup) {
+            console.log("Backup button found, adding listener");
+            btnBackup.addEventListener('click', (e) => {
+                e.preventDefault(); // Prevent any default behavior
+                console.log("Backup button clicked");
+                try {
+                    console.log("Preparing data...", { itemsCount: items?.length, settings: !!settings });
+
+                    const data = {
+                        items: items || [],
+                        settings: settings || {},
+                        userCategories: userCategories || {},
+                        timestamp: new Date().toISOString()
+                    };
+
+                    const dataStr = JSON.stringify(data, null, 2);
+                    console.log("Data stringified, creating blob...");
+
+                    const blob = new Blob([dataStr], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+
+                    const a = document.createElement('a');
+                    a.href = url;
+                    const date = new Date().toISOString().split('T')[0];
+                    a.download = `ceyiz_yedek_${date}.json`;
+
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+
+                    URL.revokeObjectURL(url);
+                    console.log("Download triggered");
+
+                    showToast('Yedek dosyası indirildi! 📥', false);
+                } catch (err) {
+                    console.error("Backup failed:", err);
+                    showToast('Yedek oluşturulurken hata: ' + err.message, true);
+                }
             });
+        } else {
+            console.error("Backup button NOT found!");
+        }
+
+        // Limit Import to File Only
+        document.getElementById('btn-import-paste')?.addEventListener('click', () => {
+            const fileInput = document.getElementById('backup-file-input');
+            if (fileInput) fileInput.click();
         });
 
-        document.getElementById('btn-import-paste')?.addEventListener('click', () => {
-            const area = document.getElementById('import-area');
-            const btn = document.getElementById('btn-import-paste');
-            if (area.classList.contains('hidden')) {
-                area.classList.remove('hidden');
-                area.focus();
-                btn.innerHTML = '<i class="fas fa-check"></i> Veriyi Yükle';
-            } else {
+        // File Input Handler
+        document.getElementById('backup-file-input')?.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
                 try {
-                    const val = area.value.trim();
-                    if (!val) {
-                        area.classList.add('hidden');
-                        btn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> Yedek Yükle';
-                        return;
-                    }
+                    const val = event.target.result;
                     const data = JSON.parse(val);
-                    if (confirm('Tüm verileriniz yüklenecek ve mevcut veriler silinecek. Emin misiniz?')) {
+
+                    if (confirm('Bu yedek dosyası yüklendiğinde mevcut tüm verileriniz silinecek ve dosyadaki verilerle değiştirilecek. İşlemi onaylıyor musunuz?')) {
+
                         if (data.items) items = data.items;
                         if (data.settings) Object.assign(settings, data.settings);
-                        if (data.userCategories) Object.assign(userCategories, data.userCategories);
+                        if (data.userCategories) userCategories = data.userCategories;
 
                         saveData();
                         saveSettings();
                         saveUserCategories();
 
                         showToast('Veriler başarıyla yüklendi! 🔄', false);
-                        setTimeout(() => location.reload(), 1000);
+                        setTimeout(() => location.reload(), 1500);
                     }
                 } catch (err) {
-                    showToast('Hatalı veri formatı! ❌', true);
-                    console.error(err);
+                    showToast('Dosya okunamadı veya format hatalı! ❌', true);
+                    console.error("Import Error:", err);
                 }
-            }
+            };
+            reader.readAsText(file);
+            e.target.value = ''; // Reset
         });
 
         // --- RESET DATA ---
@@ -3031,7 +3068,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const target = new Date(targetStr + 'T00:00:00').getTime();
                     const diff = target - now;
 
-                    if (diff < 0) return "Ger\u00E7ekle\u015Fti Ã¢Å“â€¦";
+                    if (diff < 0) return "Gerçekleşti ✅";
 
                     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
                     const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
@@ -3070,7 +3107,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
         // --- ADDED: Long Press on Countdown (Settings) ---
         function setupLongPressForCountdown() {
-            const countdownCard = document.querySelector('.unified-countdown-card');
+            const countdownCard = document.querySelector('.unified-countdown-card:not(.calendar-mode):not(.upcoming-mode)');
             if (!countdownCard) return;
 
             // Visual feedback via CSS (optional but nice)
@@ -3094,7 +3131,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         document.body.classList.add('modal-open');
                         modalSettings.classList.remove('hidden');
                         requestAnimationFrame(() => modalSettings.classList.add('active'));
-                        showToast("Ayarlar a\u00E7\u0131ld\u0131 Ã¢Å¡â„¢Ã¯Â¸Â", false);
+                        showToast("Ayarlar açıldı ⚙️", false);
 
                         // Reset visual
                         countdownCard.style.transform = 'scale(1)';
@@ -4411,7 +4448,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Countdown Edit
-        const btnCountdown = e.target.closest('.unified-countdown-card');
+        const btnCountdown = e.target.closest('.unified-countdown-card:not(.calendar-mode):not(.upcoming-mode)');
         if (btnCountdown) {
             const modal = document.getElementById('modal-dates-editor');
             const inputNisan = document.getElementById('input-date-nisan');

@@ -5640,3 +5640,52 @@ body.dark-mode .bg-option::before {
 .btn-danger-minimal:hover { opacity: 1; text-decoration: underline; }
 .settings-footer-info { text-align: center; padding: 20px 0 10px; opacity: 0.5; font-size: 0.75rem; line-height: 1.6; }
 
+
+/* --- Theme Readability Refinements (Solid Backgrounds) --- */
+body.bg-floral .card,
+body.bg-floral .modal-content,
+body.bg-floral .bottom-nav,
+body.bg-floral .calendar-card,
+body.bg-floral .unified-countdown-card,
+body.bg-floral .weekly-goal-card,
+body.bg-floral .daily-quote-widget,
+body.bg-picnic .card,
+body.bg-picnic .modal-content,
+body.bg-picnic .bottom-nav,
+body.bg-picnic .calendar-card,
+body.bg-picnic .unified-countdown-card,
+body.bg-picnic .weekly-goal-card,
+body.bg-picnic .daily-quote-widget {
+    background-color: #ffffff !important;
+    background: #ffffff !important;
+    backdrop-filter: none !important;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08) !important;
+}
+
+body.dark-mode.bg-floral .card,
+body.dark-mode.bg-floral .modal-content,
+body.dark-mode.bg-floral .bottom-nav,
+body.dark-mode.bg-floral .calendar-card,
+body.dark-mode.bg-floral .unified-countdown-card,
+body.dark-mode.bg-floral .weekly-goal-card,
+body.dark-mode.bg-floral .daily-quote-widget,
+body.dark-mode.bg-picnic .card,
+body.dark-mode.bg-picnic .modal-content,
+body.dark-mode.bg-picnic .bottom-nav,
+body.dark-mode.bg-picnic .calendar-card,
+body.dark-mode.bg-picnic .unified-countdown-card,
+body.dark-mode.bg-picnic .weekly-goal-card,
+body.dark-mode.bg-picnic .daily-quote-widget {
+    background-color: #1e1e1e !important;
+    background: #1e1e1e !important;
+    backdrop-filter: none !important;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.4) !important;
+}
+
+/* Ensure text remains readable on solid white cards in Floral/Picnic modes */
+body.bg-floral .calendar-card,
+body.bg-floral .unified-countdown-card,
+body.bg-picnic .calendar-card,
+body.bg-picnic .unified-countdown-card {
+    color: var(--text-color) !important;
+}
