@@ -747,17 +747,21 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 });
             } else {
+                // First time load (or data cleared)
                 items = [];
+                populateDefaultItems();
             }
         } catch (e) {
             console.error("Error parsing items:", e);
             items = [];
-        }
-
-        // Populate defaults if empty
-        if (items.length === 0) {
+            // If error, maybe safe to populate defaults? Or just leave empty to avoid overwriting potentially broken but valuable data?
+            // Let's populate defaults to be safe for user experience if corrupted.
             populateDefaultItems();
         }
+
+        // REMOVED: The check "if (items.length === 0) populateDefaultItems()" was causing the bug.
+        // It was re-adding items if the user deleted everything.
+
 
         try {
             const rawCats = localStorage.getItem(STORAGE_CATS_KEY);
@@ -830,7 +834,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function saveData() {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+        console.log("Saving data... Items count:", items.length);
+        try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+            console.log("Data saved to localStorage successfully.");
+        } catch (e) {
+            console.error("Error saving to localStorage:", e);
+            alert("Veriler kaydedilemedi: Depolama alanı dolu olabilir.");
+        }
         renderStats();
     }
 
@@ -1749,15 +1760,24 @@ document.addEventListener('DOMContentLoaded', () => {
     window.appData.showToast = showToast;
 
     function initiateDelete(id) {
-        const item = items.find(i => i.id === id);
-        if (!item) return;
+        console.log("initiateDelete called for id:", id);
+        const itemIndex = items.findIndex(i => i.id === id);
+        if (itemIndex === -1) {
+            console.error("Item not found for deletion:", id);
+            return;
+        }
 
+        const item = items[itemIndex];
         pendingDeleteItem = item;
+
+        // Use slice/splice to ensure mutation or re-assignment is clear
         items = items.filter(i => i.id !== id);
+        console.log("Item removed. New items length:", items.length);
+
         saveData();
         renderApp();
 
-        showToast("\u00DCr\u00FCn silindi", true);
+        showToast("Ürün silindi", true);
     }
 
     // --- Render Category Manager ---
