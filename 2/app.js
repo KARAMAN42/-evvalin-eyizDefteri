@@ -2945,10 +2945,29 @@ document.addEventListener('DOMContentLoaded', () => {
                     const date = new Date().toISOString().split('T')[0];
                     const fileName = `ceyiz_yedek_${date}.json`;
 
-                    // iOS Safari Fix: Use 'application/octet-stream' to force the "Download" prompt
-                    // instead of opening in a viewer or Share Sheet which causes issues.
-                    console.log("Using octet-stream download method...");
-                    const blob = new Blob([dataStr], { type: 'application/octet-stream' });
+                    // Strategy: Try Web Share API with .txt extension (Best for iOS)
+                    // iOS Share Sheet handles .txt much better than .json, avoiding "2 Items" or "Content Unavailable" errors.
+                    if (navigator.share && navigator.canShare) {
+                        try {
+                            const txtFileName = `ceyiz_yedek_${date}.txt`;
+                            const file = new File([dataStr], txtFileName, { type: 'text/plain' });
+
+                            if (navigator.canShare({ files: [file] })) {
+                                await navigator.share({
+                                    files: [file],
+                                    title: 'Yedek Dosyası'
+                                });
+                                showToast('Paylaşım ekranı açıldı! "Dosyalara Kaydet"i seçin. 📱', false);
+                                return;
+                            }
+                        } catch (shareErr) {
+                            console.warn("Share API failed, falling back to standard download:", shareErr);
+                        }
+                    }
+
+                    // Fallback: Standard Download (Desktop / Android)
+                    console.log("Using standard download method...");
+                    const blob = new Blob([dataStr], { type: 'application/json' });
                     const url = URL.createObjectURL(blob);
 
                     const a = document.createElement('a');
@@ -2960,9 +2979,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     document.body.removeChild(a);
 
                     URL.revokeObjectURL(url);
-                    console.log("Download triggered");
 
-                    showToast('Yedek dosyası indiriliyor... 📥', false);
+                    // Specific helper for iOS where download attribute might be ignored and opens preview
+                    if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
+                        showToast('Dosya açıldıysa alttaki "Paylaş" butonuna basıp kaydedin. ℹ️', false);
+                    } else {
+                        showToast('Yedek dosyası indiriliyor... 📥', false);
+                    }
                 } catch (err) {
                     console.error("Backup failed:", err);
                     showToast('Yedek oluşturulurken hata: ' + err.message, true);
