@@ -5007,40 +5007,85 @@ document.addEventListener('DOMContentLoaded', () => {
         btnCloseLightbox.addEventListener('click', closeLightbox);
     }
 
-    // Zoom Toggle
+    // Zoom Interaction: Press & Hold to Zoom + Pan
     if (lightboxImg) {
-        lightboxImg.addEventListener('click', (e) => {
-            e.stopPropagation(); // Don't close if we clicked image
-            const img = e.target;
-            const container = img.parentElement;
+        let isZooming = false;
 
-            if (img.classList.contains('is-zoomed')) {
-                // Zoom Out
-                img.classList.remove('is-zoomed');
-                img.style.maxWidth = '100%';
-                img.style.maxHeight = '100%';
-                img.style.width = '';
-                img.style.cursor = 'zoom-in';
+        const startZoom = (e) => {
+            if (e.pointerType === 'mouse' && e.button !== 0) return; // Only left click or touch
+            isZooming = true;
 
-                container.style.justifyContent = 'center';
-                container.style.alignItems = 'center';
-            } else {
-                // Zoom In
-                img.classList.add('is-zoomed');
-                img.style.maxWidth = 'none';
-                img.style.maxHeight = 'none';
+            lightboxImg.style.transition = 'transform 0.2s cubic-bezier(0.1, 0.9, 0.2, 1)';
+            lightboxImg.style.cursor = 'move';
+            lightboxImg.classList.add('is-zoomed');
 
-                // Smart Zoom: Force 250% screen width
-                img.style.width = '250vw';
-                img.style.height = 'auto';
+            updateZoom(e);
+        };
 
-                img.style.cursor = 'zoom-out';
+        const moveZoom = (e) => {
+            if (!isZooming) return;
+            e.preventDefault(); // Prevent scroll while zooming
+            updateZoom(e);
+        };
 
-                // Important for scroll
-                container.style.justifyContent = 'flex-start';
-                container.style.alignItems = 'flex-start';
-            }
-        });
+        const endZoom = () => {
+            if (!isZooming) return;
+            isZooming = false;
+
+            // Reset
+            lightboxImg.style.transform = 'translate(0, 0) scale(1)';
+            lightboxImg.style.cursor = 'zoom-in';
+            lightboxImg.classList.remove('is-zoomed');
+        };
+
+        const updateZoom = (e) => {
+            // Get pointer position relative to viewport
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+            // Calculate offset to keep image under finger roughly
+            // Simple center-zoom approach:
+            // Just scale up.
+            // Pan logic needs container dims.
+            // Let's simplified: Transform Origin based on click? 
+            // Hard to do dynamically smooth.
+            // Easier: Fixed scale (2.5) + Translate equal to distance from center.
+
+            const rect = lightboxImg.getBoundingClientRect();
+            // Important: This rect changes as we scale? 
+            // Better to use window center.
+
+            const winW = window.innerWidth;
+            const winH = window.innerHeight;
+
+            // Offset from center
+            const x = (winW / 2) - clientX;
+            const y = (winH / 2) - clientY;
+
+            // Apply translation to oppose the offset (bring touched point to center)
+            // Multiplied by scale factor to follow finger?
+            // Actually, simplified "Lens" effect:
+            // Scale = 2.5
+            // Translate = (Center - Pointer) * 1.5
+
+            const scale = 2.5;
+            const tx = x * 1.5;
+            const ty = y * 1.5;
+
+            // Use transform which is performant
+            lightboxImg.style.transform = `translate(${tx}px, ${ty}px) scale(${scale})`;
+        };
+
+        // Touch Events
+        lightboxImg.addEventListener('touchstart', startZoom, { passive: false });
+        lightboxImg.addEventListener('touchmove', moveZoom, { passive: false });
+        lightboxImg.addEventListener('touchend', endZoom);
+        lightboxImg.addEventListener('touchcancel', endZoom);
+
+        // Mouse Events (for desktop testing)
+        lightboxImg.addEventListener('mousedown', startZoom);
+        document.addEventListener('mousemove', moveZoom); // Document to track outside
+        document.addEventListener('mouseup', endZoom);
     }
 
     function closeLightbox() {
