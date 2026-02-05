@@ -5315,7 +5315,7 @@ document.addEventListener('DOMContentLoaded', () => {
         requestAnimationFrame(() => budgetModal.classList.add('active'));
         document.body.classList.add('modal-open');
 
-        if (budgetInput) budgetInput.focus();
+        // Removed automatic focus to prevent keyboard from popping up on mobile
     };
 
 });
