@@ -2948,19 +2948,20 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Attempt: Web Share API (iOS/Mobile)
                     if (navigator.share && navigator.canShare) {
                         try {
-                            const file = new File([dataStr], fileName, { type: 'application/json' });
+                            // iOS Note: 'application/json' can fail in "Save to Files". 
+                            // Using 'text/plain' often resolves this, and the content remains valid JSON.
+                            const file = new File([dataStr], fileName, { type: 'text/plain' });
+
                             if (navigator.canShare({ files: [file] })) {
-                                // iOS Fix: Share ONLY the file. Adding text causes "2 Items" and breaks "Save to Files".
                                 await navigator.share({
-                                    files: [file],
-                                    title: 'Çeyiz Listesi Yedeği'
+                                    files: [file]
+                                    // Removed title/text completely to prevent "2 Items" or metadata conflicts
                                 });
-                                showToast('Yedek paylaşma ekranı açıldı! 📱', false);
-                                return; // Stop here if share worked
+                                showToast('Dosya paylaşım ekranı açıldı! 📱', false);
+                                return;
                             }
                         } catch (shareErr) {
                             console.warn("Share API failed, falling back to download:", shareErr);
-                            // Fallthrough to download method
                         }
                     }
 
