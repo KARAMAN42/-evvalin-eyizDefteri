@@ -4444,7 +4444,11 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             // No Images
             if (singleImgContainer) singleImgContainer.classList.add('hidden');
-            if (galleryTrack) galleryTrack.parentElement.classList.add('hidden');
+            if (galleryTrack) {
+                galleryTrack.parentElement.classList.add('hidden');
+                galleryTrack.innerHTML = ''; // Prevent ghost images from previous products
+                galleryDots.innerHTML = '';
+            }
         }
 
         // 3. Links Logic
@@ -4515,14 +4519,18 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.classList.add('modal-open');
     }
 
-    // Helper: Detail Carousel
+    // Helper: Detail Carousel (High Performance V3)
     function initDetailCarousel(track, dotsContainer, count) {
         let current = 0;
         let startX = 0;
+        let startY = 0;
         let isDragging = false;
+        let isHorizontal = false;
         const dots = dotsContainer.children;
+        const container = track.parentElement;
 
-        function update() {
+        function update(transition = true) {
+            track.style.transition = transition ? 'transform 0.4s cubic-bezier(0.2, 1, 0.3, 1)' : 'none';
             track.style.transform = `translateX(-${current * 100}%)`;
             Array.from(dots).forEach((d, i) => {
                 if (i === current) d.classList.add('active');
@@ -4530,21 +4538,51 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        track.parentElement.addEventListener('touchstart', (e) => {
+        const handleStart = (e) => {
             startX = e.touches[0].clientX;
+            startY = e.touches[0].clientY;
             isDragging = true;
-        }, { passive: true });
+            isHorizontal = false;
+            track.style.transition = 'none';
+        };
 
-        track.parentElement.addEventListener('touchend', (e) => {
+        const handleMove = (e) => {
             if (!isDragging) return;
+            const x = e.touches[0].clientX;
+            const y = e.touches[0].clientY;
+            const dx = x - startX;
+            const dy = y - startY;
+
+            if (!isHorizontal && Math.abs(dx) > Math.abs(dy)) {
+                if (Math.abs(dx) > 10) isHorizontal = true;
+            }
+
+            if (isHorizontal) {
+                if (e.cancelable) e.preventDefault();
+                const offset = -(current * container.offsetWidth) + dx;
+                track.style.transform = `translateX(${offset}px)`;
+            }
+        };
+
+        const handleEnd = (e) => {
+            if (!isDragging) return;
+            isDragging = false;
+            if (!isHorizontal) return;
+
             const diff = startX - e.changedTouches[0].clientX;
             if (Math.abs(diff) > 50) {
                 if (diff > 0 && current < count - 1) current++;
                 else if (diff < 0 && current > 0) current--;
-                update();
             }
-            isDragging = false;
-        });
+            update();
+        };
+
+        // Use direct properties to ensure only one handler exists
+        container.ontouchstart = handleStart;
+        container.ontouchmove = handleMove;
+        container.ontouchend = handleEnd;
+
+        update(false);
     }
     function formatDateToDisplay(dateStr) {
         if (!dateStr || !dateStr.includes('-')) return dateStr;

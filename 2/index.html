@@ -1217,6 +1217,80 @@
         </div>
     </div>
 
+    <!-- FINAL GALLERY OVERRIDE V2 -->
+    <style>
+        #detail-gallery.detail-gallery-container:not(.hidden) {
+            display: block !important;
+            height: 320px !important;
+            background: #f8f9fa !important;
+            border-radius: 16px !important;
+            overflow: hidden !important;
+            margin: 0 0 20px 0 !important;
+            position: relative !important;
+        }
+
+        #detail-gallery-track.gallery-wrapper {
+            display: flex !important;
+            height: 100% !important;
+            width: auto !important;
+            transition: transform 0.4s cubic-bezier(0.2, 1, 0.3, 1) !important;
+            overflow: visible !important;
+        }
+
+        .detail-slide {
+            flex: 0 0 100% !important;
+            width: 100% !important;
+            height: 100% !important;
+            display: flex !important;
+            justify-content: center !important;
+            align-items: center !important;
+            background: #f8f9fa !important;
+        }
+
+        .detail-slide img {
+            max-width: 100% !important;
+            max-height: 100% !important;
+            width: auto !important;
+            height: auto !important;
+            object-fit: contain !important;
+            display: block !important;
+        }
+
+        .gallery-dots {
+            position: absolute !important;
+            bottom: 12px !important;
+            left: 50% !important;
+            transform: translateX(-50%) !important;
+            display: flex !important;
+            gap: 8px !important;
+            z-index: 20 !important;
+            background: rgba(255, 255, 255, 0.5) !important;
+            padding: 5px 10px !important;
+            border-radius: 20px !important;
+            backdrop-filter: blur(5px) !important;
+        }
+
+        .d-dot {
+            width: 8px !important;
+            height: 8px !important;
+            border-radius: 50% !important;
+            background: rgba(0, 0, 0, 0.2) !important;
+            transition: all 0.3s ease !important;
+        }
+
+        .d-dot.active {
+            background: var(--primary-color) !important;
+            width: 18px !important;
+            border-radius: 4px !important;
+        }
+
+        @media (max-width: 480px) {
+            #detail-gallery.detail-gallery-container {
+                height: 280px !important;
+            }
+        }
+    </style>
+
     <!-- Scripts -->
     <script src="app.js"></script>
     <script src="touch-drag-support.js"></script>
