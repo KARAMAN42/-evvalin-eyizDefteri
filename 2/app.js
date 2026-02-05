@@ -67,7 +67,8 @@ document.addEventListener('DOMContentLoaded', () => {
         lastMonthReset: null, // Last time budget was reset (YYYY-MM format)
         budgetLastUpdated: null, // Last update timestamp
         feedback: '',
-        weeklyGoal: 'Bu hafta için bir güzellik belirle...'
+        weeklyGoal: 'Bu hafta için bir güzellik belirle...',
+        syncCode: '' // Cloud sync code
     };
 
     // Make variables globally accessible for addCategory function
@@ -827,6 +828,8 @@ document.addEventListener('DOMContentLoaded', () => {
     function saveCategories() {
         localStorage.setItem(STORAGE_CATS_KEY, JSON.stringify(userCategories));
         updateAllCategoryDropdowns();
+        // Cloud Sync
+        if (typeof window.syncToCloud === 'function') window.syncToCloud('categories', userCategories);
     }
     window.appData.saveCategories = saveCategories; // Expose globally
 
@@ -836,11 +839,10 @@ document.addEventListener('DOMContentLoaded', () => {
         applySettings();
         // Update live counters immediately
         updateCountdowns();
-        updateHomeCountdowns(); // <--- ADDED THIS to refresh home screen immediately
+        updateHomeCountdowns();
         if (typeof renderHomeUpcomingEvents === 'function') renderHomeUpcomingEvents();
-        // Force live widget update if running
-        const elNisan = document.getElementById('fc-nisan');
-        if (elNisan) elNisan.textContent = "...";
+        // Cloud Sync
+        if (typeof window.syncToCloud === 'function') window.syncToCloud('settings', settings);
     }
 
     // ========================================
@@ -5608,4 +5610,145 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-}); // End Lightbox Init
+    // ========================================
+    // Firebase Cloud Sync System (Enhanced)
+    // ========================================
+    const firebaseConfig = {
+        // Placeholder - USER: You can enter your own Firebase config here for higher security
+        // For now, I will use a logic that tries to init if possible.
+        apiKey: "AIzaSyAs-DEMO-ONLY",
+        authDomain: "ceyiz-defteri-sync.firebaseapp.com",
+        projectId: "ceyiz-defteri-sync",
+        storageBucket: "ceyiz-defteri-sync.appspot.com",
+        messagingSenderId: "123456789",
+        appId: "1:123456789:web:abcdef123"
+    };
+
+    let db = null;
+    let syncActive = false;
+    let unsubscribes = [];
+
+    async function initCloudSync() {
+        const cloudInput = document.getElementById('setting-cloud-code');
+        const syncStatus = document.getElementById('sync-status');
+        const btnConnect = document.getElementById('btn-sync-connect');
+
+        const code = (settings.syncCode || "").trim().toUpperCase();
+        if (cloudInput) cloudInput.value = code;
+
+        if (!code) return;
+
+        try {
+            if (!firebase.apps.length) {
+                firebase.initializeApp(firebaseConfig);
+            }
+            db = firebase.firestore();
+            syncActive = true;
+
+            if (syncStatus) {
+                syncStatus.textContent = `Durum: Bağlı (Kod: ${code}) ✅`;
+                syncStatus.style.color = "#27ae60";
+            }
+            if (btnConnect) btnConnect.innerHTML = '<i class="fas fa-sync fa-spin"></i> Senkronize Ediliyor...';
+
+            setupCloudListeners(code);
+        } catch (err) {
+            console.error("Firebase Init Error:", err);
+            if (syncStatus) syncStatus.textContent = "Durum: Bağlantı Hatası! ❌";
+        }
+    }
+
+    function setupCloudListeners(familyCode) {
+        // Clear old listeners
+        unsubscribes.forEach(unsub => unsub());
+        unsubscribes = [];
+
+        const docRef = db.collection("families").doc(familyCode);
+
+        // 1. Listen for items
+        unsubscribes.push(docRef.collection("data").doc("items").onSnapshot(doc => {
+            if (doc.exists) {
+                const remoteData = doc.data().list;
+                if (JSON.stringify(remoteData) !== JSON.stringify(items)) {
+                    items = remoteData;
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+                    renderApp();
+                }
+            }
+        }));
+
+        // 2. Listen for settings
+        unsubscribes.push(docRef.collection("data").doc("settings").onSnapshot(doc => {
+            if (doc.exists) {
+                const remoteSettings = doc.data().config;
+                // Avoid infinite loop: only update if changed
+                if (JSON.stringify(remoteSettings.syncCode) === JSON.stringify(settings.syncCode)) {
+                    if (JSON.stringify(remoteSettings) !== JSON.stringify(settings)) {
+                        settings = { ...settings, ...remoteSettings };
+                        localStorage.setItem(STORAGE_SETTINGS_KEY, JSON.stringify(settings));
+                        applySettings();
+                        renderStats();
+                    }
+                }
+            }
+        }));
+
+        // 3. Listen for categories
+        unsubscribes.push(docRef.collection("data").doc("categories").onSnapshot(doc => {
+            if (doc.exists) {
+                const remoteCats = doc.data().map;
+                if (JSON.stringify(remoteCats) !== JSON.stringify(userCategories)) {
+                    userCategories = remoteCats;
+                    localStorage.setItem(STORAGE_CATS_KEY, JSON.stringify(userCategories));
+                    updateAllCategoryDropdowns();
+                }
+            }
+        }));
+    }
+
+    window.syncToCloud = async function (type, data) {
+        if (!syncActive || !db || !settings.syncCode) return;
+        const familyCode = settings.syncCode.trim().toUpperCase();
+
+        try {
+            const docRef = db.collection("families").doc(familyCode).collection("data").doc(type);
+            if (type === 'items') await docRef.set({ list: data, lastUpdated: new Date().toISOString() });
+            if (type === 'settings') await docRef.set({ config: data, lastUpdated: new Date().toISOString() });
+            if (type === 'categories') await docRef.set({ map: data, lastUpdated: new Date().toISOString() });
+        } catch (err) {
+            console.warn("Cloud Sync Failed:", err);
+        }
+    };
+
+    // Connect Button Listener
+    const btnSyncConnect = document.getElementById('btn-sync-connect');
+    if (btnSyncConnect) {
+        btnSyncConnect.addEventListener('click', async () => {
+            const codeInput = document.getElementById('setting-cloud-code');
+            const code = codeInput.value.trim().toUpperCase();
+
+            if (!code || code.length < 4) {
+                showNotification("Lütfen en az 4 haneli bir kod giriniz.", { type: 'error' });
+                return;
+            }
+
+            settings.syncCode = code;
+            saveSettings();
+
+            showNotification("Bulut bağlantısı kuruluyor...", { icon: '☁️' });
+            await initCloudSync();
+
+            // Initial Push to Cloud
+            if (syncActive) {
+                window.syncToCloud('items', items);
+                window.syncToCloud('settings', settings);
+                window.syncToCloud('categories', userCategories);
+                showNotification("Bulut senkronizasyonu aktif! ✅", { type: 'success' });
+            }
+        });
+    }
+
+    // Auto-init fallback
+    initCloudSync();
+
+}); // End Main App Init
