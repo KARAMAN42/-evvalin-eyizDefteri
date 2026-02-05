@@ -3645,6 +3645,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
             function renderCalendar() {
                 if (!grid || !monthLabel) return;
+
+                // Mini Cal Interaction: Click Header/Bg -> Open Full Modal
+                monthLabel.style.cursor = 'pointer';
+                monthLabel.onclick = () => { if (typeof openFullModal === 'function') openFullModal(); };
+
+                grid.style.cursor = 'pointer';
+                grid.onclick = (e) => {
+                    // Only invoke if clicking the grid background (gaps), as days handle their own click
+                    if (e.target === grid && typeof openFullModal === 'function') openFullModal();
+                };
+
                 grid.innerHTML = '';
 
                 const year = calDate.getFullYear();
@@ -3685,7 +3696,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     const dayDate = new Date(year, month, d);
                     const dateKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-                    setupDayLongPress(el, dateKey);
+                    // setupDayLongPress(el, dateKey);
+                    // Mini Calendar Mode: Click opens Full Calendar
+                    el.onclick = () => {
+                        // Optional: Set full calendar to this date?
+                        // fullCalDate = new Date(year, month, d); 
+                        if (typeof openFullModal === 'function') openFullModal();
+                    };
 
                     // Check Today
                     if (dayDate.toDateString() === today.toDateString()) {
@@ -3916,11 +3933,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     const dateKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
                     el.dataset.date = dateKey;
 
-                    // Bind Long Press & Click
-                    setupDayLongPress(el, dateKey);
-
-                    // Click to Note removed (User requested long-press explicitly)
-                    // el.onclick = () => { openDayModal(dateKey); };
+                    // Bind Click (was Long Press)
+                    el.onclick = () => { openDayModal(dateKey); };
 
                     if (dayDate.toDateString() === today.toDateString()) el.classList.add('today');
 
@@ -4954,3 +4968,94 @@ if (document.readyState === 'loading') {
     initBackgrounds();
 }
 
+
+// --- Lightbox & Image Zoom Logic ---
+document.addEventListener('DOMContentLoaded', () => {
+
+    window.viewImage = function (src) {
+        const modal = document.getElementById('modal-lightbox');
+        const img = document.getElementById('lightbox-image');
+        if (!modal || !img) return;
+
+        img.src = src;
+
+        // Reset Zoom
+        img.classList.remove('is-zoomed');
+        img.style.maxWidth = '100%';
+        img.style.maxHeight = '100%';
+        img.style.width = '';
+        img.style.height = '';
+        img.style.transform = 'scale(1)';
+        img.style.cursor = 'zoom-in';
+
+        // Use flex center for fit mode
+        const container = img.parentElement;
+        container.style.justifyContent = 'center';
+        container.style.alignItems = 'center';
+
+        modal.classList.remove('hidden');
+        requestAnimationFrame(() => modal.classList.add('active'));
+    };
+
+    // Lightbox Controls
+    const btnCloseLightbox = document.getElementById('btn-close-lightbox');
+    const lightboxImg = document.getElementById('lightbox-image');
+    const lightboxModal = document.getElementById('modal-lightbox');
+
+    if (btnCloseLightbox) {
+        btnCloseLightbox.addEventListener('click', closeLightbox);
+    }
+
+    // Zoom Toggle
+    if (lightboxImg) {
+        lightboxImg.addEventListener('click', (e) => {
+            e.stopPropagation(); // Don't close if we clicked image
+            const img = e.target;
+            const container = img.parentElement;
+
+            if (img.classList.contains('is-zoomed')) {
+                // Zoom Out
+                img.classList.remove('is-zoomed');
+                img.style.maxWidth = '100%';
+                img.style.maxHeight = '100%';
+                img.style.width = '';
+                img.style.cursor = 'zoom-in';
+
+                container.style.justifyContent = 'center';
+                container.style.alignItems = 'center';
+            } else {
+                // Zoom In
+                img.classList.add('is-zoomed');
+                img.style.maxWidth = 'none';
+                img.style.maxHeight = 'none';
+
+                // Smart Zoom: Force 250% screen width
+                img.style.width = '250vw';
+                img.style.height = 'auto';
+
+                img.style.cursor = 'zoom-out';
+
+                // Important for scroll
+                container.style.justifyContent = 'flex-start';
+                container.style.alignItems = 'flex-start';
+            }
+        });
+    }
+
+    function closeLightbox() {
+        if (lightboxModal) {
+            lightboxModal.classList.remove('active');
+            setTimeout(() => lightboxModal.classList.add('hidden'), 200);
+        }
+    }
+
+    // Close on backdrop click
+    if (lightboxModal) {
+        lightboxModal.addEventListener('click', (e) => {
+            if (e.target !== lightboxImg) {
+                closeLightbox();
+            }
+        });
+    }
+
+}); // End Lightbox Init
