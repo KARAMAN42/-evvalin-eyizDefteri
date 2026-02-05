@@ -62,7 +62,10 @@ document.addEventListener('DOMContentLoaded', () => {
         partnerName: 'Yusuf',
         dates: { engagement: '2026-10-01', wedding: '2027-10-01' },
         appearance: { fontSize: 'normal', animations: true },
-        budget: 0,
+        budget: 0, // Current remaining budget for this month
+        monthlyBudget: 0, // Monthly budget limit (resets every month)
+        lastMonthReset: null, // Last time budget was reset (YYYY-MM format)
+        budgetLastUpdated: null, // Last update timestamp
         feedback: '',
         weeklyGoal: 'Bu hafta için bir güzellik belirle...'
     };
@@ -412,6 +415,8 @@ document.addEventListener('DOMContentLoaded', () => {
         updateDailyQuote();
         if (typeof updateGreeting === 'function') updateGreeting(); // Initialize Greeting
         if (typeof updateMiniStats === 'function') updateMiniStats(); // Initialize Mini Stats
+        checkMonthlyBudgetReset(); // Check if budget needs monthly reset
+        updateBudgetDisplay(); // Update budget UI
     } catch (e) {
         console.error("Error initializing UI:", e);
     }
@@ -788,35 +793,9 @@ document.addEventListener('DOMContentLoaded', () => {
             // Keep default settings
         }
 
-        // --- Budget Migration & Auto-Reset ---
-        const now = new Date();
-        const currentMonth = now.getMonth();
-        const currentYear = now.getFullYear();
-
-        // 1. Migration: If budget is number, convert to object
-        if (typeof settings.budget === 'number') {
-            settings.budgetConf = {
-                amount: settings.budget,
-                lastMonth: currentMonth,
-                lastYear: currentYear
-            };
-            delete settings.budget;
-        }
-
-        // 2. Init if missing
-        if (!settings.budgetConf) {
-            settings.budgetConf = { amount: 0, lastMonth: currentMonth, lastYear: currentYear };
-        }
-
-        // 3. Auto-Reset Check
-        if (settings.budgetConf.lastMonth !== currentMonth || settings.budgetConf.lastYear !== currentYear) {
-            console.log("New month detected! Resetting budget.");
-            settings.budgetConf.amount = 0;
-            settings.budgetConf.lastMonth = currentMonth;
-            settings.budgetConf.lastYear = currentYear;
-            // Ensure we save this reset state eventually
-            setTimeout(saveSettings, 1000);
-        }
+        // --- Budget Reset Logic (New System) ---
+        // The monthly check/reset is handled by checkMonthlyBudgetReset() which is called in init.
+        // We don't need the legacy budgetConf migration here.
 
         // --- FORCE VALID DATES RECOVERY ---
         // If local storage had bad/empty dates, we must overwrite them to ensure the countown works.
@@ -863,6 +842,76 @@ document.addEventListener('DOMContentLoaded', () => {
         const elNisan = document.getElementById('fc-nisan');
         if (elNisan) elNisan.textContent = "...";
     }
+
+    // ========================================
+    // Monthly Budget System
+    // ========================================
+
+    // Check if month has changed and reset budget if needed
+    function checkMonthlyBudgetReset() {
+        const now = new Date();
+        const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+        // If lastMonthReset is null, this is first time - set it
+        if (!settings.lastMonthReset) {
+            settings.lastMonthReset = currentMonth;
+            saveSettings();
+            return;
+        }
+
+        // If month has changed, reset budget
+        if (settings.lastMonthReset !== currentMonth) {
+            console.log(`📅 Month changed: ${settings.lastMonthReset} -> ${currentMonth}`);
+
+            // Reset budget to monthly budget
+            const oldBudget = settings.budget;
+            settings.budget = settings.monthlyBudget;
+            settings.lastMonthReset = currentMonth;
+            settings.budgetLastUpdated = new Date().toISOString();
+            saveSettings();
+
+            // Show notification
+            showMonthlyBudgetResetNotification(oldBudget);
+        }
+    }
+
+    // Show notification when budget is reset
+    function showMonthlyBudgetResetNotification(oldBudget) {
+        const modal = document.createElement('div');
+        modal.className = 'modal active';
+        modal.style.zIndex = '10000';
+        modal.innerHTML = `
+            <div class="modal-backdrop" style="background: rgba(0, 0, 0, 0.8);"></div>
+            <div class="modal-content-sheet" style="max-width: 400px; text-align: center; padding: 2rem;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">🗓️</div>
+                <h2 style="margin-bottom: 1rem; color: var(--primary-color);">Yeni Ay Başladı!</h2>
+                <p style="margin-bottom: 1.5rem; color: var(--text-light);">
+                    Bütçeniz sıfırlandı.<br>
+                    ${settings.monthlyBudget > 0 ?
+                `Bu ay için <strong>${new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', minimumFractionDigits: 0 }).format(settings.monthlyBudget)}</strong> bütçeniz bulunmaktadır.` :
+                'Lütfen aylık bütçenizi belirleyin.'}
+                </p>
+                <button id="btn-close-budget-notification" class="btn-primary" style="width: 100%;">
+                    ${settings.monthlyBudget > 0 ? 'Anladım' : 'Bütçe Belirle'}
+                </button>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+        document.body.classList.add('modal-open');
+
+        const closeBtn = modal.querySelector('#btn-close-budget-notification');
+        closeBtn.addEventListener('click', () => {
+            modal.remove();
+            document.body.classList.remove('modal-open');
+
+            // If no monthly budget set, open budget modal
+            if (settings.monthlyBudget === 0) {
+                if (window.openBudgetModal) window.openBudgetModal();
+            }
+        });
+    }
+
 
     function populateDefaultItems() {
         console.log("Populating default items...");
@@ -1060,12 +1109,12 @@ document.addEventListener('DOMContentLoaded', () => {
                                 <span class="item-tag">${item.category}</span>
                                 <span class="item-qty">${item.quantity} Adet</span>
                                 ${priceDisplay ? `<span class="item-price-tag">${priceDisplay}</span>` : ''}
+                                ${item.isBought ? '<div class="completed-badge">Tamamland\u0131 \u2728</div>' : ''}
                             </div>
                             ${item.note ? `<div class="item-note-text"><i class="fas fa-sticky-note"></i> ${item.note}</div>` : ''}
-                            ${item.link ? `<a href="${item.link}" target="_blank" class="item-link-btn" onclick="event.stopPropagation();"><i class="fas fa-external-link-alt"></i> \u00DCr\u00FCne Git</a>` : ''}
+                            ${item.link ? `<a href="${item.link}" target="_blank" class="item-link-btn" onclick="event.stopPropagation();"><i class="fas fa-external-link-alt"></i> Ürüne Git</a>` : ''}
                         </div>
-                        ${item.image ? `<div class="item-thumbnail" onclick="window.viewImage('${item.image}'); event.stopPropagation();"><img src="${item.image}" alt="Ürün"></div>` : ''}
-                        ${item.isBought ? '<div class="completed-badge">Tamamland\u0131 \u2728</div>' : ''}
+                        ${(item.images && item.images.length > 0) || item.image ? `<div class="item-thumbnail" data-item-id="${item.id}"><img src="${item.images && item.images.length > 0 ? item.images[0] : item.image}" alt="Ürün"></div>` : ''}
                     </div>
                 `;
                 // Add actions: Edit + Delete
@@ -1172,6 +1221,30 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                     openProductDetailModal(item);
                 });
+
+                // Thumbnail Click - Open Image Viewer with all photos
+                const thumbnail = el.querySelector('.item-thumbnail');
+                if (thumbnail) {
+                    thumbnail.addEventListener('click', (e) => {
+                        e.stopPropagation();
+
+                        // Support both new (images array) and old (image string) formats
+                        let imagesToShow = [];
+
+                        if (item.images && Array.isArray(item.images) && item.images.length > 0) {
+                            // New format: images array
+                            imagesToShow = item.images;
+                        } else if (item.image) {
+                            // Old format: single image string
+                            imagesToShow = [item.image];
+                        }
+
+                        if (imagesToShow.length > 0) {
+                            // Pass first image and all images array
+                            window.viewImage(imagesToShow[0], imagesToShow);
+                        }
+                    });
+                }
 
                 if (!isFiltering) addDragEvents(el);
                 container.appendChild(el);
@@ -1299,8 +1372,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Reset counters for correct calculation
         totalCost = 0; spentCost = 0; remainingCost = 0; monthlySpent = 0;
-        ceyizTotal = 0; ceyizSpent = 0; ceyizCount = 0; ceyizBought = 0;
-        damatTotal = 0; damatSpent = 0; damatCount = 0; damatBought = 0;
+        let ceyizTotal = 0, ceyizSpent = 0, ceyizCount = 0, ceyizBought = 0;
+        let damatTotal = 0, damatSpent = 0, damatCount = 0, damatBought = 0;
 
         items.forEach(i => {
             const cost = (i.price || 0) * (i.quantity || 1);
@@ -1328,48 +1401,53 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // User Budget Logic (Monthly)
-        const userBudget = (settings.budgetConf && settings.budgetConf.amount) ? settings.budgetConf.amount : 0;
-        const useBudget = userBudget > 0;
+        // User Budget Logic (New Monthly System)
+        const useBudget = settings.monthlyBudget > 0 || !!settings.budgetLastUpdated;
 
-        let displayTotal = useBudget ? userBudget : totalCost;
-        // If budgeting, 'spent' is monthly spent, 'remaining' is budget left.
-        // If no budget, 'spent' is total spent, 'remaining' is total cost left.
+        // Ensure values are numbers
+        const initialLimit = parseFloat(settings.monthlyBudget || 0);
+        const currentWallet = parseFloat(settings.budget || 0);
 
+        // CALCULATIONS:
+        // 1. Big Value: In budget mode, show REMAINING BALANCE (Decreases as we spend)
+        // In cost mode, show TOTAL COST of everything.
+        let displayTotal = useBudget ? (currentWallet - monthlySpent) : totalCost;
+
+        // 2. Spent Value: In budget mode, show spent THIS MONTH. In cost mode, show TOTAL spent.
         let displaySpent = useBudget ? monthlySpent : spentCost;
-        let displayRemaining = useBudget ? (userBudget - monthlySpent) : remainingCost;
 
-        let displayGauge;
-        if (useBudget) {
-            displayGauge = userBudget === 0 ? 0 : Math.min(100, Math.round((monthlySpent / userBudget) * 100));
-        } else {
-            displayGauge = totalCost === 0 ? 0 : Math.min(100, Math.round((spentCost / totalCost) * 100));
-        }
+        // 3. Remaining Value: ALWAYS show COST of items NOT YET BOUGHT (The actual "Need")
+        let displayRemaining = remainingCost;
 
-        // Update DOM
-        const elTotalM = document.getElementById('stat-total-money');
-        const elSpentM = document.getElementById('stat-spent-money');
-        const elRemM = document.getElementById('stat-remaining-money');
-        const elGauge = document.getElementById('budget-gauge-fill');
-        const elTotalLabel = document.querySelector('.hero-main-val .label');
+        // Apply to UI
+        const statTotalEl = document.getElementById('stat-total-money');
+        const statSpentEl = document.getElementById('stat-spent-money');
+        const statRemainingEl = document.getElementById('stat-remaining-money');
+        const gaugeEl = document.getElementById('budget-gauge-fill');
+        const totalLabel = document.querySelector('.hero-main-val .label');
 
-        // Update labels for Monthly context
-        const elSpentLabel = document.querySelector('.hero-item.spent .label');
-        if (elSpentLabel) elSpentLabel.textContent = useBudget ? 'Bu Ay Harcanan' : 'Harcanan ve alınanlar';
+        if (statTotalEl) statTotalEl.textContent = currencyFormatter.format(displayTotal).replace('₺', '').trim();
+        if (statSpentEl) statSpentEl.textContent = currencyFormatter.format(displaySpent);
+        if (statRemainingEl) statRemainingEl.textContent = currencyFormatter.format(displayRemaining);
 
-        if (elTotalM) elTotalM.textContent = currencyFormatter.format(displayTotal).replace('₺', '');
-        if (elSpentM) elSpentM.textContent = currencyFormatter.format(displaySpent);
-        if (elRemM) elRemM.textContent = currencyFormatter.format(displayRemaining);
-        if (elTotalLabel) elTotalLabel.textContent = useBudget ? 'Bu Ayki Bütçe' : 'Tahmini Toplam';
+        // Update labels for clarity
+        if (totalLabel) totalLabel.textContent = useBudget ? 'Kalan Bakiye' : 'Tahmini Toplam';
 
-        // Gauge width and color
-        if (elGauge) {
-            elGauge.style.width = `${displayGauge}% `;
-            // Change color if over budget
-            if (useBudget && displayRemaining < 0) {
-                elGauge.style.backgroundColor = '#ff6b6b';
+        const spentLabel = document.querySelector('.hero-item:first-child .label');
+        if (spentLabel) spentLabel.textContent = useBudget ? 'Bu Ay Harcanan' : 'Harcanan ve alınanlar';
+
+        if (gaugeEl) {
+            // Gauge is always Spent vs Original Limit (or Total Cost)
+            const gaugeTotal = useBudget ? initialLimit : totalCost;
+            const gaugePct = gaugeTotal === 0 ? 0 : Math.min(100, Math.round((displaySpent / gaugeTotal) * 100));
+
+            gaugeEl.style.width = gaugePct + '%';
+
+            // Warning color if over budget
+            if (useBudget && (initialLimit - monthlySpent) < 0) {
+                gaugeEl.style.background = '#e74c3c';
             } else {
-                elGauge.style.backgroundColor = 'rgba(255, 255, 255, 0.95)';
+                gaugeEl.style.background = 'white';
             }
         }
 
@@ -1766,6 +1844,166 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 4000);
     }
     window.appData.showToast = showToast;
+
+    // ========================================
+    // Custom In-App Notification System
+    // ========================================
+
+    // Show notification modal (replaces alert())
+    function showNotification(message, options = {}) {
+        const {
+            title = 'Bildirim',
+            icon = '💬',
+            type = 'info', // info, success, error, warning
+            duration = null, // null = requires click to close
+            onClose = null
+        } = options;
+
+        // Create modal
+        const modal = document.createElement('div');
+        modal.className = 'modal active';
+        modal.style.zIndex = '10000';
+
+        // Type-based colors
+        const typeColors = {
+            info: { bg: 'var(--primary-color)', icon: '💬' },
+            success: { bg: '#2ecc71', icon: '✅' },
+            error: { bg: '#e74c3c', icon: '⚠️' },
+            warning: { bg: '#f39c12', icon: '⚡' }
+        };
+
+        const colorScheme = typeColors[type] || typeColors.info;
+        const displayIcon = icon || colorScheme.icon;
+
+        modal.innerHTML = `
+            <div class="modal-backdrop" style="background: rgba(0, 0, 0, 0.7);"></div>
+            <div class="modal-content-sheet" style="max-width: 400px; text-align: center; padding: 2rem; border-radius: 16px;">
+                <div style="font-size: 3rem; margin-bottom: 1rem; animation: bounce 0.6s ease-out;">
+                    ${displayIcon}
+                </div>
+                <h3 style="margin-bottom: 1rem; color: var(--text-color); font-size: 1.3rem;">
+                    ${title}
+                </h3>
+                <p style="margin-bottom: 1.5rem; color: var(--text-light); line-height: 1.6; white-space: pre-line;">
+                    ${message}
+                </p>
+                <button class="btn-notification-close" 
+                    style="width: 100%; padding: 1rem; background: ${colorScheme.bg}; 
+                           border: none; border-radius: 12px; color: white; font-weight: 600; 
+                           font-size: 1rem; cursor: pointer; transition: transform 0.2s;">
+                    Anladım
+                </button>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+        document.body.classList.add('modal-open');
+
+        const closeBtn = modal.querySelector('.btn-notification-close');
+        const backdrop = modal.querySelector('.modal-backdrop');
+
+        const closeModal = () => {
+            modal.classList.remove('active');
+            setTimeout(() => {
+                modal.remove();
+                if (!document.querySelector('.modal.active')) {
+                    document.body.classList.remove('modal-open');
+                }
+            }, 200);
+            if (onClose) onClose();
+        };
+
+        closeBtn.addEventListener('click', closeModal);
+        backdrop.addEventListener('click', closeModal);
+
+        // Auto-close if duration specified
+        if (duration) {
+            setTimeout(closeModal, duration);
+        }
+
+        // Add bounce animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes bounce {
+                0%, 100% { transform: translateY(0); }
+                50% { transform: translateY(-10px); }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+    // Show confirmation dialog (replaces confirm())
+    function showConfirm(message, options = {}) {
+        return new Promise((resolve) => {
+            const {
+                title = 'Onay',
+                icon = '❓',
+                confirmText = 'Evet',
+                cancelText = 'Hayır',
+                confirmColor = '#2ecc71',
+                cancelColor = '#95a5a6'
+            } = options;
+
+            const modal = document.createElement('div');
+            modal.className = 'modal active';
+            modal.style.zIndex = '10000';
+
+            modal.innerHTML = `
+                <div class="modal-backdrop" style="background: rgba(0, 0, 0, 0.7);"></div>
+                <div class="modal-content-sheet" style="max-width: 400px; text-align: center; padding: 2rem; border-radius: 16px;">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">
+                        ${icon}
+                    </div>
+                    <h3 style="margin-bottom: 1rem; color: var(--text-color); font-size: 1.3rem;">
+                        ${title}
+                    </h3>
+                    <p style="margin-bottom: 1.5rem; color: var(--text-light); line-height: 1.6; white-space: pre-line;">
+                        ${message}
+                    </p>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <button class="btn-confirm-cancel" 
+                            style="padding: 1rem; background: ${cancelColor}; 
+                                   border: none; border-radius: 12px; color: white; font-weight: 600; 
+                                   font-size: 1rem; cursor: pointer;">
+                            ${cancelText}
+                        </button>
+                        <button class="btn-confirm-ok" 
+                            style="padding: 1rem; background: ${confirmColor}; 
+                                   border: none; border-radius: 12px; color: white; font-weight: 600; 
+                                   font-size: 1rem; cursor: pointer;">
+                            ${confirmText}
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(modal);
+            document.body.classList.add('modal-open');
+
+            const btnOk = modal.querySelector('.btn-confirm-ok');
+            const btnCancel = modal.querySelector('.btn-confirm-cancel');
+            const backdrop = modal.querySelector('.modal-backdrop');
+
+            const closeModal = (result) => {
+                modal.classList.remove('active');
+                setTimeout(() => {
+                    modal.remove();
+                    if (!document.querySelector('.modal.active')) {
+                        document.body.classList.remove('modal-open');
+                    }
+                }, 200);
+                resolve(result);
+            };
+
+            btnOk.addEventListener('click', () => closeModal(true));
+            btnCancel.addEventListener('click', () => closeModal(false));
+            backdrop.addEventListener('click', () => closeModal(false));
+        });
+    }
+
+    // Expose globally
+    window.showNotification = showNotification;
+    window.showConfirm = showConfirm;
 
     function initiateDelete(id) {
         console.log("initiateDelete called for id:", id);
@@ -4168,6 +4406,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Wrap renderFullCalendar to dispatch
             const originalRenderFull = renderFullCalendar;
+
+            // Add click listener to header to switch to year view
+            if (fullMonthLabel) {
+                fullMonthLabel.style.cursor = 'pointer';
+                fullMonthLabel.title = "Yıl görünümüne geç";
+                fullMonthLabel.onclick = () => {
+                    if (fullCalView === 'month') {
+                        fullCalView = 'year';
+                        renderFullCalendar();
+                    } else {
+                        // If already year, maybe go back to month? 
+                        // Usually people click to zoom in/out.
+                        fullCalView = 'month';
+                        renderFullCalendar();
+                    }
+                };
+            }
+
             renderFullCalendar = function () {
                 if (fullCalView === 'year') {
                     renderYearGridView();
@@ -4766,35 +5022,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Edit Budget Event Listener ---
 
-    // --- Edit Budget Event Listener (Custom Modal) ---
     document.addEventListener('click', (e) => {
-        // Budget Edit
-        const btnBudget = e.target.closest('#btn-edit-budget');
-        if (btnBudget) {
-            const modal = document.getElementById('modal-budget-editor');
-            const input = document.getElementById('budget-input');
-            const display = document.getElementById('budget-current-display');
-
-            if (modal && input) {
-                // Get Current
-                const currentBudget = (settings.budgetConf && settings.budgetConf.amount) ? settings.budgetConf.amount : 0;
-
-                // Init Display
-                if (display) display.textContent = currencyFormatter.format(currentBudget);
-                input.value = ''; // Reset input
-
-                // Store temp value for calculator
-                modal.dataset.tempBudget = currentBudget;
-
-                // Show Modal
-                modal.classList.remove('hidden');
-                requestAnimationFrame(() => modal.classList.add('active'));
-                document.body.classList.add('modal-open');
-                input.focus();
-            }
-            return;
-        }
-
         // Weekly Goal Edit
         const btnGoal = e.target.closest('#btn-edit-weekly-goal');
         if (btnGoal) {
@@ -4875,80 +5103,220 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
-    // Calculator Buttons
-    function updateBudgetCalc(isAdd) {
-        const modal = document.getElementById('modal-budget-editor');
-        const input = document.getElementById('budget-input');
-        const display = document.getElementById('budget-current-display');
-
-        if (!modal || !input || !display) return;
-
-        const val = parseFloat(input.value.trim());
-        if (isNaN(val) || val <= 0) return;
-
-        let current = parseFloat(modal.dataset.tempBudget || 0);
-
-        if (isAdd) current += val;
-        else current -= val;
-
-        if (current < 0) current = 0;
-
-        // Update State & UI
-        modal.dataset.tempBudget = current;
-        display.textContent = currencyFormatter.format(current);
-        input.value = ''; // Reset input after op
-        input.focus();
-    }
-
-    const btnAdd = document.getElementById('btn-budget-add');
-    const btnSub = document.getElementById('btn-budget-sub');
-
-    if (btnAdd) btnAdd.onclick = () => updateBudgetCalc(true);
-    if (btnSub) btnSub.onclick = () => updateBudgetCalc(false);
-
-    // Save Budget Button
-    const btnSaveBudget = document.getElementById('btn-save-budget');
-    if (btnSaveBudget) {
-        btnSaveBudget.onclick = () => {
-            const modal = document.getElementById('modal-budget-editor');
-            const input = document.getElementById('budget-input');
-
-            if (modal) {
-                // If user typed something but didn't press +/-, we treat it as the NEW total or just ignore?
-                // Request implies calculator. But user might just want to set it.
-                // Let's assume if input has value, we treat it as an OVERWRITE (classic behavior) 
-                // OR we can't be sure. 
-                // "İşlem yapmadan direkt yeni tutarı kaydetmek için 'Kaydet'i kullanabilirsiniz."
-                // This implies input value = NEW TOTAL.
-
-                let finalAmount = parseFloat(modal.dataset.tempBudget || 0);
-
-                if (input && input.value.trim() !== '') {
-                    const directVal = parseFloat(input.value.trim());
-                    if (!isNaN(directVal) && directVal >= 0) {
-                        finalAmount = directVal;
-                    }
-                }
-
-                if (!settings.budgetConf) settings.budgetConf = {};
-                settings.budgetConf.amount = finalAmount;
-                const now = new Date();
-                settings.budgetConf.lastMonth = now.getMonth();
-                settings.budgetConf.lastYear = now.getFullYear();
-
-                saveSettings();
-                renderStats();
-
-                // Close Modal
-                modal.classList.remove('active');
-                document.body.classList.remove('modal-open');
-                setTimeout(() => modal.classList.add('hidden'), 300);
-            }
-        };
-    }
 
     // Expose for potential external use
     window.openProductDetailModal = openProductDetailModal;
+
+    // ========================================
+    // Budget Modal Event Listeners (Moved to Main Closure)
+    // ========================================
+    const budgetModal = document.getElementById('modal-budget');
+    const btnEditBudget = document.getElementById('btn-edit-budget');
+    const btnSaveBudgetNew = document.getElementById('btn-save-budget'); // Renamed to avoid conflict with existing btnSaveBudget
+    const btnResetBudget = document.getElementById('btn-reset-budget');
+    const btnBudgetAdd = document.getElementById('btn-budget-add');
+    const btnBudgetSub = document.getElementById('btn-budget-sub');
+    const budgetInput = document.getElementById('budget-input');
+    const budgetCurrentDisplay = document.getElementById('budget-current-display');
+
+    // Open budget modal on edit button click
+    if (btnEditBudget) {
+        btnEditBudget.addEventListener('click', () => {
+            if (window.openBudgetModal) {
+                window.openBudgetModal();
+            }
+        });
+    }
+
+    // Close modal on backdrop or close button click
+    if (budgetModal) {
+        const closeButtons = budgetModal.querySelectorAll('.close-modal-sheet, .modal-backdrop');
+        closeButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                budgetModal.classList.remove('active');
+                setTimeout(() => budgetModal.classList.add('hidden'), 200);
+                document.body.classList.remove('modal-open');
+            });
+        });
+    }
+
+    // Add to budget
+    if (btnBudgetAdd) {
+        btnBudgetAdd.addEventListener('click', () => {
+            const val = budgetInput.value.replace(',', '.').trim();
+            const amount = parseFloat(val) || 0;
+
+            if (amount <= 0) {
+                showNotification('Lütfen geçerli bir tutar girin.', { type: 'warning', icon: '⚠️' });
+                return;
+            }
+
+            // Update budget (wallet) and also adjust monthly limit if it's the primary way user manages it
+            settings.budget = (parseFloat(settings.budget) || 0) + amount;
+
+            // If they are adding to a 0 limit, let's treat this as their new limit too
+            if ((parseFloat(settings.monthlyBudget) || 0) === 0) {
+                settings.monthlyBudget = settings.budget;
+            } else {
+                // Otherwise just increase the limit as well? 
+                // Normally "Add" means "I have more money now", so limit increases.
+                settings.monthlyBudget = (parseFloat(settings.monthlyBudget) || 0) + amount;
+            }
+
+            settings.budgetLastUpdated = new Date().toISOString();
+
+            saveSettings();
+            if (typeof renderStats === 'function') renderStats();
+
+            // Success feedback
+            showNotification(`${currencyFormatter.format(amount)} bütçeye eklendi!`, {
+                title: 'Bütçe Güncellendi',
+                icon: '✅',
+                type: 'success'
+            });
+
+            budgetInput.value = '';
+            const formatter = new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+            if (budgetCurrentDisplay) budgetCurrentDisplay.textContent = '₺' + formatter.format(settings.budget);
+        });
+    }
+
+    // Subtract from budget
+    if (btnBudgetSub) {
+        btnBudgetSub.addEventListener('click', () => {
+            const val = budgetInput.value.replace(',', '.').trim();
+            const amount = parseFloat(val) || 0;
+
+            if (amount <= 0) {
+                showNotification('Lütfen geçerli bir tutar girin.', { type: 'warning', icon: '⚠️' });
+                return;
+            }
+
+            // Update global settings
+            settings.budget = (parseFloat(settings.budget) || 0) - amount;
+            // Also reduce limit? Probably yes, to keep them in sync if using as a limit tool.
+            settings.monthlyBudget = (parseFloat(settings.monthlyBudget) || 0) - amount;
+            if (settings.monthlyBudget < 0) settings.monthlyBudget = 0;
+
+            settings.budgetLastUpdated = new Date().toISOString();
+
+            saveSettings();
+            if (typeof renderStats === 'function') renderStats();
+
+            showNotification(`${currencyFormatter.format(amount)} bütçeden düşüldü.`, {
+                title: 'Bütçe Güncellendi',
+                icon: 'ℹ️',
+                type: 'success'
+            });
+
+            budgetInput.value = '';
+            const formatter = new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+            if (budgetCurrentDisplay) budgetCurrentDisplay.textContent = '₺' + formatter.format(settings.budget);
+        });
+    }
+
+    // Save budget (Set or Update)
+    if (btnSaveBudgetNew) {
+        btnSaveBudgetNew.addEventListener('click', () => {
+            const valStr = budgetInput.value.trim().replace(',', '.');
+
+            // If user typed a value, OVERWRITE the budget
+            if (valStr !== '') {
+                const newBudgetVal = parseFloat(valStr) || 0;
+                settings.budget = newBudgetVal;
+                settings.monthlyBudget = newBudgetVal;
+                settings.budgetLastUpdated = new Date().toISOString();
+            }
+            // If empty, we JUST keep the current settings.budget (which might have been updated by 'Ekle')
+
+            // Persist
+            if (!settings.lastMonthReset) {
+                const now = new Date();
+                settings.lastMonthReset = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+            }
+            saveSettings();
+            if (typeof renderStats === 'function') renderStats();
+
+            // Success feedback
+            const formatter = new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+            showNotification(
+                `Bütçeniz ${formatter.format(settings.budget)} TL olarak hazırlandı.`,
+                {
+                    title: 'Bütçe Kaydedildi',
+                    icon: '💰',
+                    type: 'success'
+                }
+            );
+
+            // Close modal
+            budgetModal.classList.remove('active');
+            setTimeout(() => {
+                budgetModal.classList.add('hidden');
+                budgetInput.value = '';
+            }, 200);
+            document.body.classList.remove('modal-open');
+        });
+    }
+
+    // Reset budget
+    if (btnResetBudget) {
+        btnResetBudget.addEventListener('click', () => {
+            showConfirm(
+                'Bütçenizi sıfırlamak istediğinize emin misiniz?\n\nBu işlem mevcut bakiye ve aylık limitinizi silecektir.',
+                {
+                    title: 'Bütçeyi Sıfırla',
+                    icon: '🗑️',
+                    confirmText: 'Sıfırla',
+                    cancelText: 'İptal',
+                    confirmColor: '#e74c3c',
+                    cancelColor: '#95a5a6'
+                }
+            ).then(confirmed => {
+                if (confirmed) {
+                    // Update global settings
+                    settings.budget = 0;
+                    settings.monthlyBudget = 0;
+                    settings.budgetLastUpdated = new Date().toISOString();
+
+                    saveSettings();
+
+                    // Update display
+                    const formatter = new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+                    if (budgetCurrentDisplay) budgetCurrentDisplay.textContent = '₺' + formatter.format(0);
+                    if (typeof renderStats === 'function') renderStats();
+
+                    budgetInput.value = '';
+
+                    // Show success message
+                    showNotification(
+                        'Bütçe sıfırlandı!\n\nYeni bir aylık bütçe belirlemek için kaydet butonunu kullanabilirsiniz.',
+                        {
+                            title: 'Bütçe Sıfırlandı',
+                            icon: '✅',
+                            type: 'success'
+                        }
+                    );
+                }
+            });
+        });
+    }
+
+    // Expose openBudgetModal globally
+    window.openBudgetModal = function () {
+        if (!budgetModal) return;
+
+        // Update display from global settings
+        const formatter = new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+        if (budgetCurrentDisplay) {
+            budgetCurrentDisplay.textContent = '₺' + formatter.format(settings.budget || 0);
+        }
+
+        budgetModal.classList.remove('hidden');
+        requestAnimationFrame(() => budgetModal.classList.add('active'));
+        document.body.classList.add('modal-open');
+
+        if (budgetInput) budgetInput.focus();
+    };
 
 });
 
