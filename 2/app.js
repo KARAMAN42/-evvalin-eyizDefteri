@@ -5007,7 +5007,7 @@ document.addEventListener('DOMContentLoaded', () => {
         btnCloseLightbox.addEventListener('click', closeLightbox);
     }
 
-    // Zoom Interaction: Pinch-to-Zoom & Pan
+    // Zoom Interaction: Pinch-to-Zoom & Pan (Optimized with Constraints)
     if (lightboxImg) {
         let currentScale = 1;
         let initialDist = 0;
@@ -5032,14 +5032,42 @@ document.addEventListener('DOMContentLoaded', () => {
             lightboxImg.style.transform = `translate(${translateX}px, ${translateY}px) scale(${currentScale})`;
         };
 
+        // Helper to Clamp Translate values based on scale
+        const clampTranslate = (x, y, scale) => {
+            const rect = lightboxImg.getBoundingClientRect();
+            // Use original Width/Height for calculation if possible, or infer?
+            // lightboxImg.offsetWidth is reliable.
+            const w = lightboxImg.offsetWidth * scale;
+            const h = lightboxImg.offsetHeight * scale;
+            const vw = window.innerWidth;
+            const vh = window.innerHeight;
+
+            // Max offset allowed
+            const maxOffsetX = Math.max(0, (w - vw) / 2);
+            const maxOffsetY = Math.max(0, (h - vh) / 2);
+
+            let newX = x;
+            let newY = y;
+
+            // Clamp X
+            if (newX > maxOffsetX) newX = maxOffsetX;
+            if (newX < -maxOffsetX) newX = -maxOffsetX;
+
+            // Clamp Y
+            if (newY > maxOffsetY) newY = maxOffsetY;
+            if (newY < -maxOffsetY) newY = -maxOffsetY;
+
+            return { x: newX, y: newY };
+        };
+
         const onTouchStart = (e) => {
             if (e.touches.length === 2) {
                 // Pinch Start
-                e.preventDefault(); // Stop browser zoom
+                e.preventDefault();
                 initialDist = getDistance(e.touches);
                 initialScale = currentScale;
             } else if (e.touches.length === 1 && currentScale > 1) {
-                // Pan Start (Only if zoomed)
+                // Pan Start
                 isPanning = true;
                 startX = e.touches[0].clientX;
                 startY = e.touches[0].clientY;
@@ -5056,11 +5084,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (dist > 0 && initialDist > 0) {
                     const scaleDiff = dist / initialDist;
                     let newScale = initialScale * scaleDiff;
-                    // Limits
-                    if (newScale < 1) newScale = 1; // Don't allow smaller than original
+                    if (newScale < 1) newScale = 1;
                     if (newScale > 5) newScale = 5;
 
                     currentScale = newScale;
+
+                    // Re-clamp translate while zooming to avoid "drift"
+                    // If we zoom out, boundaries shrink.
+                    const clamped = clampTranslate(translateX, translateY, currentScale);
+                    translateX = clamped.x;
+                    translateY = clamped.y;
+
                     updateTransform();
                 }
             } else if (e.touches.length === 1 && isPanning) {
@@ -5069,8 +5103,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 const dx = e.touches[0].clientX - startX;
                 const dy = e.touches[0].clientY - startY;
 
-                translateX = initialTranslateX + dx;
-                translateY = initialTranslateY + dy;
+                let rawX = initialTranslateX + dx;
+                let rawY = initialTranslateY + dy;
+
+                // Clamp immediately for smooth wall effect
+                const clamped = clampTranslate(rawX, rawY, currentScale);
+                translateX = clamped.x;
+                translateY = clamped.y;
+
                 updateTransform();
             }
         };
@@ -5081,45 +5121,57 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             if (e.touches.length === 0) {
                 isPanning = false;
-                // Optional: Snap back if scale is 1?
-            }
-        };
 
-        // Double Tap to Reset/Zoom
-        let lastTap = 0;
-        lightboxImg.addEventListener('touchend', (e) => {
-            const currentTime = new Date().getTime();
-            const tapLength = currentTime - lastTap;
-            if (tapLength < 300 && tapLength > 0 && e.changedTouches.length === 1 && currentScale === 1) {
-                // Double Tap on normal image -> Zoom to 2.5x center?
-                // Or just let user pinch?
-                // Let's implement toggle for convenience
-                e.preventDefault();
-                if (currentScale > 1) {
+                // Elastic snap back if needed?
+                // Since we clamp during move, we just need to handle scale < 1 reset
+                if (currentScale < 1.05) {
                     currentScale = 1;
                     translateX = 0;
                     translateY = 0;
-                } else {
-                    currentScale = 2.5;
-                    translateX = 0;
-                    translateY = 0;
+                    lightboxImg.style.transition = 'transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)';
+                    updateTransform();
+                    setTimeout(() => lightboxImg.style.transition = '', 300);
                 }
-                lightboxImg.style.transition = 'transform 0.3s ease';
+                else {
+                    // Ensure within bounds one last time (e.g. if pinch zoom ended weirdly)
+                    const clamped = clampTranslate(translateX, translateY, currentScale);
+                    if (clamped.x !== translateX || clamped.y !== translateY) {
+                        translateX = clamped.x;
+                        translateY = clamped.y;
+                        lightboxImg.style.transition = 'transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1)';
+                        updateTransform();
+                        setTimeout(() => lightboxImg.style.transition = '', 200);
+                    }
+                }
+            }
+        };
+
+        // Double Tap
+        let lastTap = 0;
+        lightboxImg.addEventListener('touchend', (e) => {
+            if (isPanning) return; // Don't trigger if we were panning?
+            // Actually touchend logic handles isPanning=false before this if propagation is weird.
+            // But we are in same event loop order.
+            // Let's rely on time.
+
+            const currentTime = new Date().getTime();
+            const tapLength = currentTime - lastTap;
+            if (tapLength < 300 && tapLength > 0 && e.changedTouches.length === 1 && currentScale === 1) {
+                e.preventDefault();
+                currentScale = 2.5;
+                translateX = 0;
+                translateY = 0;
+                lightboxImg.style.transition = 'transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)';
                 updateTransform();
-                setTimeout(() => {
-                    lightboxImg.style.transition = '';
-                }, 300);
-            } else if (tapLength < 300 && tapLength > 0 && currentScale > 1 && e.changedTouches.length === 1) {
-                // Double tap to reset
+                setTimeout(() => lightboxImg.style.transition = '', 300);
+            } else if (tapLength < 300 && tapLength > 0 && e.changedTouches.length === 1 && currentScale > 1) {
                 e.preventDefault();
                 currentScale = 1;
                 translateX = 0;
                 translateY = 0;
-                lightboxImg.style.transition = 'transform 0.3s ease';
+                lightboxImg.style.transition = 'transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)';
                 updateTransform();
-                setTimeout(() => {
-                    lightboxImg.style.transition = '';
-                }, 300);
+                setTimeout(() => lightboxImg.style.transition = '', 300);
             }
             lastTap = currentTime;
         });
