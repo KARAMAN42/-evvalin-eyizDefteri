@@ -532,14 +532,18 @@ body.dark-mode .header-actions button:hover {
     flex: 1;
     min-width: 0;
     cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
 }
 
 .item-info h3 {
     font-size: 1.05rem;
-    /* Normal boyuta çekildi */
     font-weight: 600;
     margin-bottom: 0.3rem;
-    /* Normal boşluk */
+    width: 100%;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -549,15 +553,13 @@ body.dark-mode .header-actions button:hover {
 
 .item-details {
     font-size: 0.8rem;
-    /* Biraz küçültüldü */
     color: var(--text-light);
     display: flex;
     flex-wrap: wrap;
     align-items: center;
+    justify-content: center;
     gap: 0.4rem 0.6rem;
-    /* Gap azaltıldı */
     line-height: normal;
-    /* Satır yüksekliği normale çekildi */
     margin-top: 0.2rem;
 }
 
