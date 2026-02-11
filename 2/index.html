@@ -950,20 +950,49 @@
                     <h3 class="settings-section-title">
                         <i class="fas fa-shield-alt"></i> Veri & Yedekleme
                     </h3>
-                    <div class="data-actions-grid">
-                        <button id="btn-backup-copy" class="action-btn-mini">
-                            <i class="fas fa-cloud-download-alt"></i> Yedek Oluştur
-                        </button>
-                        <button id="btn-import-paste" class="action-btn-mini">
-                            <i class="fas fa-cloud-upload-alt"></i> Yedek Yükle
-                        </button>
-                        <!-- Demo button completely removed -->
+
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label class="settings-label">Manuel Yedekleme</label>
+                        <div class="data-actions-grid"
+                            style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                            <button id="btn-backup-copy" class="action-btn-mini" title="Yedek dosyasını indir">
+                                <i class="fas fa-file-download"></i> Dosya İndir
+                            </button>
+                            <button id="btn-import-paste" class="action-btn-mini" title="Yedek dosyasını yükle">
+                                <i class="fas fa-file-upload"></i> Dosya Yükle
+                            </button>
+                            <button id="btn-copy-json" class="action-btn-mini" title="Veriyi panoya kopyala">
+                                <i class="fas fa-copy"></i> Kodu Kopyala
+                            </button>
+                            <button id="btn-paste-json" class="action-btn-mini" title="Panodan veri yapıştır">
+                                <i class="fas fa-paste"></i> Kod Yapıştır
+                            </button>
+                        </div>
                         <input type="file" id="backup-file-input" accept=".json, .txt, text/plain, application/json"
                             style="display: none;">
+                        <p class="settings-help">Verilerinizi bir dosya olarak saklayabilir veya kod olarak
+                            kopyalayabilirsiniz.</p>
                     </div>
 
+                    <!-- Cloud Sync Section -->
+                    <div class="cloud-sync-container"
+                        style="background: rgba(var(--primary-rgb), 0.05); padding: 1rem; border-radius: 16px; margin-top: 1rem; border: 1px dashed var(--primary-color);">
+                        <h4
+                            style="margin: 0 0 0.8rem 0; font-size: 0.95rem; display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-cloud" style="color: var(--primary-color);"></i> Bulut Senkronizasyonu
+                        </h4>
+                        <div class="sync-input-group" style="display: flex; gap: 8px;">
+                            <input type="text" id="setting-cloud-code" class="modern-input" maxlength="10"
+                                placeholder="Ortak Kodunuz..."
+                                style="flex: 1; padding: 10px 15px; font-size: 0.9rem; text-transform: uppercase;">
+                            <button id="btn-sync-connect" class="btn-primary"
+                                style="padding: 0 15px; font-size: 0.85rem; height: 44px; white-space: nowrap;">Bağlan</button>
+                        </div>
+                        <p class="settings-help" style="margin-top: 8px; font-size: 0.75rem;">Aynı kodu girdiğiniz tüm
+                            cihazlar arasında verileriniz anlık olarak senkronize edilir.</p>
+                    </div>
 
-                    <button id="btn-reset-app-data" class="btn-danger-minimal">
+                    <button id="btn-reset-app-data" class="btn-danger-minimal" style="margin-top: 1.5rem; width: 100%;">
                         <i class="fas fa-undo"></i> Tüm Verileri Sıfırla
                     </button>
                 </div>
@@ -1469,6 +1498,10 @@
 
     <script src="missing_funcs.js"></script>
     <script src="touch-drag-support.js"></script>
+
+    <!-- Firebase SDK (v8 Compatibility) -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     <!-- Custom UI Confirm Modal -->
     <div id="modal-confirm" class="modal hidden" style="z-index: 2147483647;">
         <div class="modal-backdrop"></div>

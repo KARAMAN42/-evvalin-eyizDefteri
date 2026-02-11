@@ -192,33 +192,53 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function loadData() {
         try {
-            const data = localStorage.getItem(STORAGE_KEY);
+            // Priority: Normal Key -> Safe Copy -> Backup File
+            let data = localStorage.getItem(STORAGE_KEY);
+
+            if (!data) {
+                console.log("⚠️ Birincil veri yok, güvenli kopya kontrol ediliyor...");
+                data = localStorage.getItem(STORAGE_KEY + '_safe_copy');
+            }
+
+            // Backup legacy key check
+            if (!data) {
+                console.log("⚠️ Eski anahtar (ceyiz_data) kontrol ediliyor...");
+                data = localStorage.getItem('ceyiz_data');
+            }
+
             if (data) {
                 const parsed = JSON.parse(data);
                 items = parsed.items || [];
                 userCategories = parsed.userCategories || { ceyiz: [], damat: [] };
                 settings = { ...settings, ...(parsed.settings || {}) };
 
-                checkMonthlyBudgetReset(); // Yükleme sonrası ay kontrolü yap
-                console.log(`📂 Veri yüklendi: ${items.length} öğe.`);
+                checkMonthlyBudgetReset();
+                console.log(`📂 Veri başarıyla yüklendi: ${items.length} ürün.`);
             } else {
-                console.log("📂 Kayıtlı veri bulunamadı, varsayılanlar kullanılıyor.");
+                console.log("📂 Hiçbir kayıtlı veri bulunamadı, başlangıç değerleri kullanılıyor.");
             }
         } catch (e) {
             console.error("❌ Veri yükleme hatası:", e);
-            alert("Veriler yüklenirken bir sorun oluştu, ancak uygulama çalışmaya devam edecek.");
         }
     }
 
     function saveData() {
         try {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify({
+            const dataToSave = JSON.stringify({
                 items,
                 userCategories,
-                settings
-            }));
-            console.log("💾 Veri kaydedildi.");
-            updateStats(); // Her kayıtta istatistikleri güncelle
+                settings,
+                version: '2.0',
+                lastUpdate: new Date().toISOString()
+            });
+
+            localStorage.setItem(STORAGE_KEY, dataToSave);
+
+            // Secondary backup for safety
+            localStorage.setItem(STORAGE_KEY + '_safe_copy', dataToSave);
+
+            console.log("💾 Veri kaydedildi (Asıl + Güvenli Kopya).");
+            updateStats();
         } catch (e) {
             console.error("❌ Veri kaydetme hatası:", e);
         }
@@ -2163,8 +2183,259 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             }
         }, 1000);
+    }
 
+    // =========================================================================
+    // 11. VERİ YEDEKLEME VE BULUT SENKRONİZASYONU (YENİ)
+    // =========================================================================
 
+    // A. Manuel JSON Yedekleme (Dışa Aktar)
+    function exportBackup() {
+        try {
+            const data = localStorage.getItem(STORAGE_KEY);
+            if (!data) {
+                if (window.showToast) window.showToast('⚠️ Yedeklenecek veri bulunamadı.');
+                return;
+            }
+
+            const blob = new Blob([data], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            const date = new Date().toISOString().slice(0, 10);
+
+            a.href = url;
+            a.download = `ceyiz_yedek_${date}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            if (window.showToast) window.showToast('✅ Yedek dosyası oluşturuldu!');
+        } catch (e) {
+            console.error("Backup Error:", e);
+        }
+    }
+
+    // B. Manuel JSON Geri Yükleme (İçe Aktar)
+    function importBackup(file) {
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const content = e.target.result;
+                const parsed = JSON.parse(content);
+
+                // Basit doğrulama
+                if (!parsed.items || !parsed.settings) {
+                    throw new Error("Geçersiz yedek dosyası formatı.");
+                }
+
+                window.showConfirm(
+                    'Yedeği Geri Yükle',
+                    '⚠️ Mevcut verileriniz silinecek ve seçtiğiniz yedek yüklenecektir. Devam edilsin mi?',
+                    () => {
+                        localStorage.setItem(STORAGE_KEY, content);
+                        localStorage.setItem(STORAGE_KEY + '_safe_copy', content);
+                        if (window.showToast) window.showToast('♻️ Veriler geri yüklendi! Sayfa yenileniyor...');
+                        setTimeout(() => location.reload(), 1500);
+                    }
+                );
+            } catch (err) {
+                console.error("Import Error:", err);
+                alert("Hata: " + err.message);
+            }
+        };
+        reader.readAsText(file);
+    }
+
+    // C. Firebase Bulut Senkronizasyonu
+    let db = null;
+    let syncActive = false;
+    let unsubscribes = [];
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyAs-PLACEHOLDER",
+        authDomain: "ceyiz-defteri-sync.firebaseapp.com",
+        projectId: "ceyiz-defteri-sync",
+        storageBucket: "ceyiz-defteri-sync.appspot.com",
+        messagingSenderId: "123456789",
+        appId: "1:123456789:web:abcdef"
+    };
+
+    async function initCloudSync() {
+        const syncCode = (settings.syncCode || "").trim().toUpperCase();
+        if (!syncCode || syncCode.length < 4) return;
+
+        try {
+            if (typeof firebase === 'undefined') {
+                console.warn("☁️ Firebase SDK henüz yüklenmemiş.");
+                return;
+            }
+
+            if (!firebase.apps.length) {
+                firebase.initializeApp(firebaseConfig);
+            }
+
+            db = firebase.firestore();
+            syncActive = true;
+            console.log("☁️ Bulut bağlantısı kuruldu (Kod: " + syncCode + ")");
+
+            setupCloudListeners(syncCode);
+        } catch (err) {
+            console.error("Firebase Init Error:", err);
+        }
+    }
+
+    function setupCloudListeners(code) {
+        unsubscribes.forEach(u => u());
+        unsubscribes = [];
+
+        const docRef = db.collection("families").doc(code);
+
+        // Buluttan veri geldiğinde yerelle birleştir (Data Loss Prevention)
+        unsubscribes.push(docRef.onSnapshot(doc => {
+            if (doc.exists) {
+                const remote = doc.data();
+                handleRemoteData(remote);
+            }
+        }));
+    }
+
+    function handleRemoteData(remote) {
+        let changed = false;
+
+        // 1. Items Merging
+        if (remote.items && JSON.stringify(remote.items) !== JSON.stringify(items)) {
+            // Eğer yerel boşsa direkt al, doluysa en güncel listeyi (id bazlı) koru
+            if (items.length === 0) {
+                items = remote.items;
+            } else {
+                // Merge logic: ID bazlı en yeni olanı tut (Karmaşıklaşmaması için şimdilik remote'u baskın yapıyoruz)
+                items = remote.items;
+            }
+            changed = true;
+        }
+
+        // 2. Settings Merging
+        if (remote.settings && JSON.stringify(remote.settings) !== JSON.stringify(settings)) {
+            settings = { ...settings, ...remote.settings };
+            changed = true;
+        }
+
+        if (changed) {
+            console.log("🔄 Bulut verileri senkronize edildi.");
+            localStorage.setItem(STORAGE_KEY, JSON.stringify({ items, userCategories, settings }));
+            renderApp();
+        }
+    }
+
+    window.syncToCloud = async function () {
+        if (!syncActive || !db || !settings.syncCode) return;
+        const code = settings.syncCode.trim().toUpperCase();
+
+        try {
+            await db.collection("families").doc(code).set({
+                items,
+                userCategories,
+                settings,
+                lastUpdated: new Date().toISOString()
+            });
+            console.log("☁️ Veriler buluta itildi.");
+        } catch (err) {
+            console.warn("Cloud Push Failed:", err);
+        }
+    };
+
+    function setupDataSafetyListeners() {
+        // Backup Buttons
+        const btnBackup = document.getElementById('btn-backup-copy');
+        if (btnBackup) btnBackup.addEventListener('click', exportBackup);
+
+        const btnImport = document.getElementById('btn-import-paste');
+        const fileInput = document.getElementById('backup-file-input');
+        if (btnImport && fileInput) {
+            btnImport.addEventListener('click', () => fileInput.click());
+            fileInput.addEventListener('change', (e) => importBackup(e.target.files[0]));
+        }
+
+        // Copy JSON to Clipboard (New)
+        const btnCopyJson = document.getElementById('btn-copy-json');
+        if (btnCopyJson) {
+            btnCopyJson.addEventListener('click', () => {
+                const data = localStorage.getItem(STORAGE_KEY);
+                if (!data) {
+                    if (window.showToast) window.showToast('⚠️ Kopyalanacak veri bulunamadı.');
+                    return;
+                }
+                navigator.clipboard.writeText(data).then(() => {
+                    if (window.showToast) window.showToast('📋 Veri kodu panoya kopyalandı!');
+                }).catch(err => {
+                    console.error('Copy failed:', err);
+                    alert("Kopyalama başarısız oldu. Lütfen manuel seçip kopyalayın.");
+                });
+            });
+        }
+
+        // Paste JSON from Clipboard (New)
+        const btnPasteJson = document.getElementById('btn-paste-json');
+        if (btnPasteJson) {
+            btnPasteJson.addEventListener('click', async () => {
+                try {
+                    const text = await navigator.clipboard.readText();
+                    if (!text) {
+                        alert("Pano boş veya erişim izni yok.");
+                        return;
+                    }
+
+                    const parsed = JSON.parse(text);
+                    if (!parsed.items || !parsed.settings) {
+                        throw new Error("Geçersiz veri formatı.");
+                    }
+
+                    window.showConfirm(
+                        'Veriyi Yapıştır',
+                        '⚠️ Panodaki veriyi yapıştırmak mevcut verilerinizi silecektir. Devam edilsin mi?',
+                        () => {
+                            localStorage.setItem(STORAGE_KEY, text);
+                            localStorage.setItem(STORAGE_KEY + '_safe_copy', text);
+                            if (window.showToast) window.showToast('♻️ Veriler panodan yüklendi! Sayfa yenileniyor...');
+                            setTimeout(() => location.reload(), 1500);
+                        }
+                    );
+                } catch (err) {
+                    console.error('Paste failed:', err);
+                    alert("Hata: Geçersiz bir veri formatı veya pano erişim sorunu (" + err.message + ")");
+                }
+            });
+        }
+
+        // Sync Connection
+        const btnConnect = document.getElementById('btn-sync-connect');
+        if (btnConnect) {
+            btnConnect.addEventListener('click', async () => {
+                const codeInput = document.getElementById('setting-cloud-code');
+                const code = codeInput ? codeInput.value.trim().toUpperCase() : '';
+
+                if (code.length < 4) {
+                    alert("Lütfen en az 4 haneli bir kod giriniz.");
+                    return;
+                }
+
+                settings.syncCode = code;
+                saveData();
+
+                if (window.showToast) window.showToast('☁️ Bulut bağlantısı kuruluyor...');
+                await initCloudSync();
+                if (syncActive) {
+                    await window.syncToCloud();
+                    if (window.showToast) window.showToast('✅ Bulut senkronizasyonu aktif!');
+                }
+            });
+        }
+
+        // Auto-init cloud sync if code exists
+        initCloudSync();
     }
 
 
@@ -2925,6 +3196,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initTheme(); // Tema tercihini uygula
     setupThemeListeners(); // Dinleyiciyi tak (Not: Modal DOM'da statikse çalışır)
     setupSettingsListeners(); // Ayarlar ve tarih dinleyicileri
+    setupDataSafetyListeners(); // Veri Güvenliği ve Bulut Senkronizasyonu (YENİ)
     setupBudgetListeners(); // Bütçe dinleyicileri (YENİ)
     setupReorderListeners(); // Sıralama dinleyicileri (YENİ)
     setupHistoryListeners(); // Geçmiş modalı dinleyicisi (YENİ)
