@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hızlı Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+
+        .box {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 30px;
+            border-radius: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        button {
+            background: white;
+            color: #667eea;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 10px 5px;
+            transition: transform 0.2s;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+        }
+
+        .status {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+        }
+
+        .ok {
+            color: #4ade80;
+        }
+
+        .error {
+            color: #f87171;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="box">
+        <h1>🚀 Son Durum Testi</h1>
+        <p>Dosyaların yüklenip yüklenmediğini kontrol ediyorum...</p>
+
+        <div class="status" id="status">
+            <div>Test başlıyor...</div>
+        </div>
+
+        <button onclick="location.reload()">Yenile</button>
+        <button onclick="location.href='index.html'">Ana Uygulamayı Aç</button>
+    </div>
+
+    <script>
+        const status = document.getElementById('status');
+
+        function log(msg, isOk = true) {
+            const div = document.createElement('div');
+            div.className = isOk ? 'ok' : 'error';
+            div.textContent = (isOk ? '✓ ' : '✗ ') + msg;
+            status.appendChild(div);
+        }
+
+        async function test() {
+            status.innerHTML = '<div>Test ediliyor...</div>';
+
+            // Test app.js
+            try {
+                const r = await fetch('app.js');
+                if (r.ok) {
+                    log('app.js mevcut');
+                } else {
+                    log('app.js yüklenemedi', false);
+                }
+            } catch (e) {
+                log('app.js hata: ' + e.message, false);
+            }
+
+            // Test missing_funcs.js
+            try {
+                const r = await fetch('missing_funcs.js');
+                if (r.ok) {
+                    log('missing_funcs.js mevcut');
+                } else {
+                    log('missing_funcs.js yüklenemedi', false);
+                }
+            } catch (e) {
+                log('missing_funcs.js hata: ' + e.message, false);
+            }
+
+            // Test image-viewer.js
+            try {
+                const r = await fetch('image-viewer.js');
+                if (r.ok) {
+                    log('image-viewer.js mevcut');
+                } else {
+                    log('image-viewer.js yüklenemedi', false);
+                }
+            } catch (e) {
+                log('image-viewer.js hata: ' + e.message, false);
+            }
+
+            // Test index.html
+            try {
+                const r = await fetch('index.html');
+                const text = await r.text();
+
+                if (text.includes('missing_funcs.js')) {
+                    log('index.html missing_funcs.js içeriyor');
+                } else {
+                    log('index.html EKSIK: missing_funcs.js yok!', false);
+                }
+
+                if (text.includes('display: none')) {
+                    log('Splash ekran gizli (display: none var)');
+                } else {
+                    log('UYARI: Splash ekran gizli değil!', false);
+                }
+            } catch (e) {
+                log('index.html test hatası: ' + e.message, false);
+            }
+
+            log('Test tamamlandı!');
+        }
+
+        window.addEventListener('load', () => {
+            setTimeout(test, 100);
+        });
+    </script>
+</body>
+
+</html>

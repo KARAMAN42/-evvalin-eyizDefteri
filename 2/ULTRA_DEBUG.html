@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ULTRA DEBUG - Dark Mode</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #fdfbfb;
+            --text: #554e4e;
+            --card: #ffffff;
+        }
+
+        body.dark-mode {
+            --bg: #1a1a1a;
+            --text: #e0e0e0;
+            --card: #2d2d2d;
+        }
+
+        body {
+            font-family: monospace;
+            background: var(--bg);
+            color: var(--text);
+            padding: 20px;
+            transition: all 0.3s;
+        }
+
+        .card {
+            background: var(--card);
+            padding: 20px;
+            margin: 10px 0;
+            border-radius: 8px;
+        }
+
+        button {
+            padding: 15px 30px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px 0;
+            display: block;
+        }
+
+        #log {
+            background: #000;
+            color: #0f0;
+            padding: 10px;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+            border: 2px solid #0f0;
+        }
+
+        .error {
+            color: #f00;
+            font-weight: bold;
+        }
+
+        .success {
+            color: #0f0;
+            font-weight: bold;
+        }
+
+        .info {
+            color: #ff0;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🔬 ULTRA DEBUG MODE</h1>
+
+    <div class="card">
+        <h2>Adım 1: CSS Test</h2>
+        <p>Bu kartın arka planı değişmeli</p>
+        <p>Computed bg-color: <span id="computed-bg">-</span></p>
+    </div>
+
+    <button id="testBtn1" onclick="test1()">TEST 1: Manuel Class Toggle</button>
+    <button id="testBtn2" onclick="test2()">TEST 2: Simülasyon (App.js mantığı)</button>
+    <button id="testBtn3" onclick="test3()">TEST 3: LocalStorage kaydet/yükle</button>
+
+    <div class="card">
+        <h3>Console Log:</h3>
+        <div id="log"></div>
+    </div>
+
+    <script>
+        let logs = [];
+
+        function log(msg, type = 'info') {
+            const time = new Date().toLocaleTimeString();
+            const className = type === 'error' ? 'error' : (type === 'success' ? 'success' : 'info');
+            const line = `<div class="${className}">[${time}] ${msg}</div>`;
+            logs.push(line);
+            document.getElementById('log').innerHTML = logs.join('');
+            console.log(`[${time}] ${msg}`);
+        }
+
+        function updateDisplay() {
+            const bg = getComputedStyle(document.body).backgroundColor;
+            document.getElementById('computed-bg').textContent = bg;
+            log(`Computed BG: ${bg}`, 'info');
+        }
+
+        function test1() {
+            log('=== TEST 1 BAŞLADI ===', 'info');
+            const hasDark = document.body.classList.contains('dark-mode');
+            log(`Şu anki durum: ${hasDark ? 'DARK' : 'LIGHT'}`, 'info');
+
+            if (hasDark) {
+                document.body.classList.remove('dark-mode');
+                log('REMOVE dark-mode', 'success');
+            } else {
+                document.body.classList.add('dark-mode');
+                log('ADD dark-mode', 'success');
+            }
+
+            const nowDark = document.body.classList.contains('dark-mode');
+            log(`Yeni durum: ${nowDark ? 'DARK' : 'LIGHT'}`, nowDark !== hasDark ? 'success' : 'error');
+            log(`Body className: "${document.body.className}"`, 'info');
+
+            updateDisplay();
+        }
+
+        function test2() {
+            log('=== TEST 2 BAŞLADI (App.js Logic) ===', 'info');
+
+            // Simulated settings object
+            let settings = {
+                theme: {
+                    mode: 'light'
+                }
+            };
+
+            // Load from localStorage if exists
+            const saved = localStorage.getItem('test_dark_mode');
+            if (saved) {
+                settings.theme.mode = saved;
+                log(`LocalStorage okudu: ${saved}`, 'info');
+            }
+
+            const isDark = document.body.classList.contains('dark-mode');
+            log(`Mevcut body.dark-mode: ${isDark}`, 'info');
+
+            // Toggle
+            if (isDark) {
+                document.body.classList.remove('dark-mode');
+                settings.theme.mode = 'light';
+                log('→ LIGHT moda geçildi', 'success');
+            } else {
+                document.body.classList.add('dark-mode');
+                settings.theme.mode = 'dark';
+                log('→ DARK moda geçildi', 'success');
+            }
+
+            // Save
+            localStorage.setItem('test_dark_mode', settings.theme.mode);
+            log(`LocalStorage kaydedildi: ${settings.theme.mode}`, 'success');
+
+            updateDisplay();
+        }
+
+        function test3() {
+            log('=== TEST 3 BAŞLADI (Persistence) ===', 'info');
+
+            const saved = localStorage.getItem('test_dark_mode');
+            log(`LocalStorage'dan okunan: ${saved || '(boş)'}`, 'info');
+
+            if (saved === 'dark') {
+                document.body.classList.add('dark-mode');
+                log('Dark mode yüklendi ✓', 'success');
+            } else {
+                document.body.classList.remove('dark-mode');
+                log('Light mode yüklendi ✓', 'success');
+            }
+
+            updateDisplay();
+        }
+
+        // Self-test on load
+        window.addEventListener('DOMContentLoaded', () => {
+            log('Sayfa yüklendi', 'success');
+            log('CSS değişkenleri kontrol ediliyor...', 'info');
+
+            const root = getComputedStyle(document.documentElement);
+            const bgVar = root.getPropertyValue('--bg').trim();
+            log(`CSS Variable --bg: ${bgVar}`, bgVar ? 'success' : 'error');
+
+            updateDisplay();
+
+            // Auto-load saved preference
+            const saved = localStorage.getItem('test_dark_mode');
+            if (saved === 'dark') {
+                log('LocalStorage: Dark mode tercih edilmiş, yükleniyor...', 'info');
+                document.body.classList.add('dark-mode');
+                updateDisplay();
+            }
+        });
+    </script>
+</body>
+
+</html>

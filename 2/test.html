@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acil Test - Şevval'in Çeyiz Defteri</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        .test-box {
+            background: white;
+            padding: 20px;
+            margin: 10px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .success {
+            color: #27ae60;
+            font-weight: bold;
+        }
+
+        .error {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+
+        button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+
+        button:hover {
+            background: #2980b9;
+        }
+
+        #results {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="test-box">
+        <h1>🔧 Acil Sistem Testi</h1>
+        <p>Bu sayfa uygulamanızın düzgün çalışıp çalışmadığını kontrol eder.</p>
+
+        <button onclick="testFiles()">Dosyaları Test Et</button>
+        <button onclick="window.location.href='index.html'">Ana Uygulamayı Aç</button>
+
+        <div id="results"></div>
+    </div>
+
+    <script>
+        async function testFiles() {
+            const results = document.getElementById('results');
+            results.innerHTML = '<div class="test-box"><h3>Test Ediliyor...</h3></div>';
+
+            const tests = [];
+
+            // Test 1: app.js yüklenebiliyor mu?
+            try {
+                const response = await fetch('app.js');
+                const text = await response.text();
+                tests.push({
+                    name: 'app.js dosyası',
+                    success: text.includes('DOMContentLoaded'),
+                    details: `Boyut: ${(text.length / 1024).toFixed(2)} KB`
+                });
+            } catch (e) {
+                tests.push({
+                    name: 'app.js dosyası',
+                    success: false,
+                    details: e.message
+                });
+            }
+
+            // Test 2: index.html doğru mu?
+            try {
+                const response = await fetch('index.html');
+                const text = await response.text();
+                tests.push({
+                    name: 'index.html dosyası',
+                    success: text.includes('app-container'),
+                    details: text.includes('display: none') ? 'Splash ekran gizli ✓' : 'Splash ekran görünür'
+                });
+            } catch (e) {
+                tests.push({
+                    name: 'index.html dosyası',
+                    success: false,
+                    details: e.message
+                });
+            }
+
+            // Test 3: CSS dosyaları
+            try {
+                const response = await fetch('style.css');
+                tests.push({
+                    name: 'style.css dosyası',
+                    success: response.ok,
+                    details: response.ok ? 'Yüklendi ✓' : 'Bulunamadı'
+                });
+            } catch (e) {
+                tests.push({
+                    name: 'style.css dosyası',
+                    success: false,
+                    details: e.message
+                });
+            }
+
+            // Sonuçları göster
+            let html = '<div class="test-box"><h3>📊 Test Sonuçları</h3><ul style="list-style: none; padding: 0;">';
+            tests.forEach(test => {
+                html += `<li style="margin: 10px 0;">
+                    <span class="${test.success ? 'success' : 'error'}">
+                        ${test.success ? '✓' : '✗'} ${test.name}
+                    </span>
+                    <br><small style="color: #666;">${test.details}</small>
+                </li>`;
+            });
+
+            const allSuccess = tests.every(t => t.success);
+            if (allSuccess) {
+                html += '</ul><p class="success" style="font-size: 18px; margin-top: 20px;">🎉 Tüm testler başarılı! Ana uygulamayı açabilirsiniz.</p>';
+            } else {
+                html += '</ul><p class="error" style="font-size: 18px; margin-top: 20px;">⚠️ Bazı sorunlar var. Detayları kontrol edin.</p>';
+            }
+            html += '</div>';
+
+            results.innerHTML = html;
+        }
+
+        // Sayfa yüklendiğinde otomatik test yap
+        window.addEventListener('load', () => {
+            setTimeout(testFiles, 500);
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,142 @@
+/* Refined Animated Infinity & Heart for Splash Screen */
+
+.puffy-heart-svg {
+    width: 100px;
+    height: 100px;
+    animation: puffyHeartbeat 3s ease-in-out infinite;
+    transform-origin: center;
+    filter: drop-shadow(0 4px 15px rgba(200, 143, 149, 0.4));
+}
+
+@keyframes puffyHeartbeat {
+    0% {
+        transform: scale(1);
+        filter: drop-shadow(0 4px 15px rgba(200, 143, 149, 0.4));
+    }
+
+    15% {
+        transform: scale(1.08);
+        filter: drop-shadow(0 8px 25px rgba(200, 143, 149, 0.6));
+    }
+
+    30% {
+        transform: scale(1);
+        filter: drop-shadow(0 4px 15px rgba(200, 143, 149, 0.4));
+    }
+
+    45% {
+        transform: scale(1.12);
+        filter: drop-shadow(0 10px 30px rgba(200, 143, 149, 0.7));
+    }
+
+    100% {
+        transform: scale(1);
+        filter: drop-shadow(0 4px 15px rgba(200, 143, 149, 0.4));
+    }
+}
+
+.splash-names {
+    display: flex;
+    flex-direction: column;
+    /* Stacked vertically */
+    align-items: center;
+    justify-content: center;
+    gap: 0.8rem;
+    /* Tighter gap for vertical look */
+    margin: 2rem 0;
+}
+
+.splash-names .name-line {
+    font-family: 'Playfair Display', serif;
+    font-size: 3.2rem;
+    /* Larger for stacked look */
+    font-weight: 600;
+    color: #2E2A2B;
+    letter-spacing: 3px;
+    line-height: 1;
+}
+
+body.dark-mode .splash-names .name-line {
+    color: #f0f0f0;
+}
+
+/* Infinity Symbol - Elegant SVG structure */
+.splash-infinity {
+    width: 80px;
+    /* Slightly wider */
+    height: 40px;
+    margin: 0.5rem 0;
+    /* Vertical margin */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.splash-infinity .infinity-svg {
+    width: 100%;
+    height: 100%;
+}
+
+.splash-infinity .infinity-path {
+    stroke-width: 5;
+    /* Slightly thicker for splash screen prominence */
+}
+
+/* Subtle breathing animation - elegant and romantic */
+@keyframes infinityBreath {
+
+    0%,
+    100% {
+        transform: scale(1);
+        opacity: 0.9;
+    }
+
+    50% {
+        transform: scale(1.15);
+        opacity: 1;
+        filter: drop-shadow(0 0 6px rgba(200, 143, 149, 0.5));
+    }
+}
+
+/* Gentle glow pulse */
+@keyframes infinityGentleGlow {
+
+    0%,
+    100% {
+        filter: drop-shadow(0 0 3px rgba(200, 143, 149, 0.3));
+    }
+
+    50% {
+        filter: drop-shadow(0 0 8px rgba(200, 143, 149, 0.6));
+    }
+}
+
+/* The drawing and pulsing animations are inherited from infinity-animation.css. 
+   We just need to ensure the container here doesn't conflict. */
+.splash-infinity {
+    animation: infinity-pulse 4s ease-in-out infinite;
+    /* Match draw cycle */
+}
+
+/* Optional: Very subtle rotation on hover */
+.splash-names:hover .infinity-symbol {
+    transition: transform 0.5s ease;
+    transform: scale(1.2);
+}
+
+/* Responsive adjustment for smaller screens */
+@media (max-width: 380px) {
+    .splash-names {
+        gap: 0.5rem;
+    }
+
+    .splash-names .name-line {
+        font-size: 2.5rem;
+    }
+
+    .splash-infinity {
+        width: 60px;
+        height: 30px;
+        margin: 0.3rem 0;
+    }
+}

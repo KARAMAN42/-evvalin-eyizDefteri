@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Splash Test - Çeyiz Defteri</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+        }
+
+        .status {
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        iframe {
+            width: 100%;
+            height: 600px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+
+        .btn:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🔍 Çeyiz Defteri - Splash Ekran Test</h1>
+
+    <div class="status info">
+        <strong>Test Başlatılıyor...</strong><br>
+        Lütfen bekleyin, splash ekranı yükleniyor.
+    </div>
+
+    <div id="test-results"></div>
+
+    <button class="btn" onclick="reloadApp()">🔄 Uygulamayı Yeniden Yükle</button>
+    <button class="btn" onclick="location.href='index.html'" style="background: #28a745;">🚀 Ana Uygulamayı Aç</button>
+
+    <iframe id="app-frame" src="index.html"></iframe>
+
+    <script>
+        const resultsDiv = document.getElementById('test-results');
+        const frame = document.getElementById('app-frame');
+
+        function reloadApp() {
+            frame.src = 'index.html?t=' + Date.now();
+        }
+
+        // Wait for iframe to load
+        frame.onload = function () {
+            setTimeout(checkSplash, 500);
+        };
+
+        function checkSplash() {
+            resultsDiv.innerHTML = '';
+
+            try {
+                const iframeDoc = frame.contentDocument || frame.contentWindow.document;
+                const splash = iframeDoc.getElementById('splash-screen');
+
+                if (!splash) {
+                    addResult('error', '❌ HATA: Splash ekran elementi bulunamadı!');
+                    return;
+                }
+
+                const styles = window.getComputedStyle(splash);
+                const display = styles.display;
+                const visibility = styles.visibility;
+                const opacity = styles.opacity;
+                const zIndex = styles.zIndex;
+
+                addResult('info', `Display: ${display}`);
+                addResult('info', `Visibility: ${visibility}`);
+                addResult('info', `Opacity: ${opacity}`);
+                addResult('info', `Z-Index: ${zIndex}`);
+                addResult('info', `Class: ${splash.className}`);
+
+                if (display === 'none') {
+                    addResult('error', '❌ SORUN: Splash ekran "display: none" ile gizli!');
+                } else if (display === 'flex' || display === 'block') {
+                    addResult('success', '✅ BAŞARILI: Splash ekran görünür durumda!');
+
+                    // Check if it has correct class
+                    if (splash.classList.contains('ethereal-splash')) {
+                        addResult('success', '✅ CSS Class doğru (ethereal-splash)');
+                    } else {
+                        addResult('error', '⚠️ UYARI: ethereal-splash class\'ı eksik!');
+                    }
+                } else {
+                    addResult('error', `⚠️ Beklenmeyen display değeri: ${display}`);
+                }
+
+                // Check if app.js is loaded
+                const scripts = iframeDoc.querySelectorAll('script[src]');
+                let appJsLoaded = false;
+                scripts.forEach(s => {
+                    if (s.src.includes('app.js')) {
+                        appJsLoaded = true;
+                    }
+                });
+
+                if (appJsLoaded) {
+                    addResult('success', '✅ app.js yüklendi');
+                } else {
+                    addResult('error', '❌ app.js yüklenmedi');
+                }
+
+            } catch (error) {
+                addResult('error', '❌ Test hatası: ' + error.message);
+            }
+        }
+
+        function addResult(type, message) {
+            const div = document.createElement('div');
+            div.className = 'status ' + type;
+            div.textContent = message;
+            resultsDiv.appendChild(div);
+        }
+
+        // Initial check after page load
+        setTimeout(checkSplash, 1000);
+    </script>
+</body>
+
+</html>

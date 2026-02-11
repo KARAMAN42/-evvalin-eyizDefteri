@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JavaScript Konsol Testi</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            padding: 20px;
+            background: #1e1e1e;
+            color: #d4d4d4;
+        }
+
+        .console {
+            background: #252526;
+            border: 1px solid #3e3e42;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 10px 0;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .error {
+            color: #f48771;
+        }
+
+        .success {
+            color: #4ec9b0;
+        }
+
+        .warning {
+            color: #dcdcaa;
+        }
+
+        .info {
+            color: #9cdcfe;
+        }
+
+        button {
+            background: #0e639c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #1177bb;
+        }
+
+        pre {
+            margin: 5px 0;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🔍 JavaScript Hata Tespit Sistemi</h1>
+
+    <button onclick="testAppJS()">app.js'i Test Et</button>
+    <button onclick="clearConsole()">Konsolu Temizle</button>
+    <button onclick="location.href='index.html'">Ana Uygulamayı Aç</button>
+
+    <div id="console" class="console">
+        <pre class="info">Konsol hazır. "app.js'i Test Et" butonuna tıklayın...</pre>
+    </div>
+
+    <script>
+        const consoleDiv = document.getElementById('console');
+
+        function log(message, type = 'info') {
+            const pre = document.createElement('pre');
+            pre.className = type;
+            pre.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            consoleDiv.appendChild(pre);
+            consoleDiv.scrollTop = consoleDiv.scrollHeight;
+        }
+
+        function clearConsole() {
+            consoleDiv.innerHTML = '<pre class="info">Konsol temizlendi.</pre>';
+        }
+
+        // Gerçek console'u yakala
+        const originalError = console.error;
+        const originalLog = console.log;
+
+        console.error = function (...args) {
+            log('ERROR: ' + args.join(' '), 'error');
+            originalError.apply(console, args);
+        };
+
+        console.log = function (...args) {
+            log('LOG: ' + args.join(' '), 'info');
+            originalLog.apply(console, args);
+        };
+
+        window.addEventListener('error', function (e) {
+            log(`GLOBAL ERROR: ${e.message} (${e.filename}:${e.lineno})`, 'error');
+        });
+
+        async function testAppJS() {
+            clearConsole();
+            log('Test başlıyor...', 'info');
+
+            try {
+                // 1. Dosya var mı?
+                log('1. app.js dosyası kontrol ediliyor...', 'info');
+                const response = await fetch('app.js');
+                if (!response.ok) {
+                    log(`HATA: app.js yüklenemedi (${response.status})`, 'error');
+                    return;
+                }
+
+                const code = await response.text();
+                log(`✓ app.js yüklendi (${(code.length / 1024).toFixed(2)} KB)`, 'success');
+
+                // 2. Syntax kontrolü
+                log('2. Syntax kontrol ediliyor...', 'info');
+                try {
+                    new Function(code);
+                    log('✓ Syntax hatası YOK', 'success');
+                } catch (syntaxError) {
+                    log(`SYNTAX HATASI: ${syntaxError.message}`, 'error');
+                    return;
+                }
+
+                // 3. Kritik kod parçaları var mı?
+                log('3. Kritik fonksiyonlar kontrol ediliyor...', 'info');
+                const checks = [
+                    { name: 'DOMContentLoaded', pattern: /DOMContentLoaded/ },
+                    { name: 'renderApp', pattern: /function renderApp/ },
+                    { name: 'loadData', pattern: /function loadData/ },
+                    { name: 'saveData', pattern: /function saveData/ },
+                    { name: 'switchTab', pattern: /window\.switchTab/ }
+                ];
+
+                checks.forEach(check => {
+                    if (check.pattern.test(code)) {
+                        log(`  ✓ ${check.name} bulundu`, 'success');
+                    } else {
+                        log(`  ✗ ${check.name} BULUNAMADI!`, 'error');
+                    }
+                });
+
+                // 4. Şimdi gerçekten yükle
+                log('4. app.js yükleniyor...', 'info');
+                const script = document.createElement('script');
+                script.src = 'app.js';
+                script.onload = () => {
+                    log('✓ app.js başarıyla yüklendi!', 'success');
+
+                    // 5. Window objelerini kontrol et
+                    setTimeout(() => {
+                        log('5. Global değişkenler kontrol ediliyor...', 'info');
+                        if (window.appData) {
+                            log('  ✓ window.appData var', 'success');
+                        } else {
+                            log('  ✗ window.appData YOK', 'error');
+                        }
+
+                        if (window.switchTab) {
+                            log('  ✓ window.switchTab var', 'success');
+                        } else {
+                            log('  ✗ window.switchTab YOK', 'error');
+                        }
+
+                        log('TEST TAMAMLANDI!', 'success');
+                        log('Eğer hatalar varsa yukarıdaki kırmızı satırlara bakın.', 'warning');
+                    }, 1000);
+                };
+                script.onerror = () => {
+                    log('HATA: app.js yüklenirken hata oluştu!', 'error');
+                };
+                document.head.appendChild(script);
+
+            } catch (error) {
+                log(`TEST HATASI: ${error.message}`, 'error');
+            }
+        }
+    </script>
+</body>
+
+</html>

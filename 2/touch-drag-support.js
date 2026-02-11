@@ -127,37 +127,47 @@ function addTouchDragSupport() {
                 const targetCard = target.closest('.item-card');
 
                 if (targetCard && targetCard !== draggedItem && targetCard.parentElement === itemContainer) {
-                    // Start FLIP
+                    // Midpoint check to prevent oscillation
+                    const targetRect = targetCard.getBoundingClientRect();
+                    const midpoint = targetRect.top + targetRect.height / 2;
+                    const isMovingDown = clientY > midpoint;
+
+                    // Only swap if we've crossed the midpoint
                     const cards = Array.from(itemContainer.children).filter(el => el.classList.contains('item-card'));
-                    const rects = new Map(cards.map(c => [c, c.getBoundingClientRect()]));
+                    const draggedIdx = cards.indexOf(draggedItem);
+                    const targetIdx = cards.indexOf(targetCard);
 
-                    // Swap in DOM
-                    const isAfter = targetCard.compareDocumentPosition(draggedItem) & Node.DOCUMENT_POSITION_PRECEDING;
-                    if (isAfter) {
-                        itemContainer.insertBefore(draggedItem, targetCard.nextSibling);
-                    } else {
-                        itemContainer.insertBefore(draggedItem, targetCard);
-                    }
+                    if ((isMovingDown && draggedIdx < targetIdx) || (!isMovingDown && draggedIdx > targetIdx)) {
+                        // Start FLIP
+                        const rects = new Map(cards.map(c => [c, c.getBoundingClientRect()]));
 
-                    // Complete FLIP: Animate the others
-                    const newCards = Array.from(itemContainer.children).filter(el => el.classList.contains('item-card'));
-                    newCards.forEach(c => {
-                        if (c === draggedItem) return; // Don't animate the invisible one
-
-                        const oldRect = rects.get(c);
-                        const newRect = c.getBoundingClientRect();
-                        const dy = oldRect.top - newRect.top;
-
-                        if (dy !== 0) {
-                            c.style.transition = 'none';
-                            c.style.transform = `translateY(${dy}px)`;
-                            c.offsetHeight; // trigger reflow
-                            c.style.transition = 'transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)';
-                            c.style.transform = 'translateY(0)';
+                        // Swap in DOM
+                        if (isMovingDown) {
+                            itemContainer.insertBefore(draggedItem, targetCard.nextSibling);
+                        } else {
+                            itemContainer.insertBefore(draggedItem, targetCard);
                         }
-                    });
 
-                    if (navigator.vibrate) navigator.vibrate(5);
+                        // Complete FLIP: Animate the others
+                        const newCards = Array.from(itemContainer.children).filter(el => el.classList.contains('item-card'));
+                        newCards.forEach(c => {
+                            if (c === draggedItem) return;
+
+                            const oldRect = rects.get(c);
+                            const newRect = c.getBoundingClientRect();
+                            const dy = oldRect.top - newRect.top;
+
+                            if (dy !== 0) {
+                                c.style.transition = 'none';
+                                c.style.transform = `translateY(${dy}px)`;
+                                c.offsetHeight; // trigger reflow
+                                c.style.transition = 'transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)';
+                                c.style.transform = 'translateY(0)';
+                            }
+                        });
+
+                        if (navigator.vibrate) navigator.vibrate(5);
+                    }
                 }
             }
 

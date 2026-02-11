@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ACIL: Console Hataları</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #000;
+            color: #0f0;
+            font-size: 18px;
+            line-height: 1.6;
+        }
+
+        h1 {
+            color: #f00;
+            font-size: 32px;
+        }
+
+        .step {
+            background: #111;
+            padding: 15px;
+            margin: 15px 0;
+            border-left: 4px solid #0f0;
+        }
+
+        .error {
+            color: #f00;
+            font-weight: bold;
+        }
+
+        button {
+            background: #0f0;
+            color: #000;
+            border: none;
+            padding: 15px 30px;
+            font-size: 20px;
+            cursor: pointer;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background: #0d0;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🚨 ACIL DEBUG TALİMATLARI</h1>
+
+    <div class="step">
+        <h2>ADIM 1: Ana uygulamayı açın</h2>
+        <button onclick="window.open('index.html')">index.html'i Aç</button>
+    </div>
+
+    <div class="step">
+        <h2>ADIM 2: F12'ye basın</h2>
+        <p>Developer Tools açılacak</p>
+    </div>
+
+    <div class="step">
+        <h2>ADIM 3: "Console" sekmesine tıklayın</h2>
+        <p>Üstteki sekmelerden "Console" yazan yeri bulun</p>
+    </div>
+
+    <div class="step">
+        <h2>ADIM 4: Kırmızı hataları arayın</h2>
+        <p class="error">Kırmızı yazılar varsa EKRAN GÖRÜNTÜsü alın!</p>
+        <p>Özellikle bakmanız gerekenler:</p>
+        <ul>
+            <li>"Uncaught" ile başlayanlar</li>
+            <li>"SyntaxError" yazanlar</li>
+            <li>"ReferenceError" yazanlar</li>
+            <li>"TypeError" yazanlar</li>
+        </ul>
+    </div>
+
+    <div class="step">
+        <h2>ADIM 5: Console'a şunu yazın:</h2>
+        <p style="background: #222; padding: 10px; font-family: monospace;">
+            typeof setupEventListeners
+        </p>
+        <p>Enter tuşuna basın ve sonucu alın</p>
+        <p>Sonuç ne diyor? "function" mı yoksa "undefined" mı?</p>
+    </div>
+
+    <div class="step">
+        <h2>ADIM 6: Console'a şunu yazın:</h2>
+        <p style="background: #222; padding: 10px; font-family: monospace;">
+            typeof switchTab
+        </p>
+        <p>Enter tuşuna basın ve sonucu alın</p>
+    </div>
+
+    <div class="step">
+        <h2>ADIM 7: Tüm sonuçları bana bildirin</h2>
+        <p>Ekran görüntüleri + konsol mesajları</p>
+    </div>
+
+    <script>
+        console.log("🔍 ACIL DEBUG SAYFASI AÇILDI");
+        console.log("Lütfen yukarıdaki talimatları sırayla takip edin");
+    </script>
+</body>
+
+</html>

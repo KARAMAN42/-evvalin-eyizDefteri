@@ -1,486 +1,396 @@
-﻿/* Advanced Splash Design - "Fairy Tale Pink" */
+﻿/* Wedding Invitation / Editorial Premium Design - Refined Alignment */
 
-/* 1. Background with Sparkles */
-#splash-screen {
-    /* dreamy floral pattern */
-    background: url('bg-pattern.png') repeat;
-    background-size: 300px auto;
-    background-attachment: fixed;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+/* 1. Base Container - Full Screen & Background */
+#splash-screen.ethereal-splash {
     position: fixed;
     top: 0;
     left: 0;
-    right: 0;
-    bottom: 0;
     width: 100vw;
     height: 100vh;
     height: 100dvh;
     z-index: 99999;
+
+    /* Heritage background from body or style.css themes */
+    background: transparent;
+
+    /* Layout - PERFECT CENTERING */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    /* Horizontally Center Everything */
+    justify-content: center;
+    /* Vertically Center Content */
+
+    padding: env(safe-area-inset-top) 1.5rem env(safe-area-inset-bottom) 1.5rem;
     overflow: hidden;
+    text-align: center;
 }
 
-body.dark-mode #splash-screen {
-    background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('bg-pattern-dark.png') repeat !important;
-    background-size: 300px auto !important;
-    background-attachment: fixed !important;
+/* Reduced Opacity Overlay (More Transparent) */
+#splash-screen.ethereal-splash::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    /* Reduced from 0.05 to show background theme clearly without blur */
+    background: rgba(255, 255, 255, 0.05);
+    z-index: -1;
 }
 
+/* Dark Mode Overlay Override */
+body.dark-mode #splash-screen.ethereal-splash::before {
+    background: rgba(20, 20, 20, 0.6);
+}
+
+
+/* 2. Theme Toggle - Visible Top Right Button */
 .splash-theme-btn {
-    position: fixed;
-    top: 20px;
+    position: absolute;
+    top: max(20px, env(safe-area-inset-top));
     right: 20px;
     width: 44px;
     height: 44px;
-    background: rgba(255, 255, 255, 0.4);
-    border: 1px solid rgba(255, 255, 255, 0.6);
+    background: rgba(255, 255, 255, 0.85);
+    border: 1px solid rgba(0, 0, 0, 0.1);
     border-radius: 50%;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    color: #4A4A4A;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #4a2c2c;
-    font-size: 1.2rem;
+    z-index: 100;
     cursor: pointer;
-    z-index: 100000;
-    transition: transform 0.2s, background 0.2s;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
+.splash-theme-btn:hover {
+    background: rgba(255, 255, 255, 1);
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.splash-theme-btn i {
+    font-size: 18px;
+}
+
+/* Dark mode button styles */
 body.dark-mode .splash-theme-btn {
-    background: rgba(45, 45, 45, 0.6);
-    border-color: rgba(255, 255, 255, 0.1);
-    color: var(--primary-color);
+    background: rgba(50, 50, 50, 0.85);
+    border-color: rgba(255, 255, 255, 0.2);
+    color: #f0f0f0;
 }
 
-.splash-theme-btn:active {
-    transform: scale(0.9);
+body.dark-mode .splash-theme-btn:hover {
+    background: rgba(60, 60, 60, 1);
 }
 
-.splash-content {
-    text-align: center;
-    width: 90%;
-    max-width: 400px;
+
+/* 3. Main Content Wrapper - Centered & Aligned */
+.splash-body-wrapper {
+    width: 100%;
+    max-width: 380px;
+    /* Constrain width to keep cards aligned */
+    flex: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
-}
-
-/* Sparkle Overlay (Simulated with repeating gradients) */
-#splash-screen::before {
-    content: "";
-    position: absolute;
-    width: 200%;
-    height: 200%;
-    background-image:
-        radial-gradient(white 1px, transparent 1px),
-        radial-gradient(white 2px, transparent 2px);
-    background-size: 50px 50px, 100px 100px;
-    background-position: 0 0, 25px 25px;
-    opacity: 0.6;
-    animation: sparkleMove 60s linear infinite;
-    pointer-events: none;
-}
-
-/* 2. Central Glossy Heart */
-.splash-icon {
-    /* Reset base */
-    font-size: 0;
-    /* Hide font icon if any */
-    width: 140px;
-    height: 140px;
-    background: transparent;
-    box-shadow: none;
-    border-radius: 0;
-    margin-bottom: 2rem;
-    animation: floatHeart 4s ease-in-out infinite;
-    display: flex;
-    /* Centering */
+    /* Center Items */
     justify-content: center;
-    align-items: center;
-    margin-left: auto;
-    margin-right: auto;
+    /* Center Vertical */
+    gap: 3rem;
+    /* Equal spacing blocks */
 }
 
-/* The Puffy Heart SVG Style */
-.puffy-heart-svg {
-    width: 140px;
-    height: 140px;
-    filter: drop-shadow(0 15px 30px rgba(var(--primary-rgb), 0.3));
-    animation: floatHeart 4s ease-in-out infinite;
-    transform-origin: center;
-}
-
-/* The Puffy Heart Image */
-.puffy-heart {
-    width: 120px;
-    height: 120px;
-    object-fit: contain;
-    filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.15));
-    animation: floatHeart 4s ease-in-out infinite;
-}
-
-@keyframes floatHeart {
-
-    0%,
-    100% {
-        transform: translateY(0) scale(1.0) rotate(0deg);
-    }
-
-    50% {
-        transform: translateY(-15px) scale(1.08) rotate(2deg);
-    }
-}
-
-/* The Glowing Rings */
-
-/* We'll use the container for rings */
-.splash-icon {
-    position: relative;
-}
-
-.splash-icon::after {
-    /* Doing multiple box shadows instead of pseudo elements for rings */
-    content: '';
-    position: absolute;
+/* --- HERO SECTION --- */
+.splash-hero {
     width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    /* Creating the concentric rings */
-    box-shadow:
-        0 0 0 10px rgba(255, 255, 255, 0.1),
-        0 0 0 25px rgba(255, 255, 255, 0.05),
-        0 0 60px 40px rgba(255, 200, 200, 0.4);
-    background: transparent;
-    z-index: -1;
-    animation: pulseGlow 3s infinite ease-in-out;
-}
-
-
-/* 3. Typography */
-/* 3. Typography */
-#splash-screen h1.splash-names {
-    font-family: 'Playfair Display', serif !important;
-    font-size: 3rem !important;
-    /* Slightly larger */
-    color: #4a2c2c;
-    margin: 0;
-    letter-spacing: -0.5px;
-    text-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0;
-    /* Tight spacing */
-    line-height: 1.1;
-}
-
-body.dark-mode #splash-screen h1.splash-names {
-    color: #fbecec;
-}
-
-.infinity-symbol {
-    font-size: 3rem;
-    /* Much larger */
-    color: var(--primary-color);
-    margin: 5px 0;
-    opacity: 0.9;
-    font-weight: 300;
-    animation: infinityFlow 4s linear infinite;
-    /* Smooth continuous flow */
-    background: linear-gradient(90deg, var(--primary-color), #fff0f5, var(--primary-color));
-    /* Pink -> White -> Pink */
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    background-size: 200% auto;
-}
-
-body.dark-mode .infinity-symbol {
-    background: linear-gradient(90deg, var(--primary-color), #eec4c4, var(--primary-color));
-    -webkit-background-clip: text;
-    background-clip: text;
-}
-
-@keyframes infinityFlow {
-    0% {
-        background-position: 0% center;
-    }
-
-    100% {
-        background-position: 200% center;
-    }
-}
-
-/* 4. Separator */
-.splash-separator {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    width: 100%;
     justify-content: center;
-    margin: 10px 0 15px 0;
-    opacity: 0.6;
 }
 
-.sep-line {
-    height: 1px;
-    background: #8e6a6a;
-    width: 40px;
-    opacity: 0.3;
-}
-
-.sep-icon {
-    color: #ffffff;
-    font-size: 0.8rem;
-    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
-}
-
-.splash-subtitle {
-    font-family: 'Poppins', sans-serif;
-    font-size: 0.8rem !important;
-    letter-spacing: 3px !important;
-    color: #8c7176 !important;
-    text-transform: uppercase;
-    margin-bottom: 3rem !important;
-}
-
-/* 5. Glass Cards */
-.splash-countdown {
-    display: flex;
-    gap: 1.2rem;
-    width: 100%;
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-    backdrop-filter: none !important;
-    padding: 0 !important;
-}
-
-.splash-item {
-    flex: 1 1 0;
-    /* Force equal width regardless of content */
-    width: 0;
-    /* The glossy card look */
-    background: rgba(255, 255, 255, 0.35);
-    border: 2px solid rgba(255, 255, 255, 0.8);
-    border-radius: 20px;
-    padding: 1.5rem 0.5rem;
-    /* Reduce side padding slightly */
-    box-shadow:
-        0 10px 30px rgba(216, 138, 154, 0.15),
-        inset 0 0 20px rgba(255, 255, 255, 0.5);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    position: relative;
-    overflow: hidden;
-    transition: transform 0.3s;
-}
-
-body.dark-mode .splash-item {
-    background: rgba(255, 255, 255, 0.05);
-    border-color: rgba(255, 255, 255, 0.1);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-}
-
-.splash-item::before {
-    /* Internal shine */
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(circle, rgba(255, 255, 255, 0.8) 0%, transparent 60%);
-    opacity: 0.3;
-    pointer-events: none;
-}
-
-.sp-icon-wrapper {
-    font-size: 1.8rem;
-    color: var(--primary-color);
-    /* Dusty pink base */
-    margin-bottom: 0.8rem;
-    filter: drop-shadow(0 2px 4px rgba(223, 166, 166, 0.4));
-    /* Pinkish shadow */
-}
-
-.sp-icon-wrapper i {
-    background: linear-gradient(135deg, #ffffff 0%, var(--primary-color) 100%);
-    /* White to Pink */
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-}
-
-.sp-label {
-    font-family: 'Poppins', sans-serif;
-    font-size: 0.7rem;
-    letter-spacing: 2px;
-    color: #6d5a5d;
-    text-transform: uppercase;
-    margin-bottom: 0.4rem;
-    font-weight: 500;
-}
-
-.sp-time {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.4rem;
-    color: #bfa3a3;
-    /* Muted rose/brown */
-    font-weight: 600;
-}
-
-body.dark-mode .sp-label {
-    color: var(--primary-color);
-}
-
-body.dark-mode .sp-time {
-    color: #fbecec;
-}
-
-/* 7. Upcoming Splash Event */
-#splash-next-event {
-    margin-top: 2rem;
-    background: rgba(255, 255, 255, 0.4);
-    padding: 1rem 1.5rem;
-    border-radius: 15px;
-    border: 1px solid rgba(255, 255, 255, 0.6);
-    box-shadow: 0 5px 15px rgba(223, 166, 166, 0.1);
-    max-width: 85%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 5px;
-    animation: fadeInSlideUp 1s ease-out;
-}
-
-#splash-next-event.hidden {
+.monogram-watermark {
     display: none;
 }
 
-.next-event-tag {
-    font-size: 0.6rem;
-    letter-spacing: 2px;
-    color: var(--primary-color);
-    font-weight: 700;
-    background: white;
-    padding: 3px 10px;
-    border-radius: 20px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+/* Names Block */
+.names-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    line-height: 0.9;
+    margin-bottom: 1rem;
+    width: 100%;
 }
 
-.next-event-content {
+.main-name {
     font-family: 'Playfair Display', serif;
-    font-size: 1.1rem;
-    color: #4a2c2c;
-    font-weight: 600;
+    font-size: 3.5rem;
+    font-weight: 500;
+    color: #2E2A2B;
+    letter-spacing: -1px;
+    margin: 0;
+    text-align: center;
+    width: 100%;
+}
+
+
+
+
+
+.ampersand {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    font-style: italic;
+    color: #C88F95;
+    margin: 5px 0;
+    /* Expanded spacing */
+}
+
+/* Tagline */
+.tagline-container {
+    border-top: 1px solid rgba(200, 143, 149, 0.4);
+    border-bottom: 1px solid rgba(200, 143, 149, 0.4);
+    padding: 6px 0;
+    width: 140px;
+    /* Fixed width for symmetry */
+    display: flex;
+    justify-content: center;
+}
+
+.tagline-text {
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.65rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #444;
+    font-weight: 500;
     text-align: center;
 }
 
-body.dark-mode #splash-next-event {
-    background: rgba(255, 255, 255, 0.08);
+/* --- CARDS (Perfectly Aligned) --- */
+.splash-timeline {
+    display: flex;
+    width: 100%;
+    /* Fill wrapper width */
+    gap: 16px;
+    justify-content: space-between;
+    /* Spread evenly */
+}
+
+.timeline-item {
+    flex: 1;
+    /* Force equal width */
+    /* Styling */
+    background: rgba(255, 255, 255, 0.75);
+    /* Reduced opacity for overlay change */
+    border: 1px solid rgba(200, 143, 149, 0.3);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+
+    border-radius: 18px;
+    padding: 1.5rem 0.5rem;
+    /* Taller padding */
+
+    /* Layout */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 130px;
+    /* Fixed min height ensures alignment */
+}
+
+body.dark-mode .timeline-item {
+    background: rgba(30, 30, 30, 0.8);
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+.t-label {
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.65rem;
+    letter-spacing: 1.5px;
+    color: #666;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+    font-weight: 600;
+}
+
+.t-val {
+    font-family: 'Playfair Display', serif;
+    font-size: 3.2rem;
+    /* Larger Numbers */
+    font-weight: 500;
+    color: #C88F95;
+    line-height: 1;
+    margin: 4px 0;
+}
+
+.t-sub {
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.6rem;
+    color: #888;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.timeline-divider {
+    display: none;
+}
+
+/* --- FOOTER (Fixed Alignment) --- */
+.splash-footer {
+    width: 100%;
+    /* Max width matches body wrapper to ensure alignment */
+    max-width: 380px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    margin-top: auto;
+    margin-bottom: 40px;
+    /* Shifted UP */
+    /* Push bottom but stay inside padding */
+}
+
+/* Next Event Pill - Width aligned with layout */
+.next-event-pill {
+    width: 90%;
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(200, 143, 149, 0.2);
+
+    border-radius: 50px;
+    padding: 0.7rem 1.2rem;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+}
+
+.next-event-pill.hidden {
+    display: none;
+}
+
+body.dark-mode .next-event-pill {
+    background: rgba(40, 40, 40, 0.9);
     border-color: rgba(255, 255, 255, 0.1);
 }
 
-body.dark-mode .next-event-content {
-    color: #fbecec;
+.event-star {
+    color: #C88F95;
+    font-size: 0.8rem;
 }
 
-@keyframes fadeInSlideUp {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+.event-prefix {
+    display: none;
 }
 
-/* 6. Hint - Animated Arrow */
-.splash-hint {
-    margin-top: 4rem;
-    color: var(--primary-color);
+.event-name {
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #333;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+body.dark-mode .event-name {
+    color: #eee;
+}
+
+/* NEW SWIPE INDICATOR (Elegant Mouse Style) */
+.swipe-hint-container {
+    height: 50px;
+    width: 30px;
+    display: flex;
+    justify-content: center;
+    opacity: 0.7;
+    margin-top: 10px;
+    position: relative;
+    /* Ensure relative positioning for pseudo-elements */
+}
+
+.hint-text,
+.hint-arrow {
+    display: none;
+}
+
+/* NEW SWIPE INDICATOR (Large Animated Chevron) */
+.swipe-hint-container {
+    height: 40px;
+    width: 100%;
     display: flex;
     justify-content: center;
     align-items: center;
-}
-
-.splash-hint i {
-    display: block !important;
-    font-size: 2rem;
-    filter: drop-shadow(0 2px 5px rgba(223, 166, 166, 0.4));
-    animation: bounceChevron 2.5s infinite ease-in-out;
     opacity: 0.8;
+    margin-top: 15px;
+    padding-bottom: 10px;
 }
 
-@keyframes bounceChevron {
+.hint-text,
+.hint-arrow {
+    display: none !important;
+}
+
+/* Clear old mouse elements */
+.swipe-hint-container::before {
+    content: none !important;
+    display: none !important;
+}
+
+
+
+/* The Chevron Arrow (CSS Border Trick) */
+
+
+.swipe-hint-container::after {
+    content: '';
+    width: 24px;
+    height: 24px;
+    border-top: 4px solid #C88F95;
+    /* Thick elegant line */
+    border-right: 4px solid #C88F95;
+    transform: rotate(-45deg);
+    /* Points UP */
+    animation: bounceUpChevron 2s infinite ease-in-out;
+    margin-top: 10px;
+    border-radius: 2px;
+    /* Soften edges */
+}
+
+@keyframes bounceUpChevron {
 
     0%,
     20%,
     50%,
     80%,
     100% {
-        transform: translateY(0);
+        transform: translateY(0) rotate(-45deg);
     }
 
     40% {
-        transform: translateY(-12px);
+        transform: translateY(-10px) rotate(-45deg);
     }
 
     60% {
-        transform: translateY(-6px);
+        transform: translateY(-5px) rotate(-45deg);
     }
 }
 
-body.dark-mode .splash-subtitle {
-    color: var(--primary-color) !important;
-}
-
-body.dark-mode .splash-hint {
-    color: var(--primary-color) !important;
-    background: transparent !important;
-    padding: 0 !important;
-}
-
-/* Floating animation */
-@keyframes floatHeart {
-
-    0%,
-    100% {
-        transform: translateY(0);
+/* Mobile Tweak */
+@media (max-width: 380px) {
+    .main-name {
+        font-size: 3rem;
     }
 
-    50% {
-        transform: translateY(-10px);
-    }
-}
-
-@keyframes pulseGlow {
-
-    0%,
-    100% {
-        transform: scale(1);
-        opacity: 0.5;
+    .t-val {
+        font-size: 2.8rem;
     }
 
-    50% {
-        transform: scale(1.1);
-        opacity: 0.8;
-    }
-}
-
-@keyframes sparkleMove {
-    0% {
-        background-position: 0 0, 25px 25px;
-    }
-
-    100% {
-        background-position: 1000px 1000px, 1025px 1025px;
+    .splash-body-wrapper {
+        max-width: 100%;
     }
 }

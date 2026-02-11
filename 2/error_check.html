@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>App.js Hata Kontrolü</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            background: #1e1e1e;
+            color: #ddd;
+        }
+
+        h1 {
+            color: #ff6b6b;
+        }
+
+        .error {
+            background: #dc3545;
+            color: white;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+
+        .success {
+            background: #28a745;
+            color: white;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+
+        .warning {
+            background: #ffc107;
+            color: black;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+
+        pre {
+            background: #000;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+
+        button {
+            padding: 10px 20px;
+            margin: 10px 5px 10px 0;
+            cursor: pointer;
+            font-size: 16px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🔍 App.js Hata Testi</h1>
+
+    <button onclick="location.reload()">Yenile</button>
+    <button onclick="clearLog()">Temizle</button>
+
+    <div id="status"></div>
+    <div id="console-log"></div>
+
+    <script>
+        const statusDiv = document.getElementById('status');
+        const consoleDiv = document.getElementById('console-log');
+        let logs = [];
+
+        // Capture ALL console output
+        const originalLog = console.log;
+        const originalError = console.error;
+        const originalWarn = console.warn;
+
+        console.log = function (...args) {
+            originalLog.apply(console, args);
+            addToLog('LOG', args.join(' '));
+        };
+
+        console.error = function (...args) {
+            originalError.apply(console, args);
+            addToLog('ERROR', args.join(' '));
+        };
+
+        console.warn = function (...args) {
+            originalWarn.apply(console, args);
+            addToLog('WARN', args.join(' '));
+        };
+
+        // Capture script errors
+        window.addEventListener('error', function (e) {
+            const msg = `${e.filename}:${e.lineno}:${e.colno} - ${e.message}`;
+            addToLog('ERROR', msg);
+
+            statusDiv.innerHTML = `<div class="error">HATA: ${e.message}<br>Dosya: ${e.filename}<br>Satır: ${e.lineno}</div>`;
+        });
+
+        function addToLog(type, message) {
+            const className = type === 'ERROR' ? 'error' : type === 'WARN' ? 'warning' : 'success';
+            consoleDiv.innerHTML += `<div class="${className}">[${type}] ${message}</div>`;
+            consoleDiv.scrollTop = consoleDiv.scrollHeight;
+        }
+
+        function clearLog() {
+            consoleDiv.innerHTML = '';
+        }
+
+        console.log("=== Test başlıyor ===");
+        console.log("app.js yüklenecek...");
+    </script>
+
+    <!-- LOAD app.js to check for errors -->
+    <script src="app.js"></script>
+
+    <script>
+        setTimeout(() => {
+            if (logs.filter(l => l.includes('ERROR')).length === 0) {
+                statusDiv.innerHTML = '<div class="success">✓ Hiç hata yok! app.js düzgün yüklendi.</div>';
+            }
+
+            console.log("=== Test tamamlandı ===");
+            console.log(`Toplam ${logs.length} log kaydı`);
+        }, 2000);
+    </script>
+</body>
+
+</html>

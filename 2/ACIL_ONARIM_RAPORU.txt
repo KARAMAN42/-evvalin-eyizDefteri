@@ -1,0 +1,119 @@
+# ========================================
+# ACİL ONARIM - PROGRAM AÇILMIYOR SORUNU
+# ========================================
+# Tarih: 2026-02-06 11:45
+# ========================================
+
+## 🚨 TESPİT EDİLEN SORUNLAR
+
+Kullanıcı index.html'de değişiklik yapmış ve 3 KRİTİK hata oluşmuş:
+
+### 1. missing_funcs.js KALDIRILMıŞ ❌
+- Bu dosya OLMADAN butonlar ÇALIŞMAZ
+- openQuickAddModal, saveQuickAddItem gibi fonksiyonlar içerir
+- SORUN: Script tag'i silinmiş
+
+### 2. image-viewer.js KALDIRILMIŞ ❌
+- Resim galerisi çalışmaz
+- viewImage fonksiyonu tanımsız kalır
+- SORUN: Script tag'i silinmiş
+
+### 3. Splash Ekran display:none YOK ❌
+- Hoşgeldin ekranı görünür halde kalıyor
+- Uygulama açılmıyor (ekranda splash var)
+- SORUN: style="display: none" kaldırılmış
+
+## ✅ YAPTIĞIM DÜZELTMELER
+
+### Düzeltme 1: Script'ler Geri Eklendi
+```html
+<script src="app.js"></script>
+<script src="missing_funcs.js"></script>      ← EKLENDİ
+<script src="touch-drag-support.js"></script>
+<script src="image-viewer.js"></script>       ← EKLENDİ
+```
+
+### Düzeltme 2: Splash Ekran Gizlendi
+```html
+<div id="splash-screen" style="display: none;">  ← EKLENDİ
+```
+
+## 🎯 YAPIN - ADIM ADIM
+
+### ADIM 1: Hızlı Test
+```
+Tarayıcıda açın: quick_test.html
+```
+- Tüm dosyaların mevcut olup olmadığını kontrol eder
+- Yeşil ✓ işaretler görmelisiniz
+- Kırmızı ✗ varsa bana bildirin
+
+### ADIM 2: Ana Uygulamayı Açın
+```
+Tarayıcıda açın: index.html
+```
+**ÖNEMLİ:** Önce tarayıcıyı kapatıp yeniden açın
+Veya Ctrl + Shift + Delete ile cache'i temizleyin
+
+### ADIM 3: Test Edin
+- Splash ekran GÖRÜNMEMELI (display:none sayesinde)
+- Ana sayfa AÇILMALI
+- Sekme geçişleri ÇALIŞMALI
+- + butonu ÇALIŞMALI
+
+## ⚠️ ÖNEMLİ NOTLAR
+
+1. **index.html'e dokunmayın!**
+   - Script taglerini silmeyin
+   - display:none'u kaldırmayın
+   - Modalları çıkarmayın
+
+2. **Eksik Modaller**
+   - Budget modal (modal-budget-editor) var
+   - Lightbox modal YOK (app.js kullanıyor olabilir)
+   - Stats detay modalleri YOK
+
+3. **Olası Konsol Hataları**
+   - Eksik modallar için hata görebilirsiniz
+   - Bu hatalar uygulamayı durdurmaz
+   - Sadece o özellik çalışmaz
+
+## 🔍 HALA AÇILMIYORSA
+
+### Konsolu Açın (F12)
+Kırmızı hataları kontrol edin:
+
+```javascript
+// Konsola yapıştırın:
+console.log('Scripts loaded:');
+console.log('- app.js:', typeof renderApp);
+console.log('- missing_funcs.js:', typeof openQuickAddModal);
+console.log('- image-viewer.js:', typeof window.viewImage);
+```
+
+Sonuçları bana gönderin.
+
+### Cache Sorunu Olabilir
+1. Ctrl + Shift + Delete
+2. "Önbelleğe alınmış dosyalar" seçin
+3. Temizle
+4. Tarayıcıyı yeniden başlatın
+5. index.html'i açın
+
+## 📊 DOSYA DURUMU
+
+✅ index.html - Script tagları eklendi
+✅ index.html - Splash display:none eklendi
+✅ app.js - Mevcut (değişmedi)
+✅ missing_funcs.js - Mevcut
+✅ image-viewer.js - Mevcut
+✅ quick_test.html - YENİ (test için)
+
+========================================
+DURUM: KRİTİK DÜZELTMELER YAPILDI ✅
+========================================
+
+NOT: Eğer hala açılmıyorsa:
+1. quick_test.html açın
+2. Konsol hatalarını gönderin (F12)
+3. Hangi sayfada takılı kaldığını söyleyin

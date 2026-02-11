@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MİNİMAL TEST</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div style="padding: 20px; text-align: center;">
+        <h1>MİNİMAL TEST</h1>
+        <p id="status">Yükleniyor...</p>
+
+        <button id="test-btn" style="padding: 15px 30px; font-size: 18px; margin: 20px;">
+            Bana Tıkla
+        </button>
+
+        <div id="result"></div>
+    </div>
+
+    <!-- SADECE app.js yükle, başka hiçbir şey -->
+    <script src="app.js"></script>
+
+    <script>
+        console.log("=== MİNİMAL TEST BAŞLADI ===");
+
+        // app.js yüklendi mi kontrol et
+        setTimeout(() => {
+            const status = document.getElementById('status');
+            const result = document.getElementById('result');
+
+            // Temel fonksiyonlar var mı?
+            const checks = [
+                { name: 'DOMContentLoaded', check: true },
+                { name: 'window.switchTab', check: typeof window.switchTab === 'function' },
+                { name: 'window.openModal', check: typeof window.openModal === 'function' },
+                { name: 'window.toggleTheme', check: typeof window.toggleTheme === 'function' }
+            ];
+
+            let html = '<div style="text-align: left; max-width: 600px; margin: 0 auto;">';
+            let allGood = true;
+
+            checks.forEach(c => {
+                const icon = c.check ? '✅' : '❌';
+                html += `<p style="font-family: monospace;">${icon} ${c.name}: ${c.check ? 'TAMAM' : 'EKSİK'}</p>`;
+                if (!c.check) allGood = false;
+            });
+
+            html += '</div>';
+            result.innerHTML = html;
+
+            if (allGood) {
+                status.textContent = '✅ Tüm temel fonksiyonlar yüklendi!';
+                status.style.color = 'green';
+            } else {
+                status.textContent = '❌ Bazı fonksiyonlar eksik!';
+                status.style.color = 'red';
+            }
+
+            // Test butonunu aktif et
+            const btn = document.getElementById('test-btn');
+            btn.onclick = () => {
+                alert('✅ Buton çalışıyor!');
+                console.log('Test button clicked');
+            };
+
+        }, 1000);
+    </script>
+</body>
+
+</html>

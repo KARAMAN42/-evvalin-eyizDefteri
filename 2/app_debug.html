@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ana Sayfa Debug</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            background: #1e1e1e;
+            color: #fff;
+        }
+
+        .section {
+            background: #2d2d2d;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+        }
+
+        .error {
+            color: #ff6b6b;
+        }
+
+        .success {
+            color: #51cf66;
+        }
+
+        .warning {
+            color: #ffd43b;
+        }
+
+        .info {
+            color: #74c0fc;
+        }
+
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+        }
+
+        #console-output {
+            background: #000;
+            padding: 10px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-size: 12px;
+        }
+
+        .log-entry {
+            margin: 2px 0;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🔍 Ana Sayfa Debug Konsolu</h1>
+
+    <div class="section">
+        <h3>Test Sonuçları</h3>
+        <div id="test-results"></div>
+    </div>
+
+    <div class="section">
+        <h3>Konsol Çıktısı (Canlı)</h3>
+        <button onclick="clearConsole()">Temizle</button>
+        <button onclick="testApp()">Testi Yeniden Çalıştır</button>
+        <div id="console-output"></div>
+    </div>
+
+    <script>
+        const resultsDiv = document.getElementById('test-results');
+        const consoleDiv = document.getElementById('console-output');
+        const logs = [];
+
+        // Capture console logs
+        const originalLog = console.log;
+        const originalError = console.error;
+        const originalWarn = console.warn;
+
+        console.log = function (...args) {
+            originalLog.apply(console, args);
+            addLog('info', args.join(' '));
+        };
+
+        console.error = function (...args) {
+            originalError.apply(console, args);
+            addLog('error', args.join(' '));
+        };
+
+        console.warn = function (...args) {
+            originalWarn.apply(console, args);
+            addLog('warning', args.join(' '));
+        };
+
+        function addLog(type, message) {
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.textContent = `[${type.toUpperCase()}] ${message}`;
+            consoleDiv.appendChild(entry);
+            consoleDiv.scrollTop = consoleDiv.scrollHeight;
+        }
+
+        function clearConsole() {
+            consoleDiv.innerHTML = '';
+        }
+
+        function addResult(type, message) {
+            const div = document.createElement('div');
+            div.className = type;
+            div.textContent = message;
+            resultsDiv.appendChild(div);
+        }
+
+        function testApp() {
+            resultsDiv.innerHTML = '';
+            console.log("=== Test Başlıyor ===");
+
+            // Test 1: Check if elements exist
+            console.log("1. HTML Elementleri Kontrol Ediliyor...");
+            const homeSection = document.getElementById('home-section');
+            const ceyizList = document.getElementById('ceyiz-list');
+            const damatList = document.getElementById('damat-list');
+
+            addResult(homeSection ? 'success' : 'error',
+                `Home Section: ${homeSection ? '✓ Bulundu' : '✗ Bulunamadı'}`);
+            addResult(ceyizList ? 'success' : 'error',
+                `Çeyiz List: ${ceyizList ? '✓ Bulundu' : '✗ Bulunamadı'}`);
+            addResult(damatList ? 'success' : 'error',
+                `Damat List: ${damatList ? '✓ Bulundu' : '✗ Bulunamadı'}`);
+
+            // Test 2: Check navigation buttons
+            console.log("2. Navigasyon Butonları Kontrol Ediliyor...");
+            const navItems = document.querySelectorAll('.nav-item');
+            addResult(navItems.length > 0 ? 'success' : 'error',
+                `Nav Items: ${navItems.length} buton bulundu`);
+
+            // Test 3: Check if app.js loaded
+            console.log("3. app.js Yüklenme Durumu...");
+            addResult(typeof window.appData !== 'undefined' ? 'success' : 'error',
+                `window.appData: ${typeof window.appData !== 'undefined' ? '✓ Yüklendi' : '✗ Yüklenmedi'}`);
+
+            // Test 4: Check for errors
+            console.log("4. Hata Kontrolü...");
+            setTimeout(() => {
+                console.log("=== Test Tamamlandı ===");
+                addResult('info', 'F12 tuşuna basıp gerçek konsolu kontrol edin');
+            }, 500);
+        }
+
+        // Run test on load
+        window.addEventListener('load', () => {
+            setTimeout(testApp, 1000);
+        });
+    </script>
+
+    <!-- Load the actual app.js to test -->
+    <script src="app.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JavaScript Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        .test-box {
+            background: white;
+            padding: 20px;
+            margin: 10px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .success {
+            color: #28a745;
+        }
+
+        .error {
+            color: #dc3545;
+        }
+
+        .warning {
+            color: #ffc107;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🔍 JavaScript Yükleme Testi</h1>
+
+    <div class="test-box">
+        <h3>Test 1: Temel JavaScript</h3>
+        <p id="basic-test">❌ JavaScript çalışmıyor</p>
+    </div>
+
+    <div class="test-box">
+        <h3>Test 2: app.js Yükleniyor mu?</h3>
+        <p id="app-test">Kontrol ediliyor...</p>
+    </div>
+
+    <div class="test-box">
+        <h3>Test 3: Console Hataları</h3>
+        <p id="console-test">Konsolu açıp kontrol edin (F12)</p>
+        <button onclick="checkErrors()">Hataları Göster</button>
+    </div>
+
+    <div class="test-box">
+        <h3>Test 4: Splash Ekran Test</h3>
+        <button onclick="window.open('index.html')">Ana Uygulamayı Aç</button>
+    </div>
+
+    <!-- Temel Test -->
+    <script>
+        console.log("✓ Test sayfası yüklendi");
+        document.getElementById('basic-test').innerHTML = '<span class="success">✓ JavaScript çalışıyor!</span>';
+
+        let errors = [];
+        window.addEventListener('error', function (e) {
+            errors.push(e.message || e);
+            console.error("HATA:", e);
+        });
+
+        function checkErrors() {
+            if (errors.length === 0) {
+                alert("✓ Hiç hata yok!");
+            } else {
+                alert("❌ Hatalar:\n" + errors.join("\n"));
+            }
+        }
+    </script>
+
+    <!-- app.js'i yükle ve test et -->
+    <script src="app.js"></script>
+    <script>
+        setTimeout(() => {
+            const appTestEl = document.getElementById('app-test');
+
+            // Check if app.js loaded and initialized
+            if (typeof window.appData !== 'undefined') {
+                appTestEl.innerHTML = '<span class="success">✓ app.js yüklendi ve başlatıldı</span>';
+            } else {
+                appTestEl.innerHTML = '<span class="error">❌ app.js yüklenmedi veya başlatılmadı</span>';
+            }
+
+            // Check for DOMContentLoaded handler
+            console.log("window.appData:", window.appData);
+
+        }, 1000);
+    </script>
+</body>
+
+</html>

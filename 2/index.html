@@ -15,14 +15,11 @@
     <link rel="stylesheet" href="infinity-animation.css">
     <link rel="stylesheet" href="nikah-animation.css">
     <link rel="stylesheet" href="splash-design.css">
+    <link rel="stylesheet" href="splash-infinity-animation.css">
     <link
         href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-
-    <!-- Firebase SDK (Modular CDN Versions) -->
-    <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-firestore-compat.js"></script>
 </head>
 
 <body>
@@ -47,11 +44,8 @@
 
     <!-- Main Content Area -->
     <!-- Splash Screen (Always On) -->
-    <div id="splash-screen">
-        <!-- New: Theme Toggle for Splash -->
-        <button id="splash-theme-toggle" class="splash-theme-btn" onclick="window.toggleTheme && window.toggleTheme()">
-            <i class="fas fa-moon"></i>
-        </button>
+    <div id="splash-screen" class="ethereal-splash">
+        <!-- Splash Theme Toggle Removed per user request -->
 
         <div class="splash-content">
             <div class="splash-icon">
@@ -74,7 +68,12 @@
             </div>
             <h1 class="splash-names">
                 <span class="name-line" id="splash-name-bride">Şevval</span>
-                <span class="infinity-symbol">&infin;</span>
+                <div class="infinity-container splash-infinity">
+                    <svg class="infinity-svg" viewBox="0 0 100 50" xmlns="http://www.w3.org/2000/svg">
+                        <path class="infinity-path"
+                            d="M30 15C10 15 10 35 30 35C45 35 55 15 70 15C90 15 90 35 70 35C55 35 45 15 30 15" />
+                    </svg>
+                </div>
                 <span class="name-line" id="splash-name-groom">Yusuf</span>
             </h1>
             <!-- Decorative Heart Separator -->
@@ -118,6 +117,9 @@
 
         </div>
     </div>
+
+    <!-- ACIL FIX: Splash Sayacını Başlat -->
+    <script src="splash-fix.js"></script>
 
     <main id="app-container">
 
@@ -190,7 +192,7 @@
                                         <div class="calendar-days-header">
                                             <span>Pzt</span><span>Sal</span><span>&Ccedil;ar</span><span>Per</span><span>Cum</span><span>Cmt</span><span>Paz</span>
                                         </div>
-                                        <div class="calendar-grid" id="calendar-grid">
+                                        <div class="calendar-grid mini-grid" id="calendar-grid">
                                             <!-- Days injected here -->
                                         </div>
                                     </div>
@@ -225,16 +227,7 @@
                                 <div class="c-dot" data-slide="2"></div>
                             </div>
 
-                            <!-- Weekly Goal Section -->
-                            <div class="weekly-goal-card" id="btn-edit-weekly-goal">
-                                <div class="weekly-goal-header">
-                                    <i class="fas fa-star-shooting"></i>
-                                    <span>Haftalık Hedefimiz</span>
-                                </div>
-                                <div class="weekly-goal-content" id="weekly-goal-text">
-                                    Bu hafta için bir güzellik belirle...
-                                </div>
-                            </div>
+
                         </div>
 
                         <!-- Mini Dashboard Removed per user request -->
@@ -363,9 +356,10 @@
                             <!-- 2. Main Progress Cards -->
                             <div class="stat-grid-2">
                                 <!-- General Status -->
-                                <div id="stat-card-general" class="stat-card modern" style="cursor: pointer;">
+                                <div class="stat-card modern clickable-card" id="btn-show-history"
+                                    style="cursor: pointer; position: relative;">
                                     <div class="stat-card-header">
-                                        <h4>Genel Durum</h4>
+                                        <h4>Harcama Geçmişi</h4>
                                         <span class="badge-pill" id="total-pct-badge">%0</span>
                                     </div>
                                     <div class="circular-progress-container">
@@ -388,8 +382,8 @@
                                 </div>
 
                                 <!-- Lists Breakdown -->
-                                <div id="stat-card-lists" class="stat-card modern"
-                                    style="display:flex; flex-direction:column; justify-content:center; gap:10px; cursor: pointer;">
+                                <div class="stat-card modern"
+                                    style="display:flex; flex-direction:column; justify-content:center; gap:10px;">
                                     <div class="mini-list-stat">
                                         <div class="mls-header">
                                             <span class="mls-icon ceyiza"><i class="fas fa-home"></i></span>
@@ -418,7 +412,7 @@
                                 <h3>Harcama Dağılımı</h3>
                                 <small>Kategorilere göre harcamalar</small>
                             </div>
-                            <div class="stat-card modern" id="category-breakdown-container" style="cursor: pointer;">
+                            <div class="stat-card modern" id="category-breakdown-container">
                                 <!-- Injected via JS -->
                                 <div class="empty-chart-msg">Veri yok</div>
                             </div>
@@ -510,52 +504,7 @@
         </div>
     </div>
 
-    <!-- Full Calendar Modal -->
-    <div id="modal-full-calendar" class="modal hidden">
-        <div class="modal-backdrop"></div>
-        <div class="modal-content-sheet calendar-modal-main">
-            <div class="modal-sheet-header">
-                <div class="sheet-title-area">
-                    <h2 id="full-cal-title">Takvim 📅</h2>
-                </div>
-                <button class="close-modal-sheet" id="close-full-cal" type="button"><i
-                        class="fas fa-times"></i></button>
-            </div>
-            <div class="sheet-body" style="padding: 1rem; display: flex; flex-direction: column; height: 100%;">
-
-                <!-- Expanded Calendar Header -->
-                <div class="calendar-header large-header" style="margin-bottom: 1rem;">
-                    <button class="cal-nav-btn prev" id="full-cal-prev"><i
-                            class="fas fa-chevron-left fa-lg"></i></button>
-                    <span class="cal-month-year large-title" id="full-cal-month-year"
-                        style="font-size: 1.2rem;">...</span>
-                    <button class="cal-nav-btn next" id="full-cal-next"><i
-                            class="fas fa-chevron-right fa-lg"></i></button>
-                </div>
-
-                <!-- Days Header -->
-                <div class="calendar-days-header large-days" style="margin-bottom: 0.5rem; font-size: 0.9rem;">
-                    <span>Pzt</span><span>Sal</span><span>&Ccedil;ar</span><span>Per</span><span>Cum</span><span>Cmt</span><span>Paz</span>
-                </div>
-
-                <!-- Expanded Grid -->
-                <div class="calendar-grid large-grid" id="full-calendar-grid" style="row-gap: 8px;">
-                    <!-- Injected via JS -->
-                </div>
-
-                <!-- Event List / Summary -->
-                <div class="upcoming-events-list"
-                    style="margin-top: 2rem; border-top: 1px solid var(--border-color); padding-top: 1rem; flex: 1; overflow-y: auto;">
-                    <h3 style="font-size: 1rem; margin-bottom: 0.5rem; color: var(--text-light);">Bu Ay&#305;n
-                        Notlar&#305;</h3>
-                    <div id="full-cal-event-list" style="font-size: 0.9rem; color: var(--text-muted);">
-                        <!-- List of events for the month -->
-                    </div>
-                </div>
-
-            </div>
-        </div>
-    </div>
+    <!-- Full Calendar Modal Removed (Duplicate) -->
 
     <!-- Start Add/Edit Modal (Modern Sheet Design) -->
     <!-- Unified Item Editor Modal (New) -->
@@ -659,69 +608,45 @@
         </div>
     </div>
 
-    <!-- Budget Modal (Redesigned) -->
-    <div id="modal-budget" class="modal hidden">
+    <!-- Budget Editor Modal -->
+    <div id="modal-budget-editor" class="modal hidden">
         <div class="modal-backdrop"></div>
-        <div class="modal-content-sheet" style="max-width: 420px;">
+        <div class="modal-content-sheet glass-sheet">
             <div class="modal-sheet-header">
                 <div class="sheet-title-area">
-                    <h2 class="modal-title">💰 Aylık Bütçe</h2>
-                    <p class="sheet-subtitle">Her ay otomatik sıfırlanan bütçe sistemi</p>
+                    <h2 class="modal-title">Bu Ayki Bütçe</h2>
+                    <p class="sheet-subtitle">Bu ay harcayabileceğiniz limiti girin.</p>
                 </div>
                 <button class="close-modal-sheet" type="button"><i class="fas fa-times"></i></button>
             </div>
+            <div class="sheet-body" style="padding: 1.5rem;">
+                <div class="field">
+                    <span>Mevcut Bütçe</span>
+                    <div style="font-size: 1.5rem; font-weight: 700; color: var(--primary-color); margin-bottom: 15px;"
+                        id="budget-current-display">0 TL</div>
 
-            <div class="sheet-body" style="padding: 1.5rem; overflow-y: auto; max-height: 65vh;">
-                <!-- Current Budget Display -->
-                <div style="background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)); 
-                            border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; text-align: center;">
-                    <div style="color: rgba(255,255,255,0.8); font-size: 0.85rem; margin-bottom: 0.5rem;">
-                        Mevcut Bütçe
+                    <span>İşlem Tutarı (TL)</span>
+                    <input type="number" id="budget-input" placeholder="Örn: 10000" class="modern-input"
+                        style="font-size: 1.2rem; font-weight: 600;">
+
+                    <div style="display: flex; gap: 10px; margin-top: 10px;">
+                        <button id="btn-budget-add" class="btn-secondary budget-calc-btn add">
+                            <i class="fas fa-plus"></i> Ekle
+                        </button>
+                        <button id="btn-budget-sub" class="btn-secondary budget-calc-btn sub">
+                            <i class="fas fa-minus"></i> Çıkar
+                        </button>
                     </div>
-                    <div id="budget-current-display" style="color: white; font-size: 2rem; font-weight: 700;">
-                        ₺0
-                    </div>
+
+                    <small style="display:block; margin-top:12px; color:var(--text-light);">
+                        İşlem yapmadan direkt yeni tutarı kaydetmek için "Kaydet"i kullanabilirsiniz.
+                    </small>
                 </div>
-
-                <!-- Input Section -->
-                <div style="margin-bottom: 1rem;">
-                    <label style="display: block; margin-bottom: 0.5rem; color: var(--text-color); font-weight: 600;">
-                        Tutar Girin (₺)
-                    </label>
-                    <input type="number" id="budget-input" placeholder="10000" class="modern-input"
-                        style="font-size: 1.1rem; text-align: center; font-weight: 600;" readonly
-                        onfocus="this.removeAttribute('readonly');">
-                </div>
-
-                <!-- Quick Actions -->
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1rem;">
-                    <button id="btn-budget-add" class="btn-secondary"
-                        style="background: rgba(46, 204, 113, 0.15); 
-                               border: 1px solid rgba(46, 204, 113, 0.3); color: #27ae60; padding: 0.8rem; font-weight: 600; 
-                               border-radius: 50px; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: all 0.2s;">
-                        <i class="fas fa-plus-circle"></i> Ekle
-                    </button>
-                    <button id="btn-budget-sub" class="btn-secondary"
-                        style="background: rgba(230, 126, 34, 0.15); 
-                               border: 1px solid rgba(230, 126, 34, 0.3); color: #d35400; padding: 0.8rem; font-weight: 600;
-                               border-radius: 50px; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: all 0.2s;">
-                        <i class="fas fa-minus-circle"></i> Çıkar
-                    </button>
-                </div>
-
-
-                <!-- Action Buttons -->
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                    <button id="btn-save-budget" class="btn-primary"
-                        style="padding: 1rem; font-weight: 600; font-size: 1rem;
-                               border-radius: 50px; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
-                        <i class="fas fa-save"></i> Kaydet
-                    </button>
-                    <button id="btn-reset-budget" class="btn-secondary"
-                        style="background: rgba(231, 76, 60, 0.1); 
-                               border: 1px solid rgba(231, 76, 60, 0.2); color: #c0392b; padding: 1rem; font-weight: 600; font-size: 1rem;
-                               border-radius: 50px; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
-                        <i class="fas fa-redo-alt"></i> Sıfırla
+                <div style="margin-top: 20px; display: flex; flex-direction: column; gap: 10px;">
+                    <button id="btn-save-budget" class="btn-primary" style="width: 100%;">Kaydet</button>
+                    <button id="btn-reset-budget" class="btn-ghost danger"
+                        style="width: 100%; border: 1px solid #e57373; color: #e57373;">
+                        <i class="fas fa-undo-alt"></i> Bu Ayki Bütçeyi Sıfırla
                     </button>
                 </div>
             </div>
@@ -854,10 +779,10 @@
 
                 <!-- Gallery Widget -->
                 <div id="detail-gallery" class="detail-gallery-container hidden">
-                    <div class="gallery-wrapper" id="detail-gallery-track">
+                    <div class="gallery-wrapper" id="gallery-track">
                         <!-- Images injected here -->
                     </div>
-                    <div class="gallery-dots" id="detail-gallery-dots"></div>
+                    <div class="gallery-dots" id="gallery-dots"></div>
                 </div>
 
                 <!-- Info Header -->
@@ -928,6 +853,33 @@
                                 style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--primary-color);"></i>
                         </div>
                         <p class="settings-help">Uygulama ve giriş ekranındaki isimleri değiştirir.</p>
+                    </div>
+                </div>
+
+                <!-- 1.5. Special Dates (NEW) -->
+                <div class="settings-section" id="settings-dates-section"
+                    style="margin-bottom: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color);">
+                    <h3 class="settings-section-title">
+                        <i class="fas fa-calendar-heart"></i> Özel Tarihler
+                    </h3>
+                    <div class="form-group">
+                        <label class="settings-label">Nişan Tarihi</label>
+                        <div class="input-with-icon date-input-wrapper"
+                            style="position: relative; margin-bottom: 1rem;">
+                            <input type="text" id="setting-nisan-date" class="modern-input custom-date-trigger" readonly
+                                placeholder="Tarih seçin..." style="padding-left: 40px; width: 100%; cursor: pointer;">
+                            <i class="fas fa-ring"
+                                style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--primary-color);"></i>
+                        </div>
+
+                        <label class="settings-label">Nikah Tarihi</label>
+                        <div class="input-with-icon date-input-wrapper" style="position: relative;">
+                            <input type="text" id="setting-nikah-date" class="modern-input custom-date-trigger" readonly
+                                placeholder="Tarih seçin..." style="padding-left: 40px; width: 100%; cursor: pointer;">
+                            <i class="fas fa-dove"
+                                style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--primary-color);"></i>
+                        </div>
+                        <p class="settings-help">Geri sayım sayaçları bu tarihlere göre çalışır.</p>
                     </div>
                 </div>
 
@@ -1005,6 +957,7 @@
                         <button id="btn-import-paste" class="action-btn-mini">
                             <i class="fas fa-cloud-upload-alt"></i> Yedek Yükle
                         </button>
+                        <!-- Demo button completely removed -->
                         <input type="file" id="backup-file-input" accept=".json, .txt, text/plain, application/json"
                             style="display: none;">
                     </div>
@@ -1013,34 +966,6 @@
                     <button id="btn-reset-app-data" class="btn-danger-minimal">
                         <i class="fas fa-undo"></i> Tüm Verileri Sıfırla
                     </button>
-                </div>
-
-                <!-- 5. Cloud Sync (New) -->
-                <div class="settings-section"
-                    style="margin-bottom: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color);">
-                    <h3 class="settings-section-title">
-                        <i class="fas fa-cloud"></i> Bulut Senkronizasyon (Canlı Paylaşım)
-                    </h3>
-                    <p class="settings-help" style="margin-bottom: 1rem;">İkiniz de aynı kodu girerek verileri canlı
-                        paylaşabilirsiniz.</p>
-
-                    <div class="form-group">
-                        <div class="input-with-icon" style="position: relative; margin-bottom: 1rem;">
-                            <input type="text" id="setting-cloud-code" class="modern-input"
-                                placeholder="Ortak Aile Kodunuz..."
-                                style="padding-left: 40px; width: 100%; text-transform: uppercase;">
-                            <i class="fas fa-key"
-                                style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--primary-color);"></i>
-                        </div>
-                        <div id="sync-status"
-                            style="font-size: 0.75rem; margin-top: -0.5rem; margin-bottom: 1rem; color: var(--text-light);">
-                            Durum: Bağlı Değil ❌
-                        </div>
-                        <button id="btn-sync-connect" class="btn-ghost-full"
-                            style="background: rgba(var(--primary-rgb), 0.1);">
-                            <i class="fas fa-link"></i> Şimdi Bağlan & Senkronize Et
-                        </button>
-                    </div>
                 </div>
 
                 <!-- Special Romantic Section -->
@@ -1062,8 +987,8 @@
                 </div>
 
                 <!-- 5. Bilgi -->
-                <div class="settings-footer-info" style="margin-top: 2rem; margin-bottom: 1rem;">
-                    <p>Versiyon 2.5.0 • Sevgiyle hazırlandı ❤️</p>
+                <div class="settings-footer-info" style="margin-top: 2rem; margin-bottom: 1rem; text-align: center;">
+                    <p class="version-info">Versiyon 2.5.0 • Sevgiyle hazırlandı</p>
                 </div>
             </div>
 
@@ -1095,494 +1020,476 @@
         </div>
     </div>
 
-
-    <!-- General Stats Detail Modal (New) -->
-    <div id="modal-general-stats" class="modal hidden">
+    <!-- Full Calendar Modal (Active) -->
+    <div id="modal-full-calendar" class="modal hidden">
         <div class="modal-backdrop"></div>
-        <div class="modal-content-sheet detail-sheet">
+        <div class="modal-content-sheet calendar-sheet"
+            style="height: 85vh; max-height: 85vh; display: flex; flex-direction: column;">
             <div class="modal-sheet-header">
                 <div class="sheet-title-area">
-                    <h2 class="modal-title">Detaylı İstatistikler</h2>
-                    <p class="sheet-subtitle">Genel durum özeti</p>
+                    <h2 class="modal-title">Takvim 🗓️</h2>
+                    <p class="sheet-subtitle">Önemli günleri takip et.</p>
                 </div>
-                <button class="close-modal-sheet" id="btn-close-gen-stats" type="button"><i
-                        class="fas fa-times"></i></button>
+                <!-- Using window.closeModalHelper explicitly or sticking to app.js event delegation -->
+                <button class="close-modal-sheet text-btn" type="button"><i class="fas fa-times"></i></button>
             </div>
-            <div class="sheet-body" style="padding: 1.5rem; overflow-y: auto;">
-                <div class="stats-detail-grid">
-                    <div class="detail-card-row">
-                        <div class="d-card success">
-                            <span class="d-lbl">Alınan</span>
-                            <strong class="d-val" id="gen-stat-bought">0</strong>
-                        </div>
-                        <div class="d-card warning">
-                            <span class="d-lbl">Kalan</span>
-                            <strong class="d-val" id="gen-stat-remain">0</strong>
-                        </div>
-                        <div class="d-card info">
-                            <span class="d-lbl">Toplam</span>
-                            <strong class="d-val" id="gen-stat-total">0</strong>
-                        </div>
+
+            <div class="sheet-body calendar-body"
+                style="padding: 0; flex: 1; display: flex; flex-direction: column; overflow: hidden;">
+                <!-- Full Calendar Header Controls -->
+                <div class="full-calendar-controls">
+                    <button id="full-cal-prev" class="btn-icon-sm"><i class="fas fa-chevron-left"></i></button>
+                    <div style="text-align: center;">
+                        <h3 id="full-cal-month-year">Ocak 2026</h3>
+                        <button id="btn-today" class="btn-ghost-sm"
+                            style="font-size: 0.7rem; padding: 2px 8px; margin-top: 4px;">Bugüne Dön</button>
                     </div>
+                    <button id="full-cal-next" class="btn-icon-sm"><i class="fas fa-chevron-right"></i></button>
+                </div>
 
-                    <div class="divider-line"></div>
+                <!-- Days Header (Pzt, Sal...) -->
+                <div class="calendar-days-header">
+                    <span>Pzt</span><span>Sal</span><span>Çar</span><span>Per</span><span>Cum</span><span>Cmt</span><span>Paz</span>
+                </div>
 
-                    <h4 style="margin-bottom:10px; font-size:0.95rem; color:var(--text-color);">Harcama Özeti</h4>
-                    <div class="spending-summary-box">
-                        <div class="spend-row">
-                            <span>Toplam Tutar:</span>
-                            <strong id="gen-stat-cost-total">0 ₺</strong>
-                        </div>
-                        <div class="spend-row">
-                            <span>Harcanan:</span>
-                            <strong id="gen-stat-cost-spent" class="text-success">0 ₺</strong>
-                        </div>
-                        <div class="spend-row">
-                            <span>Kalan Tahmini:</span>
-                            <strong id="gen-stat-cost-remain" class="text-warning">0 ₺</strong>
-                        </div>
-                    </div>
+                <!-- Calendar Grid (Scrollable) -->
+                <div id="full-calendar-grid" class="calendar-grid full-mode">
+                    <!-- Days injected by JS -->
+                </div>
 
-                    <div class="divider-line"></div>
+                <!-- Month Events List (Always Visible) -->
+                <div class="section-label-area" style="padding: 0 1.5rem; margin-top: 5px;">
+                    <span class="section-label">Aylık Etkinlikler ✨</span>
+                </div>
+                <div id="month-events-list">
+                    <!-- Events injected by JS -->
+                </div>
 
-                    <h4 style="margin-bottom:10px; font-size:0.95rem; color:var(--text-color);">Kategori Bazlı Durum
-                    </h4>
-                    <div id="gen-stat-cat-breakdown" class="cat-breakdown-list">
-                        <!-- JS injected -->
-                    </div>
-
+                <!-- Selected Date Details (Hidden by default or simplified) -->
+                <div id="calendar-date-details" class="hidden"
+                    style="padding: 1rem; border-top: 1px solid var(--border-color); background: var(--card-bg);">
+                    <h4 id="selected-date-title" style="margin: 0 0 0.5rem 0; font-size: 1rem;">Seçilen Tarih</h4>
+                    <p id="selected-date-info" style="color: var(--text-light); font-size: 0.9rem;"></p>
                 </div>
             </div>
         </div>
     </div>
 
-
-    <!-- Lists Breakdown Detail Modal (New) -->
-    <div id="modal-lists-detail" class="modal hidden">
+    <!-- Product Detail Modal (New) -->
+    <div id="modal-item-details" class="modal hidden">
         <div class="modal-backdrop"></div>
-        <div class="modal-content-sheet detail-sheet">
-            <div class="modal-sheet-header">
-                <div class="sheet-title-area">
-                    <h2 class="modal-title">Liste Detayları</h2>
-                    <p class="sheet-subtitle">Çeyiz ve Bohça durumu</p>
+        <div class="modal-content-sheet detail-sheet" style="max-width: 450px; border-radius: 28px; overflow: hidden;">
+            <div class="detail-header"
+                style="background: var(--primary-color); padding: 2rem 1.5rem; color: white; position: relative;">
+                <button class="close-modal-sheet"
+                    onclick="window.closeModalHelper(document.getElementById('modal-item-details'))"
+                    style="position: absolute; top: 1rem; right: 1rem; background: rgba(255,255,255,0.2); border: none; color: white; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-times"></i>
+                </button>
+                <div class="detail-cat-badge" id="detail-category-badge"
+                    style="display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; margin-bottom: 0.8rem; font-weight: 600;">
+                    <i id="detail-category-icon" class="fas fa-tag"></i>
+                    <span id="detail-category-name">Kategori</span>
                 </div>
-                <button class="close-modal-sheet" id="btn-close-lists-detail" type="button"><i
-                        class="fas fa-times"></i></button>
+                <h2 id="detail-name" style="margin: 0; font-size: 1.5rem; font-weight: 700; line-height: 1.2;">Ürün Adı
+                </h2>
             </div>
-            <div class="sheet-body" style="padding: 1.5rem; overflow-y: auto;">
 
-                <!-- Çeyiz Section -->
-                <div class="list-detail-section">
-                    <div class="lds-header">
-                        <span class="lds-icon ceyiza"><i class="fas fa-home"></i></span>
-                        <h3>Çeyiz Listesi</h3>
+            <div class="detail-body" style="padding: 1.5rem; background: var(--card-bg);">
+                <div class="detail-info-grid"
+                    style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+                    <div class="detail-info-item"
+                        style="background: var(--bg-hover); padding: 1rem; border-radius: 16px;">
+                        <span
+                            style="display: block; font-size: 0.75rem; color: var(--text-light); text-transform: uppercase; font-weight: 700; margin-bottom: 4px;">Adet</span>
+                        <span id="detail-quantity"
+                            style="font-size: 1.1rem; font-weight: 700; color: var(--text-color);">1</span>
                     </div>
-                    <div class="lds-stats">
-                        <div class="lds-card">
-                            <span>Toplam</span>
-                            <strong id="ld-ceyiz-total">0</strong>
-                        </div>
-                        <div class="lds-card success">
-                            <span>Alınan</span>
-                            <strong id="ld-ceyiz-bought">0</strong>
-                        </div>
-                        <div class="lds-card warning">
-                            <span>Kalan</span>
-                            <strong id="ld-ceyiz-remain">0</strong>
-                        </div>
-                    </div>
-                    <div class="lds-cost-row">
-                        <span>Harcama:</span>
-                        <strong id="ld-ceyiz-cost">0 ₺</strong>
+                    <div class="detail-info-item"
+                        style="background: var(--bg-hover); padding: 1rem; border-radius: 16px;">
+                        <span
+                            style="display: block; font-size: 0.75rem; color: var(--text-light); text-transform: uppercase; font-weight: 700; margin-bottom: 4px;">Fiyat</span>
+                        <span id="detail-price"
+                            style="font-size: 1.1rem; font-weight: 700; color: var(--primary-color);">₺0</span>
                     </div>
                 </div>
 
-                <div class="divider-line"></div>
-
-                <!-- Bohça Section -->
-                <div class="list-detail-section">
-                    <div class="lds-header">
-                        <span class="lds-icon damata"><i class="fas fa-user-tie"></i></span>
-                        <h3>Bohça Listesi</h3>
-                    </div>
-                    <div class="lds-stats">
-                        <div class="lds-card">
-                            <span>Toplam</span>
-                            <strong id="ld-damat-total">0</strong>
-                        </div>
-                        <div class="lds-card success">
-                            <span>Alınan</span>
-                            <strong id="ld-damat-bought">0</strong>
-                        </div>
-                        <div class="lds-card warning">
-                            <span>Kalan</span>
-                            <strong id="ld-damat-remain">0</strong>
-                        </div>
-                    </div>
-                    <div class="lds-cost-row">
-                        <span>Harcama:</span>
-                        <strong id="ld-damat-cost">0 ₺</strong>
+                <div class="detail-notes-section">
+                    <h4
+                        style="font-size: 0.8rem; color: var(--text-light); text-transform: uppercase; font-weight: 700; margin: 0 0 0.8rem 0;">
+                        Notlar</h4>
+                    <div id="detail-notes-container"
+                        style="background: var(--bg-hover); padding: 1.2rem; border-radius: 16px; min-height: 80px; position: relative;">
+                        <p id="detail-notes"
+                            style="margin: 0; font-size: 0.95rem; color: var(--text-color); line-height: 1.6; white-space: pre-wrap; font-style: italic;">
+                            Henüz bir not eklenmemiş...</p>
                     </div>
                 </div>
 
+                <!-- Fotoğraflar Alanı -->
+                <div id="detail-photos-section" style="margin-top: 1.5rem;">
+                    <h4
+                        style="font-size: 0.8rem; color: var(--text-light); text-transform: uppercase; font-weight: 700; margin: 0 0 0.8rem 0;">
+                        Fotoğraflar</h4>
+                    <div id="detail-photos-list" class="detail-photo-grid">
+                        <!-- Fotoğraflar JS ile buraya eklenecek -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="detail-footer"
+                style="padding: 1rem 1.5rem 1.5rem; background: var(--card-bg); display: flex; gap: 10px;">
+                <button id="btn-detail-edit" type="button" class="btn-primary" onclick="window.handleDetailEdit(event)"
+                    style="flex: 1; border-radius: 14px; background: var(--text-color); border-color: var(--text-color); display: flex; align-items: center; justify-content: center; gap: 8px;">
+                    <i class="fas fa-edit"></i> Düzenle
+                </button>
+                <button onclick="window.closeModalHelper(document.getElementById('modal-item-details'))"
+                    class="btn-ghost" style="flex: 1; border-radius: 14px; border: 1px solid var(--border-color);">
+                    Kapat
+                </button>
             </div>
         </div>
     </div>
 
-
-    <!-- Category Spend Detail Modal (New) -->
-    <div id="modal-cat-spend-detail" class="modal hidden">
+    <!-- Add Note Modal (Redesigned) -->
+    <div id="modal-add-note" class="modal hidden note-modal-overlay">
         <div class="modal-backdrop"></div>
-        <div class="modal-content-sheet detail-sheet">
-            <div class="modal-sheet-header">
-                <div class="sheet-title-area">
-                    <h2 class="modal-title">Harcama Detayı</h2>
-                    <p class="sheet-subtitle">Kategori bazlı maliyetler</p>
+        <div class="modal-content note-modal-card">
+            <div class="note-modal-header">
+                <div class="note-icon-circle">
+                    <i class="fas fa-pen"></i>
                 </div>
-                <button class="close-modal-sheet" id="btn-close-cat-spend" type="button"><i
+                <h3 class="modal-title">Not Ekle</h3>
+                <p id="note-date-display" class="note-date"></p>
+            </div>
+
+            <div class="note-input-wrapper">
+                <textarea id="note-input" class="note-textarea" rows="5"
+                    placeholder="Bugün için planların, anıların veya notların..."></textarea>
+            </div>
+
+            <div class="note-modal-actions">
+                <button type="button" class="btn-ghost"
+                    onclick="window.closeModalHelper(document.getElementById('modal-add-note'))">Vazgeç</button>
+                <button type="button" id="btn-save-note-confirm" class="btn-primary-sculpted">Kaydet</button>
+            </div>
+        </div>
+    </div>
+
+
+
+
+    <!-- Photo Viewer Modal (Lightbox with Zoom) -->
+    <div id="modal-image-viewer" class="modal hidden photo-viewer-overlay">
+        <div class="modal-backdrop viewer-close-trigger"></div>
+        <div id="viewer-dynamic-bg" class="viewer-dynamic-bg"></div> <!-- Dinamik Arka Plan -->
+        <div class="viewer-container">
+            <div class="viewer-header">
+                <button type="button" class="viewer-btn close-viewer viewer-close-trigger"><i
                         class="fas fa-times"></i></button>
             </div>
-            <div class="sheet-body" style="padding: 1.5rem; overflow-y: auto;">
+            <div class="viewer-content">
+                <div id="viewer-zoom-wrapper" class="zoom-wrapper">
+                    <!-- Carousel Layout -->
+                    <img id="viewer-prev-image" class="viewer-side-image" src="" alt="">
+                    <img id="viewer-image" src="" alt="Tam Ekran Görüntü">
+                    <img id="viewer-next-image" class="viewer-side-image" src="" alt="">
+                </div>
+            </div>
+            <!-- Fotoğraf İndikatörleri (Noktalar) -->
+            <div id="viewer-indicators" class="viewer-indicators"></div>
+        </div>
+    </div>
 
-                <div class="spending-summary-box" style="margin-bottom:1.5rem;">
-                    <div class="spend-row" style="font-size:1.1rem; border-bottom:none;">
-                        <span>Tüm Kategoriler Toplamı:</span>
-                        <strong id="csd-total-cost" class="text-primary">0 ₺</strong>
+    <!-- Spending History Modal -->
+    <div id="modal-spending-history" class="modal hidden">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content-sheet glass-sheet" style="max-height: 80vh; display: flex; flex-direction: column;">
+            <div class="modal-sheet-header">
+                <div class="sheet-title-area" style="display: flex; align-items: center; gap: 12px;">
+                    <div class="sheet-icon" id="history-header-icon"
+                        style="background: var(--primary-light); color: var(--primary-dark); border-radius: 12px; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+                        <i class="fas fa-history"></i>
+                    </div>
+                    <div>
+                        <h2 class="sheet-title" style="margin: 0; font-size: 1.2rem;">Harcama Geçmişi</h2>
+                        <p class="sheet-subtitle" style="margin: 0; font-size: 0.85rem; opacity: 0.7;">Aylık harcama ve
+                            bütçe özeti</p>
                     </div>
                 </div>
-
-                <div id="csd-list" class="cat-breakdown-list">
-                    <!-- JS Injected -->
-                </div>
-
+                <button class="close-modal-sheet" type="button"
+                    onclick="window.closeModalHelper(document.getElementById('modal-spending-history'))">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="sheet-body" id="history-list-container" style="overflow-y: auto; padding: 1.5rem;">
+                <!-- History items will be injected here -->
             </div>
         </div>
     </div>
-
-    <!-- Lightbox Modal (For Image Zoom) -->
-    <div id="modal-lightbox" class="modal hidden" style="z-index: 2147483650;">
-        <div class="modal-backdrop" style="background: rgba(0,0,0,0.95);"></div>
-
-        <!-- Controls -->
-        <button id="btn-close-lightbox" class="icon-btn"
-            style="position:fixed; top:20px; right:20px; z-index:20; color:white; background:rgba(0,0,0,0.5); width:44px; height:44px; border-radius:50%;">
-            <i class="fas fa-times"></i>
-        </button>
-
-        <!-- Image Container -->
-        <div class="lightbox-container"
-            style="position:relative; width:100%; height:100%; overflow:auto; display:flex; justify-content:center; align-items:center;">
-            <img id="lightbox-image" src="" alt="Full View"
-                style="max-width:100%; max-height:100%; object-fit:contain; transition: transform 0.3s; cursor: zoom-in;">
-        </div>
-    </div>
-
-    <!-- FINAL GALLERY OVERRIDE V2 -->
-    <style>
-        #detail-gallery.detail-gallery-container:not(.hidden) {
-            display: block !important;
-            height: 320px !important;
-            background: #f8f9fa !important;
-            border-radius: 16px !important;
-            overflow: hidden !important;
-            margin: 0 0 20px 0 !important;
-            position: relative !important;
-        }
-
-        #detail-gallery-track.gallery-wrapper {
-            display: flex !important;
-            height: 100% !important;
-            width: auto !important;
-            transition: transform 0.4s cubic-bezier(0.2, 1, 0.3, 1) !important;
-            overflow: visible !important;
-        }
-
-        .detail-slide {
-            flex: 0 0 100% !important;
-            width: 100% !important;
-            height: 100% !important;
-            display: flex !important;
-            justify-content: center !important;
-            align-items: center !important;
-            background: #f8f9fa !important;
-        }
-
-        .detail-slide img {
-            max-width: 100% !important;
-            max-height: 100% !important;
-            width: auto !important;
-            height: auto !important;
-            object-fit: contain !important;
-            display: block !important;
-        }
-
-        .gallery-dots {
-            position: absolute !important;
-            bottom: 12px !important;
-            left: 50% !important;
-            transform: translateX(-50%) !important;
-            display: flex !important;
-            gap: 8px !important;
-            z-index: 20 !important;
-            background: rgba(255, 255, 255, 0.5) !important;
-            padding: 5px 10px !important;
-            border-radius: 20px !important;
-            backdrop-filter: blur(5px) !important;
-        }
-
-        .d-dot {
-            width: 8px !important;
-            height: 8px !important;
-            border-radius: 50% !important;
-            background: rgba(0, 0, 0, 0.2) !important;
-            transition: all 0.3s ease !important;
-        }
-
-        .d-dot.active {
-            background: var(--primary-color) !important;
-            width: 18px !important;
-            border-radius: 4px !important;
-        }
-
-        @media (max-width: 480px) {
-            #detail-gallery.detail-gallery-container {
-                height: 280px !important;
-            }
-        }
-    </style>
-
-    <!-- Image Viewer Modal (Carousel for multiple photos) -->
-    <div id="modal-image-viewer" class="modal hidden" style="z-index: 10000;">
-        <div class="modal-backdrop" style="background: rgba(0, 0, 0, 0.95);"></div>
-        <div class="image-viewer-container">
-            <button class="image-viewer-close" id="close-image-viewer">
-                <i class="fas fa-times"></i>
-            </button>
-
-            <button class="image-viewer-nav prev" id="image-viewer-prev">
-                <i class="fas fa-chevron-left"></i>
-            </button>
-
-            <div class="image-viewer-track-wrapper">
-                <div class="image-viewer-track" id="image-viewer-track">
-                    <!-- Images will be injected here -->
-                </div>
-            </div>
-
-            <button class="image-viewer-nav next" id="image-viewer-next">
-                <i class="fas fa-chevron-right"></i>
-            </button>
-
-            <div class="image-viewer-counter" id="image-viewer-counter">
-                <span id="current-image-index">1</span> / <span id="total-images">1</span>
-            </div>
-
-            <div class="image-viewer-dots" id="image-viewer-dots">
-                <!-- Dots will be injected here -->
-            </div>
-        </div>
-    </div>
-
-    <style>
-        /* Image Viewer Modal Styles */
-        .image-viewer-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 10001;
-            pointer-events: none;
-        }
-
-        .image-viewer-track-wrapper {
-            max-width: 90vw;
-            max-height: 80vh;
-            overflow: hidden;
-            position: relative;
-            pointer-events: auto;
-            border-radius: 12px;
-            background: rgba(0, 0, 0, 0.2);
-        }
-
-        .image-viewer-track {
-            display: flex;
-            transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-            touch-action: pan-y pinch-zoom;
-        }
-
-        .image-viewer-slide {
-            min-width: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-
-        .image-viewer-slide img {
-            max-width: 100%;
-            max-height: 80vh;
-            object-fit: contain;
-            border-radius: 8px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-        }
-
-        .image-viewer-close {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: white;
-            font-size: 1.5rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 10002;
-            transition: all 0.3s;
-            pointer-events: auto;
-        }
-
-        .image-viewer-close:hover {
-            background: rgba(255, 255, 255, 0.25);
-            transform: rotate(90deg);
-        }
-
-        .image-viewer-nav {
-            position: fixed;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: white;
-            font-size: 1.5rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 10002;
-            transition: all 0.3s;
-            pointer-events: auto;
-        }
-
-        .image-viewer-nav:hover {
-            background: rgba(255, 255, 255, 0.3);
-            transform: translateY(-50%) scale(1.1);
-        }
-
-        .image-viewer-nav.prev {
-            left: 20px;
-        }
-
-        .image-viewer-nav.next {
-            right: 20px;
-        }
-
-        .image-viewer-nav:disabled {
-            opacity: 0.3;
-            cursor: not-allowed;
-        }
-
-        .image-viewer-nav:disabled:hover {
-            background: rgba(255, 255, 255, 0.15);
-            transform: translateY(-50%) scale(1);
-        }
-
-        .image-viewer-counter {
-            position: fixed;
-            bottom: 80px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(10px);
-            color: white;
-            padding: 8px 20px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            z-index: 10002;
-            pointer-events: none;
-        }
-
-        .image-viewer-dots {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            gap: 10px;
-            z-index: 10002;
-            pointer-events: auto;
-        }
-
-        .image-viewer-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.4);
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .image-viewer-dot.active {
-            background: white;
-            width: 24px;
-            border-radius: 5px;
-        }
-
-        .image-viewer-dot:hover {
-            background: rgba(255, 255, 255, 0.7);
-        }
-
-        /* Mobile adjustments */
-        @media (max-width: 768px) {
-            .image-viewer-nav {
-                width: 50px;
-                height: 50px;
-                font-size: 1.2rem;
-            }
-
-            .image-viewer-nav.prev {
-                left: 10px;
-            }
-
-            .image-viewer-nav.next {
-                right: 10px;
-            }
-
-            .image-viewer-close {
-                top: 10px;
-                right: 10px;
-                width: 45px;
-                height: 45px;
-            }
-
-            .image-viewer-counter {
-                bottom: 70px;
-            }
-
-            .image-viewer-dots {
-                bottom: 20px;
-            }
-        }
-    </style>
 
     <!-- Scripts -->
+    <!-- CONFIRMATION MODAL (CUSTOM) -->
+    <div id="modal-confirmation" class="modal">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content confirmation-modal-content">
+            <div class="modal-header">
+                <h2 id="confirm-title" style="margin:0; font-size:1.2rem; color:var(--text-color);">Onay</h2>
+                <button class="btn-icon" onclick="window.closeModal('modal-confirmation')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p id="confirm-message" style="margin:1rem 0; color:var(--text-light); line-height:1.5;"></p>
+                <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:1.5rem;">
+                    <button class="btn-secondary" onclick="window.closeModal('modal-confirmation')"
+                        style="flex:1;">İptal</button>
+                    <button id="btn-confirm-action" class="btn-primary"
+                        style="flex:1; background:var(--error-color); border-color:var(--error-color);">Evet,
+                        Sil</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 
+         DARE PICKER REBORN: ROOT LEVEL 
+         This modal is at the root to avoid any nested container constraints.
+    -->
+    <div id="modal-date-picker" class="modal hidden">
+        <style>
+            #modal-date-picker.modal {
+                position: fixed !important;
+                top: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                bottom: 0 !important;
+                display: flex !important;
+                align-items: flex-end !important;
+                justify-content: center !important;
+                z-index: 2147483647 !important;
+                background: rgba(0, 0, 0, 0.45) !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                width: 100vw !important;
+                height: 100vh !important;
+                max-width: none !important;
+                max-height: none !important;
+            }
+
+            #modal-date-picker .modal-content-sheet {
+                position: absolute !important;
+                bottom: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                width: 100vw !important;
+                /* Force true viewport width */
+                min-width: 100vw !important;
+                max-width: 100vw !important;
+                height: 85vh !important;
+                /* Slightly shorter for better balance */
+                max-height: 85vh !important;
+                background: var(--cal-bg) !important;
+                backdrop-filter: blur(40px) !important;
+                -webkit-backdrop-filter: blur(40px) !important;
+                border-radius: 40px 40px 0 0 !important;
+                padding: 3rem 2rem 5rem !important;
+                /* Symmetrical padding */
+                box-shadow: 0 -20px 80px rgba(0, 0, 0, 0.5) !important;
+                border: none !important;
+                margin: 0 !important;
+                transform: none !important;
+                display: flex !important;
+                flex-direction: column !important;
+                animation: slideUpFinal 0.5s cubic-bezier(0.16, 1, 0.3, 1) !important;
+                box-sizing: border-box !important;
+            }
+
+            @keyframes slideUpFinal {
+                from {
+                    transform: translateY(100%);
+                }
+
+                to {
+                    transform: translateY(0);
+                }
+            }
+
+            #modal-date-picker .modal-sheet-header {
+                margin-bottom: 3rem !important;
+                display: flex !important;
+                justify-content: space-between !important;
+                align-items: center !important;
+            }
+
+            #modal-date-picker .modal-title {
+                margin: 0;
+                font-size: 1.5rem !important;
+                /* Smaller title */
+                font-weight: 800 !important;
+                color: var(--cal-text);
+            }
+
+            #modal-date-picker .close-modal-sheet {
+                background: hsla(0, 0%, 0%, 0.08);
+                border: none;
+                border-radius: 50%;
+                width: 50px;
+                height: 50px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: var(--cal-text);
+                cursor: pointer;
+            }
+
+            #modal-date-picker .picker-body {
+                flex: 1 !important;
+                display: flex !important;
+                flex-direction: column !important;
+            }
+
+            #modal-date-picker .picker-calendar-header {
+                margin-bottom: 2.5rem !important;
+                display: flex !important;
+                justify-content: space-between !important;
+                align-items: center !important;
+                padding: 0 0.5rem;
+            }
+
+            #modal-date-picker #picker-month-year {
+                font-size: 1.6rem !important;
+                /* Smaller month name */
+                font-weight: 900 !important;
+                color: var(--cal-primary) !important;
+                letter-spacing: -0.5px;
+            }
+
+            #modal-date-picker .picker-days-header {
+                display: grid !important;
+                grid-template-columns: repeat(7, 1fr) !important;
+                margin-bottom: 1.5rem !important;
+                text-align: center;
+            }
+
+            #modal-date-picker .picker-days-header span {
+                font-size: 0.9rem !important;
+                font-weight: 800 !important;
+                color: var(--cal-primary) !important;
+                opacity: 0.6;
+            }
+
+            #modal-date-picker .picker-grid {
+                display: grid !important;
+                grid-template-columns: repeat(7, 1fr) !important;
+                gap: 10px !important;
+                margin-bottom: 2rem !important;
+                justify-items: center;
+            }
+
+            #modal-date-picker .picker-day {
+                width: 100% !important;
+                max-width: 50px !important;
+                aspect-ratio: 1 !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                font-size: 1.1rem !important;
+                /* Smaller day numbers */
+                font-weight: 700 !important;
+                color: var(--cal-text) !important;
+                border-radius: 50% !important;
+                /* Circular for better look */
+                transition: all 0.2s !important;
+                cursor: pointer;
+            }
+
+            #modal-date-picker .picker-day.selected {
+                background: var(--cal-primary) !important;
+                color: white !important;
+                box-shadow: 0 4px 12px var(--cal-shadow) !important;
+            }
+
+            #modal-date-picker .picker-day.today {
+                border: 2px solid var(--cal-primary) !important;
+                color: var(--cal-primary) !important;
+            }
+
+            #modal-date-picker .picker-day.empty {
+                opacity: 0;
+                pointer-events: none;
+            }
+
+            #modal-date-picker #btn-confirm-date {
+                width: 100% !important;
+                height: 65px !important;
+                font-size: 1.2rem !important;
+                font-weight: 800 !important;
+                border-radius: 20px !important;
+                background: var(--cal-primary) !important;
+                color: white !important;
+                border: none !important;
+                box-shadow: 0 10px 25px var(--cal-shadow) !important;
+                cursor: pointer;
+                transition: transform 0.2s;
+            }
+
+            #modal-date-picker #btn-confirm-date:active {
+                transform: scale(0.97);
+            }
+        </style>
+        <div class="modal-backdrop" onclick="window.closeDatePicker()"></div>
+        <div class="modal-content-sheet">
+            <div class="modal-sheet-header">
+                <h2 class="modal-title">Tarih Seçimi 📅</h2>
+                <button class="close-modal-sheet" onclick="window.closeDatePicker()"><i
+                        class="fas fa-times"></i></button>
+            </div>
+            <div class="picker-body">
+                <div class="picker-calendar-header">
+                    <button id="picker-prev" class="btn-icon-sm"
+                        style="background:none; border:none; color:var(--cal-primary); font-size:1.2rem; cursor:pointer;"><i
+                            class="fas fa-chevron-left"></i></button>
+                    <span id="picker-month-year">...</span>
+                    <button id="picker-next" class="btn-icon-sm"
+                        style="background:none; border:none; color:var(--cal-primary); font-size:1.2rem; cursor:pointer;"><i
+                            class="fas fa-chevron-right"></i></button>
+                </div>
+                <div class="picker-days-header">
+                    <span>Pzt</span><span>Sal</span><span>Çar</span><span>Per</span><span>Cum</span><span>Cmt</span><span>Paz</span>
+                </div>
+                <div id="picker-grid" class="picker-grid"></div>
+            </div>
+            <div class="picker-footer">
+                <button id="btn-confirm-date">TARİHİ ONAYLA</button>
+            </div>
+        </div>
+    </div>
     <script src="app.js"></script>
+
+    <script src="missing_funcs.js"></script>
     <script src="touch-drag-support.js"></script>
-    <script src="image-viewer.js"></script>
+    <!-- Custom UI Confirm Modal -->
+    <div id="modal-confirm" class="modal hidden" style="z-index: 2147483647;">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content-sheet confirm-sheet" style="max-width: 320px; border-radius: 20px; overflow: hidden;">
+            <div class="sheet-body" style="padding: 1.5rem; text-align: center;">
+                <div class="confirm-icon" style="font-size: 2.5rem; color: var(--primary-color); margin-bottom: 1rem;">
+                    <i class="fas fa-question-circle"></i>
+                </div>
+                <h3 id="confirm-title" style="margin-bottom: 0.5rem; font-size: 1.1rem;">Emin misiniz?</h3>
+                <p id="confirm-message" style="font-size: 0.9rem; color: var(--text-light); line-height: 1.4;">Bu işlemi
+                    onaylıyor musunuz?</p>
+            </div>
+            <div class="confirm-actions" style="display: flex; border-top: 1px solid var(--border-color);">
+                <button id="btn-confirm-cancel" class="btn-ghost"
+                    style="flex: 1; padding: 1rem; border: none; border-radius: 0; font-weight: 500; color: var(--text-light);">Vazgeç</button>
+                <div style="width: 1px; background: var(--border-color);"></div>
+                <button id="btn-confirm-ok" class="btn-ghost"
+                    style="flex: 1; padding: 1rem; border: none; border-radius: 0; font-weight: 600; color: var(--primary-color);">Tamam</button>
+            </div>
+        </div>
+    </div>
 </body>
 
 </html>
