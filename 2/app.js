@@ -510,23 +510,28 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 sortedItems.forEach(i => {
                     const itemEl = document.createElement('div');
-                    itemEl.className = 'recent-item'; // CSS'de tanımlı olmalı veya style ekle
+                    itemEl.className = 'recent-item';
                     itemEl.style.cssText = 'display:flex; align-items:center; justify-content:space-between; padding:10px; border-bottom:1px solid var(--border-color);';
 
                     const icon = getCategoryIcon(i.category);
                     const dateStr = i.date ? new Date(i.date).toLocaleDateString('tr-TR') : '-';
+                    const hasPhoto = i.photos && i.photos.length > 0;
+
+                    const avatarHtml = hasPhoto
+                        ? `<img src="${i.photos[0]}" alt="" style="width:32px; height:32px; border-radius:8px; object-fit:cover; flex-shrink:0; box-shadow: 0 1px 4px rgba(0,0,0,0.15);">`
+                        : `<div style="width:32px; height:32px; background:rgba(var(--primary-rgb),0.1); border-radius:50%; display:flex; align-items:center; justify-content:center; color:var(--primary-color); flex-shrink:0;">
+                            <i class="fas ${icon}"></i>
+                          </div>`;
 
                     itemEl.innerHTML = `
-                    <div style="display:flex; align-items:center; gap:10px;">
-                        <div style="width:32px; height:32px; background:rgba(var(--primary-rgb),0.1); border-radius:50%; display:flex; align-items:center; justify-content:center; color:var(--primary-color);">
-                            <i class="fas ${icon}"></i>
-                        </div>
-                        <div>
-                            <div style="font-weight:500; font-size:0.95rem;">${i.name}</div>
+                    <div style="display:flex; align-items:center; gap:10px; min-width:0;">
+                        ${avatarHtml}
+                        <div style="min-width:0;">
+                            <div style="font-weight:500; font-size:0.95rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${i.name}</div>
                             <div style="font-size:0.75rem; color:var(--text-light);">${dateStr}</div>
                         </div>
                     </div>
-                    <div style="text-align:right;">
+                    <div style="text-align:right; flex-shrink:0;">
                         <div style="font-weight:600; color:${i.isBought ? '#27ae60' : 'var(--text-color)'};">
                             ${i.price > 0 ? '₺' + i.price.toLocaleString('tr-TR') : '-'}
                         </div>
@@ -1414,9 +1419,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 updateViewerUI();
                 isSwiping = false;
-            } else if (isPanning && state.scale > 1) {
-                isPanning = false;
             }
+
+            // Parmak çekildiğinde zoom'u sıfırla, eski yerine dönsün
+            if (state.scale !== 1 || state.posX !== 0 || state.posY !== 0) {
+                state.scale = 1;
+                state.posX = 0;
+                state.posY = 0;
+                state.lastScale = 1;
+                state.isDragging = false;
+                applyZoomTransform(currentViewerIndex); // Animasyonlu geri dönüş
+            }
+            isPanning = false;
         });
 
         // Close triggers
