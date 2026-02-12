@@ -1436,7 +1436,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!files || files.length === 0) return;
 
         const overlay = document.getElementById('editor-processing-overlay');
-        if (overlay) overlay.classList.remove('hidden');
+        if (overlay) {
+            overlay.classList.remove('hidden');
+            // Force a small delay to ensure overlay renders on mobile
+            await new Promise(r => setTimeout(r, 50));
+        }
 
         const fileArray = Array.from(files);
 
@@ -1444,30 +1448,32 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!file.type.startsWith('image/')) continue;
 
             try {
-                // Diagnostic log
-                console.log(`📸 Processing: ${file.name}, Size: ${(file.size / 1024).toFixed(2)}KB`);
+                console.log(`📸 Fotoğraf İşleniyor: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`);
 
-                // Use original for small files
-                if (file.size < 500 * 1024) {
-                    const dataUrl = await new Promise((resolve) => {
-                        const reader = new FileReader();
-                        reader.onload = (e) => resolve(e.target.result);
-                        reader.readAsDataURL(file);
-                    });
-                    currentItemPhotos.push(dataUrl);
-                    continue;
+                // Convert to compressed data URL
+                const compressedDataUrl = await compressImage(file);
+                if (compressedDataUrl) {
+                    currentItemPhotos.push(compressedDataUrl);
                 }
+            } catch (err) {
+                console.error("Fotoğraf yükleme hatası:", err);
+            }
+        }
 
-                // Optimization: Use createImageBitmap for efficient decoding
-                // This is much faster and uses less memory than new Image() on modern mobile browsers
-                const objectUrl = URL.createObjectURL(file);
+        renderPhotoGrid();
+        if (overlay) overlay.classList.add('hidden');
+    }
 
-                try {
-                    const bitmap = await createImageBitmap(file);
+    async function compressImage(file) {
+        return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
                     const canvas = document.createElement('canvas');
-                    const MAX_SIZE = 1600;
-                    let width = bitmap.width;
-                    let height = bitmap.height;
+                    const MAX_SIZE = 1200; // Mobile performance optimization
+                    let width = img.width;
+                    let height = img.height;
 
                     if (width > height) {
                         if (width > MAX_SIZE) {
@@ -1484,46 +1490,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     canvas.width = width;
                     canvas.height = height;
                     const ctx = canvas.getContext('2d');
-                    ctx.imageSmoothingEnabled = true;
-                    ctx.imageSmoothingQuality = 'high';
+                    ctx.drawImage(img, 0, 0, width, height);
 
-                    // Draw bitmap directly - very efficient
-                    ctx.drawImage(bitmap, 0, 0, width, height);
-
-                    const processedDataUrl = canvas.toDataURL('image/jpeg', 0.85);
-                    currentItemPhotos.push(processedDataUrl);
-
-                    // Cleanup
-                    bitmap.close();
-                } catch (bitmapError) {
-                    console.warn("createImageBitmap failed, falling back to legacy Image()", bitmapError);
-                    // Legacy Fallback
-                    const dataUrl = await new Promise((resolve) => {
-                        const img = new Image();
-                        img.onload = () => {
-                            const canvas = document.createElement('canvas');
-                            const MAX_SIZE = 1600;
-                            let w = img.width, h = img.height;
-                            if (w > h) { if (w > MAX_SIZE) { h *= MAX_SIZE / w; w = MAX_SIZE; } }
-                            else { if (h > MAX_SIZE) { w *= MAX_SIZE / h; h = MAX_SIZE; } }
-                            canvas.width = w; canvas.height = h;
-                            const context = canvas.getContext('2d');
-                            context.drawImage(img, 0, 0, w, h);
-                            resolve(canvas.toDataURL('image/jpeg', 0.85));
-                        };
-                        img.src = objectUrl;
-                    });
-                    currentItemPhotos.push(dataUrl);
-                }
-
-                URL.revokeObjectURL(objectUrl);
-            } catch (err) {
-                console.error("Photo process error:", err);
-            }
-        }
-
-        renderPhotoGrid();
-        if (overlay) overlay.classList.add('hidden');
+                    // Slightly lower quality for better memory management on mobile
+                    const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+                    resolve(dataUrl);
+                };
+                img.onerror = () => resolve(null);
+                img.src = e.target.result;
+            };
+            reader.onerror = () => resolve(null);
+            reader.readAsDataURL(file);
+        });
     }
 
     function renderPhotoGrid() {
@@ -1544,12 +1522,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Büyütme tıklaması
             item.querySelector('.preview-trigger').addEventListener('click', () => {
-                window.openImageViewer(currentItemPhotos, index);
+                if (typeof window.openImageViewer === 'function') {
+                    window.openImageViewer(currentItemPhotos, index);
+                }
             });
         });
 
+        // Silme işlemi
         grid.querySelectorAll('.remove-photo').forEach(btn => {
             btn.addEventListener('click', (e) => {
+                e.stopPropagation();
                 const idx = parseInt(btn.dataset.index);
                 currentItemPhotos.splice(idx, 1);
                 renderPhotoGrid();

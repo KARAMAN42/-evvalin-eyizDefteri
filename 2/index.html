@@ -606,7 +606,8 @@
                     <div class="photo-upload-area" id="editor-drop-zone">
                         <i class="fas fa-cloud-upload-alt"></i>
                         <p>Fotoğrafları buraya sürükleyin veya seçin</p>
-                        <input type="file" id="editor-photo-input" accept="image/*" multiple hidden>
+                        <input type="file" id="editor-photo-input" accept="image/*" capture="environment" multiple
+                            hidden>
                         <button type="button" class="btn-ghost-sm"
                             onclick="document.getElementById('editor-photo-input').click()">Fotoğraf Seç</button>
                     </div>
