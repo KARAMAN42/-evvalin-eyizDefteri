@@ -605,11 +605,13 @@
                     <h3 class="section-label">Fotoğraflar 📷</h3>
                     <div class="photo-upload-area" id="editor-drop-zone">
                         <i class="fas fa-cloud-upload-alt"></i>
-                        <p>Fotoğrafları buraya sürükleyin veya seçin</p>
-                        <input type="file" id="editor-photo-input" accept="image/*" capture="environment" multiple
-                            hidden>
-                        <button type="button" class="btn-ghost-sm"
-                            onclick="document.getElementById('editor-photo-input').click()">Fotoğraf Seç</button>
+                        <p>Fotoğraf eklemek için dokunun</p>
+                        <input type="file" id="editor-photo-input" accept="image/*" multiple hidden>
+                        <div style="display:flex; gap:8px; flex-wrap:wrap; justify-content:center;">
+                            <button type="button" class="btn-ghost-sm" id="btn-pick-photo">📁 Galeriden Seç</button>
+                            <button type="button" class="btn-ghost-sm" id="btn-take-photo">📷 Fotoğraf Çek</button>
+                        </div>
+                        <input type="file" id="editor-camera-input" accept="image/*" capture="environment" hidden>
                     </div>
                     <div id="editor-photo-grid" class="photo-grid">
                         <!-- Photos injected here -->

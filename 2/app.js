@@ -1432,74 +1432,111 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    async function handlePhotoUpload(files) {
-        if (!files || files.length === 0) return;
+    // ========================================
+    // FOTOĞRAF YÜKLEME SİSTEMİ (v2 - Rewrite)
+    // ========================================
 
-        const overlay = document.getElementById('editor-processing-overlay');
-        if (overlay) {
-            overlay.classList.remove('hidden');
-            // Force a small delay to ensure overlay renders on mobile
-            await new Promise(r => setTimeout(r, 50));
+    async function handlePhotoUpload(files) {
+        if (!files || files.length === 0) {
+            console.warn('⚠️ handlePhotoUpload: Dosya yok');
+            return;
         }
 
-        const fileArray = Array.from(files);
+        console.log(`📸 ${files.length} dosya alındı, işleniyor...`);
 
-        for (const file of fileArray) {
-            if (!file.type.startsWith('image/')) continue;
+        const overlay = document.getElementById('editor-processing-overlay');
+        if (overlay) overlay.classList.remove('hidden');
+
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+
+            // Tip kontrolü - bazı mobil tarayıcılar boş tip döner
+            if (file.type && !file.type.startsWith('image/')) {
+                console.warn(`⚠️ Resim değil, atlandı: ${file.name} (${file.type})`);
+                continue;
+            }
 
             try {
-                console.log(`📸 Fotoğraf İşleniyor: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`);
-
-                // Convert to compressed data URL
-                const compressedDataUrl = await compressImage(file);
-                if (compressedDataUrl) {
-                    currentItemPhotos.push(compressedDataUrl);
+                console.log(`📸 [${i + 1}/${files.length}] İşleniyor: ${file.name || 'camera'} (${(file.size / 1024).toFixed(0)} KB)`);
+                const dataUrl = await fileToDataUrl(file);
+                if (dataUrl) {
+                    currentItemPhotos.push(dataUrl);
+                    console.log(`✅ [${i + 1}/${files.length}] Başarılı eklendi`);
+                } else {
+                    console.error(`❌ [${i + 1}/${files.length}] Data URL oluşturulamadı`);
                 }
             } catch (err) {
-                console.error("Fotoğraf yükleme hatası:", err);
+                console.error(`❌ Fotoğraf hatası [${i + 1}]:`, err);
             }
         }
 
         renderPhotoGrid();
         if (overlay) overlay.classList.add('hidden');
+        console.log(`📸 Toplam fotoğraf sayısı: ${currentItemPhotos.length}`);
     }
 
-    async function compressImage(file) {
+    function fileToDataUrl(file) {
         return new Promise((resolve) => {
             const reader = new FileReader();
-            reader.onload = (e) => {
+
+            reader.onload = function (e) {
+                const originalDataUrl = e.target.result;
+
+                // Küçük resimler için direkt kullan (< 300KB)
+                if (file.size < 300 * 1024) {
+                    console.log('  → Küçük dosya, sıkıştırma atlandı');
+                    resolve(originalDataUrl);
+                    return;
+                }
+
+                // Büyük resimler için sıkıştır
                 const img = new Image();
-                img.onload = () => {
-                    const canvas = document.createElement('canvas');
-                    const MAX_SIZE = 1200; // Mobile performance optimization
-                    let width = img.width;
-                    let height = img.height;
+                img.onload = function () {
+                    try {
+                        const canvas = document.createElement('canvas');
+                        const MAX_DIM = 1200;
+                        let w = img.naturalWidth;
+                        let h = img.naturalHeight;
 
-                    if (width > height) {
-                        if (width > MAX_SIZE) {
-                            height *= MAX_SIZE / width;
-                            width = MAX_SIZE;
+                        // Boyutlandır
+                        if (w > MAX_DIM || h > MAX_DIM) {
+                            if (w > h) {
+                                h = Math.round(h * (MAX_DIM / w));
+                                w = MAX_DIM;
+                            } else {
+                                w = Math.round(w * (MAX_DIM / h));
+                                h = MAX_DIM;
+                            }
                         }
-                    } else {
-                        if (height > MAX_SIZE) {
-                            width *= MAX_SIZE / height;
-                            height = MAX_SIZE;
-                        }
+
+                        canvas.width = w;
+                        canvas.height = h;
+
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, w, h);
+
+                        const compressed = canvas.toDataURL('image/jpeg', 0.75);
+                        console.log(`  → Sıkıştırıldı: ${(compressed.length / 1024).toFixed(0)} KB`);
+                        resolve(compressed);
+                    } catch (canvasErr) {
+                        console.warn('  → Canvas sıkıştırma başarısız, orijinal kullanılıyor', canvasErr);
+                        resolve(originalDataUrl);
                     }
-
-                    canvas.width = width;
-                    canvas.height = height;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, width, height);
-
-                    // Slightly lower quality for better memory management on mobile
-                    const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
-                    resolve(dataUrl);
                 };
-                img.onerror = () => resolve(null);
-                img.src = e.target.result;
+
+                img.onerror = function () {
+                    console.warn('  → Resim yüklenemedi, orijinal data URL kullanılıyor');
+                    resolve(originalDataUrl);
+                };
+
+                img.src = originalDataUrl;
             };
-            reader.onerror = () => resolve(null);
+
+            reader.onerror = function () {
+                console.error('  → FileReader hatası');
+                resolve(null);
+            };
+
             reader.readAsDataURL(file);
         });
     }
@@ -1509,28 +1546,34 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!grid) return;
 
         grid.innerHTML = '';
+
+        if (currentItemPhotos.length === 0) return;
+
         currentItemPhotos.forEach((photo, index) => {
             const item = document.createElement('div');
             item.className = 'photo-item';
             item.innerHTML = `
-                <img src="${photo}" alt="Ürün Fotoğrafı" class="preview-trigger">
+                <img src="${photo}" alt="Fotoğraf ${index + 1}" class="preview-trigger">
                 <button type="button" class="remove-photo" data-index="${index}">
                     <i class="fas fa-times"></i>
                 </button>
             `;
             grid.appendChild(item);
+        });
 
-            // Büyütme tıklaması
-            item.querySelector('.preview-trigger').addEventListener('click', () => {
+        // Büyütme tıklamaları
+        grid.querySelectorAll('.preview-trigger').forEach((img, index) => {
+            img.addEventListener('click', () => {
                 if (typeof window.openImageViewer === 'function') {
                     window.openImageViewer(currentItemPhotos, index);
                 }
             });
         });
 
-        // Silme işlemi
+        // Silme butonları
         grid.querySelectorAll('.remove-photo').forEach(btn => {
             btn.addEventListener('click', (e) => {
+                e.preventDefault();
                 e.stopPropagation();
                 const idx = parseInt(btn.dataset.index);
                 currentItemPhotos.splice(idx, 1);
@@ -1540,35 +1583,59 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function setupPhotoListeners() {
-        const dropZone = document.getElementById('editor-drop-zone');
         const photoInput = document.getElementById('editor-photo-input');
+        const cameraInput = document.getElementById('editor-camera-input');
+        const btnPick = document.getElementById('btn-pick-photo');
+        const btnTake = document.getElementById('btn-take-photo');
 
-        if (dropZone && photoInput) {
-            dropZone.addEventListener('click', () => photoInput.click());
-            photoInput.addEventListener('change', (e) => {
-                handlePhotoUpload(e.target.files);
-                photoInput.value = '';
+        // Galeriden seç butonu
+        if (btnPick && photoInput) {
+            btnPick.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('📁 Galeri açılıyor...');
+                photoInput.click();
             });
-
-            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(evt => {
-                dropZone.addEventListener(evt, (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                }, false);
-            });
-
-            ['dragenter', 'dragover'].forEach(evt => {
-                dropZone.addEventListener(evt, () => dropZone.classList.add('drag-active'), false);
-            });
-
-            ['dragleave', 'drop'].forEach(evt => {
-                dropZone.addEventListener(evt, () => dropZone.classList.remove('drag-active'), false);
-            });
-
-            dropZone.addEventListener('drop', (e) => {
-                handlePhotoUpload(e.dataTransfer.files);
-            }, false);
         }
+
+        // Fotoğraf çek butonu
+        if (btnTake && cameraInput) {
+            btnTake.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('📷 Kamera açılıyor...');
+                cameraInput.click();
+            });
+        }
+
+        // Galeri input change
+        if (photoInput) {
+            photoInput.addEventListener('change', function () {
+                console.log('📁 Galeri seçimi:', this.files?.length, 'dosya');
+                if (this.files && this.files.length > 0) {
+                    handlePhotoUpload(this.files);
+                }
+                this.value = '';  // Reset for next selection
+            });
+        }
+
+        // Kamera input change
+        if (cameraInput) {
+            cameraInput.addEventListener('change', function () {
+                console.log('📷 Kamera çekimi:', this.files?.length, 'dosya');
+                if (this.files && this.files.length > 0) {
+                    handlePhotoUpload(this.files);
+                }
+                this.value = '';  // Reset for next capture
+            });
+        }
+
+        console.log('✅ Fotoğraf listener\'ları kuruldu', {
+            photoInput: !!photoInput,
+            cameraInput: !!cameraInput,
+            btnPick: !!btnPick,
+            btnTake: !!btnTake
+        });
     }
 
     // Editör Kategori Değişimi (Yeni Kategori Kontrolü)
