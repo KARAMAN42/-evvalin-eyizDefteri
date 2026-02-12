@@ -1,7 +1,7 @@
-﻿:root {
-    /* Şevval's Palette: Pastel Rose, Cream, Soft Grey */
+:root {
+    /* ?evval's Palette: Pastel Rose, Cream, Soft Grey */
     --primary-color: #dfa6a6;
-    /* Gül Kurusu */
+    /* G?l Kurusu */
     --primary-dark: #b87b7b;
     --primary-light: #fbecec;
     --primary-rgb: 223, 166, 166;
@@ -479,14 +479,14 @@ body.dark-mode .header-actions button:hover {
     /* Soft Pink BG */
     border-color: var(--primary-color);
     padding: 1.2rem;
-    /* Normal padding'e geri dönüldü */
+    /* Normal padding'e geri d?n?ld? */
 }
 
 .item-card.bought .item-info h3 {
     text-decoration: line-through;
     color: var(--primary-dark);
     margin-bottom: 0.3rem;
-    /* Normal boşlukla eşitlendi */
+    /* Normal bo?lukla e?itlendi */
 }
 
 .item-card.dragging {
@@ -590,13 +590,13 @@ body.dark-mode .header-actions button:hover {
 .item-tag {
     background: var(--bg-color);
     padding: 5px 12px;
-    /* Daha geniş padding */
+    /* Daha geni? padding */
     border-radius: 8px;
-    /* Daha yumuşak köşeler */
+    /* Daha yumu?ak k??eler */
     border: 1px solid var(--border-color);
     font-size: 0.82rem;
     white-space: nowrap;
-    /* Yazıların kırılmaması için */
+    /* Yaz?lar?n k?r?lmamas? i?in */
     display: inline-block;
 }
 
@@ -606,12 +606,12 @@ body.dark-mode .header-actions button:hover {
     background: rgba(212, 196, 181, 0.2);
     /* Biraz daha belirgin */
     padding: 5px 12px;
-    /* Daha geniş padding */
+    /* Daha geni? padding */
     border-radius: 8px;
-    /* Daha yumuşak köşeler */
+    /* Daha yumu?ak k??eler */
     font-size: 0.85rem;
     white-space: nowrap;
-    /* Yazıların kırılmaması için */
+    /* Yaz?lar?n k?r?lmamas? i?in */
     display: inline-block;
     border: 1px solid rgba(212, 196, 181, 0.3);
     /* Hafif bir border */
@@ -2193,7 +2193,7 @@ body.modal-open .settings-sheet {
    MODAL / OVERLAY CLICK FIX
    ========================= */
 
-/* Modal arka planı tıklamayı yutmasın, sadece modal içi tıklansın */
+/* Modal arka plan? t?klamay? yutmas?n, sadece modal i?i t?klans?n */
 .modal {
     pointer-events: none;
 }
@@ -2206,14 +2206,14 @@ body.modal-open .settings-sheet {
     pointer-events: auto;
 }
 
-/* Butonlar her zaman tıklanabilir kalsın */
+/* Butonlar her zaman t?klanabilir kals?n */
 button,
 .btn,
 .fab {
     pointer-events: auto !important;
 }
 
-/* Modal üstte kalsın */
+/* Modal ?stte kals?n */
 .modal {
     z-index: 9999 !important;
 }
@@ -2444,12 +2444,25 @@ button,
 
 /* Home Section - Compact Single Screen */
 #home-section {
-    padding: 1rem;
+    padding: 1.25rem 1rem;
     display: flex;
     flex-direction: column;
-    max-height: calc(100vh - 60px - 70px);
+    height: calc(100vh - 70px - env(safe-area-inset-bottom, 0px));
+    max-height: calc(100vh - 70px);
     overflow: hidden;
     justify-content: space-between;
+    box-sizing: border-box;
+    gap: 0.5rem;
+}
+
+
+.home-quick-stats .stat-card {
+    background: var(--cal-bg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid var(--cal-border);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.04);
+    border-radius: 24px;
 }
 
 /* =========================================================================
@@ -2787,7 +2800,7 @@ body.dark-mode #btn-add-note:hover {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
-/* Nişan Card - Pastel Pink */
+/* Ni?an Card - Pastel Pink */
 .home-count-card.nisan {
     background: linear-gradient(135deg, #FFD6E8 0%, #FFC9E0 100%);
     border-color: rgba(255, 105, 180, 0.2);
@@ -7145,7 +7158,7 @@ body.dark-mode .picker-day:hover:not(.empty):not(.selected) {
 #calendar-grid .cal-day {
     font-size: 0.8rem;
     pointer-events: none;
-    /* Mini takvimde günlere tıklanmaz */
+    /* Mini takvimde g?nlere t?klanmaz */
 }
 
 #calendar-grid .cal-day.today {
@@ -7387,7 +7400,7 @@ body.dark-mode #detail-notes-container {
     -webkit-backdrop-filter: blur(10px);
     transition: all 0.3s ease;
     z-index: 10002;
-    /* Zoom wrapper üzerinde olsun */
+    /* Zoom wrapper ?zerinde olsun */
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
@@ -7404,7 +7417,7 @@ body.dark-mode #detail-notes-container {
 /* Ensure container allows clicking through to close */
 .viewer-container {
     pointer-events: auto;
-    /* Tıklamaları yakala */
+    /* T?klamalar? yakala */
 }
 
 /* Zoom wrapper shouldn't block checks unless image is clicked */
@@ -7415,7 +7428,7 @@ body.dark-mode #detail-notes-container {
 
 .zoom-wrapper img {
     pointer-events: auto;
-    /* Sadece resim tıklanabilir olsun (zoom/pan için) */
+    /* Sadece resim t?klanabilir olsun (zoom/pan i?in) */
 }
 
 /* --- Modal Stacking Fix --- */
@@ -7476,20 +7489,20 @@ body.dark-mode #detail-notes-container {
     transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s;
 }
 
-/* Pressing State (Basılı Tutarken) */
+/* Pressing State (Bas?l? Tutarken) */
 .undo-notification.pressing {
     transform: translateX(-50%) scale(0.95);
     background: rgba(40, 40, 40, 1);
 }
 
-/* Dragging State (Sürüklerken) */
+/* Dragging State (S?r?klerken) */
 .undo-notification.dragging {
     transform: scale(1.1) !important;
     /* Pop effect */
     box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5);
     cursor: grabbing;
     background: var(--primary-color);
-    /* Renk değişimi */
+    /* Renk de?i?imi */
     border-color: white;
     z-index: 10010;
 }
@@ -7620,3 +7633,82 @@ body.dark-mode #detail-notes-container {
     font-size: 1.8rem !important;
     font-weight: 900 !important;
 }
+/* =========================================
+   PROCESSING OVERLAY & SPINNER
+   ========================================= */
+.processing-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    border-radius: var(--radius-lg);
+    animation: fadeIn 0.3s ease;
+}
+
+body.dark-mode .processing-overlay {
+    background: rgba(45, 45, 45, 0.85);
+}
+
+.processing-overlay p {
+    font-weight: 600;
+    color: var(--primary-dark);
+    font-size: 0.95rem;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid var(--primary-light);
+    border-top: 4px solid var(--primary-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.processing-overlay.hidden {
+    display: none !important;
+}
+
+
+
+/* Dashboard Clickable Stats */
+.mini-list-stat.clickable-stat {
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.mini-list-stat.clickable-stat:hover {
+    background: var(--bg-hover) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.mini-list-stat.clickable-stat:active {
+    transform: scale(0.98);
+}
+
+
+
+
+/* --- NEW Dynamic Photo Viewer Carousel --- */
+.viewer-content { flex: 1; width: 100%; position: relative; overflow: hidden; display: flex; align-items: center; }
+.viewer-track { display: flex; height: 100%; width: 100%; transition: transform 0.4s cubic-bezier(0.1, 0, 0.3, 1); will-change: transform; flex-direction: row !important; }
+.viewer-slide { flex: 0 0 100%; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; user-select: none; }
+.viewer-image-wrapper { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; will-change: transform; pointer-events: auto; }
+.viewer-slide img { max-width: 100%; max-height: 100%; object-fit: contain; user-drag: none; -webkit-user-drag: none; transform-origin: center center; box-shadow: 0 5px 30px rgba(0,0,0,0.3); }
+.viewer-track.is-dragging { transition: none !important; }
+.viewer-slide { min-width: 100%; }

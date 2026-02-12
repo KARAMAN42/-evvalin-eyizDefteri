@@ -447,6 +447,21 @@ document.addEventListener('DOMContentLoaded', () => {
         if (barDamat) barDamat.style.width = `${damatCount > 0 ? (damatBought / damatCount) * 100 : 0}%`;
         if (ratioDamat) ratioDamat.textContent = `${damatBought}/${damatCount}`;
 
+        // 4b. Home Screen Action Cards / Summary Updates
+        const homeTotalBoughtText = document.getElementById('home-total-bought-text');
+        const homeTotalPct = document.getElementById('home-total-percent');
+        const homeCeyizRatio = document.getElementById('home-ceyiz-ratio');
+        const homeCeyizBar = document.getElementById('home-ceyiz-bar');
+        const homeDamatRatio = document.getElementById('home-damat-ratio');
+        const homeDamatBar = document.getElementById('home-damat-bar');
+
+        if (homeTotalBoughtText) homeTotalBoughtText.textContent = `${boughtItems}/${totalItems} ürün alındı`;
+        if (homeTotalPct) homeTotalPct.textContent = `%${totalPct}`;
+        if (homeCeyizRatio) homeCeyizRatio.textContent = `${ceyizBought}/${ceyizCount}`;
+        if (homeCeyizBar) homeCeyizBar.style.width = `${ceyizCount > 0 ? (ceyizBought / ceyizCount) * 100 : 0}%`;
+        if (homeDamatRatio) homeDamatRatio.textContent = `${damatBought}/${damatCount}`;
+        if (homeDamatBar) homeDamatBar.style.width = `${damatCount > 0 ? (damatBought / damatCount) * 100 : 0}%`;
+
         // 5. Kategori Dağılımı (Progress Bars)
         const catContainer = document.getElementById('category-breakdown-container');
         if (catContainer) {
@@ -920,6 +935,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (notesElem) {
             notesElem.textContent = item.note || 'Henüz bir not eklenmemiş...';
             notesElem.style.opacity = item.note ? '1' : '0.5';
+
+            // Editör modundaysa sıfırla
+            window.cancelQuickNoteEdit && window.cancelQuickNoteEdit();
         }
 
         // Fotoğrafları Doldur
@@ -978,6 +996,71 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.error("❌ window.openQuickAddModal bulunamadı!");
             }
         }, 150);
+    };
+
+    // --- QUICK NOTE EDIT FUNCTIONS ---
+    window.startQuickNoteEdit = function () {
+        if (!currentDetailId) return;
+        const item = items.find(i => i.id === currentDetailId);
+        if (!item) return;
+
+        const noteText = document.getElementById('detail-notes');
+        const editor = document.getElementById('quick-note-editor');
+        const input = document.getElementById('quick-note-input');
+
+        if (noteText && editor && input) {
+            noteText.style.display = 'none';
+            editor.style.display = 'flex';
+            editor.classList.remove('hidden');
+            input.value = item.note || '';
+            input.focus();
+
+            // Container stilini güncelle (tıklanabilir hissini geçici olarak kaldır)
+            document.getElementById('detail-notes-container').style.cursor = 'default';
+        }
+    };
+
+    window.cancelQuickNoteEdit = function () {
+        const noteText = document.getElementById('detail-notes');
+        const editor = document.getElementById('quick-note-editor');
+
+        if (noteText && editor) {
+            noteText.style.display = 'block';
+            editor.style.display = 'none';
+            editor.classList.add('hidden');
+            document.getElementById('detail-notes-container').style.cursor = 'pointer';
+        }
+    };
+
+    window.saveQuickNote = function () {
+        if (!currentDetailId) return;
+        const itemIdx = items.findIndex(i => i.id === currentDetailId);
+        if (itemIdx === -1) return;
+
+        const input = document.getElementById('quick-note-input');
+        const newNote = input ? input.value.trim() : '';
+
+        // Veriyi güncelle
+        items[itemIdx].note = newNote;
+
+        // Kaydet ve Arayüzü Güncelle
+        saveData();
+
+        // Detay görünümünü güncelle
+        const noteText = document.getElementById('detail-notes');
+        if (noteText) {
+            noteText.textContent = newNote || 'Henüz bir not eklenmemiş...';
+            noteText.style.opacity = newNote ? '1' : '0.5';
+        }
+
+        // Editörü kapat
+        window.cancelQuickNoteEdit();
+
+        // Ana listeyi de sessizce güncelle (eğer render gerekiyorsa)
+        renderApp();
+
+        console.log("📝 Not hızlıca güncellendi:", newNote);
+        showToast("Not kaydedildi", 2000);
     };
 
     // Modal Açma / Kapama Helpers
@@ -1165,64 +1248,61 @@ document.addEventListener('DOMContentLoaded', () => {
     let viewerPhotos = [];
     let viewerIndex = 0;
 
-    window.openImageViewer = function (photos, startIndex = 0) {
-        viewerPhotos = Array.isArray(photos) ? photos : [photos];
-        viewerIndex = startIndex;
+    let viewerTrackX = 0;
+    let currentViewerPhotos = [];
+    let currentViewerIndex = 0;
+    let isViewerDragging = false;
+    let viewerStartTouchX = 0;
+    let viewerStartTouchY = 0;
 
-        updateViewerImage();
+    window.openImageViewer = function (photos, startIndex = 0) {
+        currentViewerPhotos = Array.isArray(photos) ? photos : [photos];
+        currentViewerIndex = startIndex;
+
+        const track = document.getElementById('viewer-track');
+        if (!track) return;
+
+        // Clear and rebuild slides
+        track.innerHTML = '';
+        currentViewerPhotos.forEach((src, idx) => {
+            const slide = document.createElement('div');
+            slide.className = 'viewer-slide';
+            slide.innerHTML = `
+                <div class="viewer-image-wrapper" id="zoom-wrapper-${idx}" data-index="${idx}">
+                    <img src="${src}" alt="Fotoğraf ${idx + 1}" draggable="false">
+                </div>
+            `;
+            track.appendChild(slide);
+        });
+
+        updateViewerUI(true); // true means immediate jump
         window.openModal('modal-image-viewer');
     };
 
-    function updateViewerImage() {
-        const modal = document.getElementById('modal-image-viewer');
-        const img = document.getElementById('viewer-image');
-        const prevImg = document.getElementById('viewer-prev-image');
-        const nextImg = document.getElementById('viewer-next-image');
-        const wrapper = document.getElementById('viewer-zoom-wrapper');
+    function updateViewerUI(immediate = false) {
+        const track = document.getElementById('viewer-track');
         const dynamicBg = document.getElementById('viewer-dynamic-bg');
         const indicators = document.getElementById('viewer-indicators');
 
-        if (!modal || !img || !wrapper) return;
+        if (!track) return;
 
-        // Current Image
-        const src = viewerPhotos[viewerIndex];
-        img.src = src;
-        if (dynamicBg) {
-            dynamicBg.style.backgroundImage = `url(${src})`;
-        }
+        // Position Track
+        const offset = -currentViewerIndex * 100;
+        track.style.transition = immediate ? 'none' : 'transform 0.4s cubic-bezier(0.1, 0, 0.3, 1)';
+        track.style.transform = `translateX(${offset}%)`;
 
-        // Side Images (Prev/Next)
-        if (prevImg) {
-            const prevIndex = (viewerIndex - 1 + viewerPhotos.length) % viewerPhotos.length;
-            prevImg.src = viewerPhotos.length > 1 ? viewerPhotos[prevIndex] : '';
+        // Update Dynamic BG
+        if (dynamicBg && currentViewerPhotos[currentViewerIndex]) {
+            dynamicBg.style.backgroundImage = `url(${currentViewerPhotos[currentViewerIndex]})`;
         }
-        if (nextImg) {
-            const nextIndex = (viewerIndex + 1) % viewerPhotos.length;
-            nextImg.src = viewerPhotos.length > 1 ? viewerPhotos[nextIndex] : '';
-        }
-
-        // Reset Zoom State on Image Change
-        zoomState = {
-            scale: 1,
-            lastScale: 1,
-            posX: 0,
-            posY: 0,
-            lastPosX: 0,
-            lastPosY: 0,
-            initialDist: 0,
-            isDragging: false,
-            lastTouchTime: 0
-        };
-        wrapper.style.transition = 'none';
-        wrapper.style.transform = `translate(0px, 0px) scale(1)`;
 
         // Render Indicators
         if (indicators) {
             indicators.innerHTML = '';
-            if (viewerPhotos.length > 1) {
-                viewerPhotos.forEach((_, i) => {
+            if (currentViewerPhotos.length > 1) {
+                currentViewerPhotos.forEach((_, i) => {
                     const dot = document.createElement('div');
-                    dot.className = `indicator-dot ${i === viewerIndex ? 'active' : ''}`;
+                    dot.className = `indicator-dot ${i === currentViewerIndex ? 'active' : ''}`;
                     indicators.appendChild(dot);
                 });
             }
@@ -1231,167 +1311,163 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function setupViewerListeners() {
         const modal = document.getElementById('modal-image-viewer');
-        const content = modal?.querySelector('.viewer-content');
-        const wrapper = document.getElementById('viewer-zoom-wrapper');
-        const closeTriggers = modal?.querySelectorAll('.viewer-close-trigger');
+        const track = document.getElementById('viewer-track');
+        if (!modal || !track) return;
 
-        if (!modal || !content || !wrapper) return;
+        let startX = 0;
+        let startY = 0;
+        let isPanning = false;
+        let isSwiping = false;
 
-        // Arka Plan Tıklama ile Kapatma (Backdrop Click)
-        modal.addEventListener('click', (e) => {
-            // Sadece wrapper dışına (boşluğa) tıklanırsa kapat
-            // e.target modalın kendisi veya content wrapper ise
-            if (e.target === modal || e.target === content || e.target.classList.contains('viewer-container')) {
-                console.log("Empty space clicked, closing viewer.");
-                window.closeModalHelper(modal);
+        // Per-slide zoom states (store by index)
+        const zoomStates = {};
+
+        function getZoomState(idx) {
+            if (!zoomStates[idx]) {
+                zoomStates[idx] = { scale: 1, posX: 0, posY: 0, lastPosX: 0, lastPosY: 0, lastScale: 1, isDragging: false };
             }
-        });
+            return zoomStates[idx];
+        }
 
-        let swipeStartX = 0;
-        let swipeOffsetX = 0;
+        function applyZoomTransform(idx) {
+            const wrapper = document.getElementById(`zoom-wrapper-${idx}`);
+            if (!wrapper) return;
+            const state = getZoomState(idx);
+            wrapper.style.transition = state.isDragging ? 'none' : 'transform 0.2s cubic-bezier(0.1, 0, 0.3, 1)';
+            wrapper.style.transform = `translate(${state.posX}px, ${state.posY}px) scale(${state.scale})`;
+        }
 
-        const updateTransform = () => {
-            if (zoomState.scale > 1) {
-                wrapper.style.transition = 'none';
-                wrapper.style.transform = `translate(${zoomState.posX}px, ${zoomState.posY}px) scale(${zoomState.scale})`;
-            } else {
-                // Swipe feedback with interactive carousel
-                wrapper.style.transition = zoomState.isDragging ? 'none' : 'transform 0.3s cubic-bezier(0.1, 0, 0.3, 1)';
-
-                // Translate the wrapper based on swipe offset
-                wrapper.style.transform = `translate(${swipeOffsetX}px, 0px) scale(1)`;
-
-                // Dynamic visibility class
-                if (Math.abs(swipeOffsetX) > 5) {
-                    wrapper.classList.add('is-swiping');
-                } else if (!zoomState.isDragging) {
-                    wrapper.classList.remove('is-swiping');
-                }
-            }
-        };
-
-        content.addEventListener('touchstart', (e) => {
+        modal.addEventListener('touchstart', (e) => {
             if (e.touches.length === 2) {
-                zoomState.initialDist = Math.hypot(
-                    e.touches[0].pageX - e.touches[1].pageX,
-                    e.touches[0].pageY - e.touches[1].pageY
-                );
-                zoomState.lastScale = zoomState.scale;
+                isPanning = false;
+                isSwiping = false;
+                const state = getZoomState(currentViewerIndex);
+                state.initialDist = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY);
+                state.lastScale = state.scale;
             } else if (e.touches.length === 1) {
-                swipeStartX = e.touches[0].pageX;
-                swipeOffsetX = 0;
-                zoomState.lastPosX = e.touches[0].pageX - zoomState.posX;
-                zoomState.lastPosY = e.touches[0].pageY - zoomState.posY;
-                zoomState.isDragging = true;
+                startX = e.touches[0].pageX;
+                startY = e.touches[0].pageY;
+                const state = getZoomState(currentViewerIndex);
+                state.lastTouchX = startX - state.posX;
+                state.lastTouchY = startY - state.posY;
+                state.isDragging = true;
 
+                // Double Tap Check
                 const now = Date.now();
-                if (now - zoomState.lastTouchTime < 300) {
-                    if (zoomState.scale > 1) {
-                        zoomState.scale = 1;
-                        zoomState.posX = 0;
-                        zoomState.posY = 0;
-                    } else {
-                        zoomState.scale = 2.5;
-                    }
-                    updateTransform();
-                }
-                zoomState.lastTouchTime = now;
-            }
-        });
-
-        content.addEventListener('touchmove', (e) => {
-            if (e.touches.length === 2) {
-                const dist = Math.hypot(
-                    e.touches[0].pageX - e.touches[1].pageX,
-                    e.touches[0].pageY - e.touches[1].pageY
-                );
-                zoomState.scale = Math.min(Math.max(1, (dist / zoomState.initialDist) * zoomState.lastScale), 4);
-                updateTransform();
-            } else if (e.touches.length === 1 && zoomState.isDragging) {
-                if (zoomState.scale > 1) {
-                    zoomState.posX = e.touches[0].pageX - zoomState.lastPosX;
-                    zoomState.posY = e.touches[0].pageY - zoomState.lastPosY;
-                    updateTransform();
-                } else if (viewerPhotos.length > 1) {
-                    e.preventDefault(); // Lock vertical scroll while swiping gallery
-                    swipeOffsetX = e.touches[0].pageX - swipeStartX;
-                    updateTransform();
+                if (now - (state.lastTap || 0) < 300) {
+                    state.scale = state.scale > 1 ? 1 : 2.5;
+                    if (state.scale === 1) { state.posX = 0; state.posY = 0; }
+                    applyZoomTransform(currentViewerIndex);
+                    state.lastTap = 0;
+                } else {
+                    state.lastTap = now;
                 }
             }
         }, { passive: false });
 
-        content.addEventListener('touchend', () => {
-            zoomState.isDragging = false;
+        modal.addEventListener('touchmove', (e) => {
+            const state = getZoomState(currentViewerIndex);
 
-            if (zoomState.scale === 1 && viewerPhotos.length > 1) {
-                const threshold = window.innerWidth / 4;
-                if (Math.abs(swipeOffsetX) > threshold) {
-                    const direction = swipeOffsetX < 0 ? 1 : -1;
-                    const targetX = -direction * window.innerWidth;
+            if (e.touches.length === 2) {
+                e.preventDefault();
+                const dist = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY);
+                state.scale = Math.min(Math.max(1, (dist / state.initialDist) * state.lastScale), 4);
+                applyZoomTransform(currentViewerIndex);
+            } else if (e.touches.length === 1 && state.isDragging) {
+                const moveX = e.touches[0].pageX;
+                const moveY = e.touches[0].pageY;
+                const dx = moveX - startX;
+                const dy = moveY - startY;
 
-                    // Sync transition exactly
-                    wrapper.style.transition = 'transform 0.35s cubic-bezier(0.15, 0, 0.2, 1)';
-                    swipeOffsetX = targetX;
-                    updateTransform();
-
-                    // Swap slightly after animation finishes to ensure no snapping
-                    setTimeout(() => {
-                        viewerIndex = (viewerIndex + direction + viewerPhotos.length) % viewerPhotos.length;
-                        swipeOffsetX = 0;
-                        updateViewerImage();
-                        // Explicitly remove swiping state after swap
-                        wrapper.classList.remove('is-swiping');
-                    }, 360);
+                if (state.scale > 1) {
+                    // Panning inside zoomed image
+                    e.preventDefault();
+                    isPanning = true;
+                    state.posX = moveX - state.lastTouchX;
+                    state.posY = moveY - state.lastTouchY;
+                    applyZoomTransform(currentViewerIndex);
                 } else {
-                    // Snap back
-                    wrapper.style.transition = 'transform 0.3s cubic-bezier(0.1, 0, 0.3, 1)';
-                    swipeOffsetX = 0;
-                    updateTransform();
-
-                    setTimeout(() => {
-                        wrapper.classList.remove('is-swiping');
-                        wrapper.style.transition = 'none';
-                    }, 300);
+                    // Potential Swiping between images
+                    if (Math.abs(dx) > Math.abs(dy) * 1.5) {
+                        e.preventDefault();
+                        isSwiping = true;
+                        track.classList.add('is-dragging');
+                        const baseOffset = -currentViewerIndex * track.offsetWidth;
+                        track.style.transform = `translateX(${baseOffset + dx}px)`;
+                    }
                 }
-            } else {
-                wrapper.classList.remove('is-swiping');
+            }
+        }, { passive: false });
+
+        modal.addEventListener('touchend', (e) => {
+            const state = getZoomState(currentViewerIndex);
+            state.isDragging = false;
+            track.classList.remove('is-dragging');
+
+            if (isSwiping) {
+                const dx = e.changedTouches[0].pageX - startX;
+                const threshold = track.offsetWidth / 5;
+
+                if (Math.abs(dx) > threshold) {
+                    if (dx > 0 && currentViewerIndex > 0) currentViewerIndex--;
+                    else if (dx < 0 && currentViewerIndex < currentViewerPhotos.length - 1) currentViewerIndex++;
+                }
+                updateViewerUI();
+                isSwiping = false;
+            } else if (isPanning && state.scale > 1) {
+                isPanning = false;
             }
         });
 
-        closeTriggers?.forEach(trigger => {
-            trigger.addEventListener('click', () => {
+        // Close triggers
+        modal.querySelectorAll('.viewer-close-trigger').forEach(btn => {
+            btn.addEventListener('click', () => window.closeModalHelper(modal));
+        });
+
+        // Modal backdrop click
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal || e.target.classList.contains('viewer-container')) {
                 window.closeModalHelper(modal);
-            });
+            }
         });
     }
-    function handlePhotoUpload(files) {
+
+    async function handlePhotoUpload(files) {
         if (!files || files.length === 0) return;
 
-        Array.from(files).forEach(file => {
-            if (!file.type.startsWith('image/')) return;
+        const overlay = document.getElementById('editor-processing-overlay');
+        if (overlay) overlay.classList.remove('hidden');
 
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const dataUrl = e.target.result;
+        const fileArray = Array.from(files);
 
+        for (const file of fileArray) {
+            if (!file.type.startsWith('image/')) continue;
+
+            try {
                 // Diagnostic log
-                console.log(`📸 Processing image: ${file.name}, Size: ${(file.size / 1024).toFixed(2)}KB`);
+                console.log(`📸 Processing: ${file.name}, Size: ${(file.size / 1024).toFixed(2)}KB`);
 
-                // If image is small enough (< 800KB), use original to preserve 100% quality
-                if (file.size < 800 * 1024) {
-                    console.log("✅ Using original image (small file size)");
+                // Use original for small files
+                if (file.size < 500 * 1024) {
+                    const dataUrl = await new Promise((resolve) => {
+                        const reader = new FileReader();
+                        reader.onload = (e) => resolve(e.target.result);
+                        reader.readAsDataURL(file);
+                    });
                     currentItemPhotos.push(dataUrl);
-                    renderPhotoGrid();
-                    return;
+                    continue;
                 }
 
-                const img = new Image();
-                img.onload = () => {
-                    console.log(`📐 Original dimensions: ${img.width}x${img.height}`);
+                // Optimization: Use createImageBitmap for efficient decoding
+                // This is much faster and uses less memory than new Image() on modern mobile browsers
+                const objectUrl = URL.createObjectURL(file);
+
+                try {
+                    const bitmap = await createImageBitmap(file);
                     const canvas = document.createElement('canvas');
                     const MAX_SIZE = 1600;
-                    let width = img.width;
-                    let height = img.height;
+                    let width = bitmap.width;
+                    let height = bitmap.height;
 
                     if (width > height) {
                         if (width > MAX_SIZE) {
@@ -1410,17 +1486,44 @@ document.addEventListener('DOMContentLoaded', () => {
                     const ctx = canvas.getContext('2d');
                     ctx.imageSmoothingEnabled = true;
                     ctx.imageSmoothingQuality = 'high';
-                    ctx.drawImage(img, 0, 0, width, height);
 
-                    const processedDataUrl = canvas.toDataURL('image/jpeg', 0.90);
-                    console.log(`✨ Processed dimensions: ${width}x${height}`);
+                    // Draw bitmap directly - very efficient
+                    ctx.drawImage(bitmap, 0, 0, width, height);
+
+                    const processedDataUrl = canvas.toDataURL('image/jpeg', 0.85);
                     currentItemPhotos.push(processedDataUrl);
-                    renderPhotoGrid();
-                };
-                img.src = dataUrl;
-            };
-            reader.readAsDataURL(file);
-        });
+
+                    // Cleanup
+                    bitmap.close();
+                } catch (bitmapError) {
+                    console.warn("createImageBitmap failed, falling back to legacy Image()", bitmapError);
+                    // Legacy Fallback
+                    const dataUrl = await new Promise((resolve) => {
+                        const img = new Image();
+                        img.onload = () => {
+                            const canvas = document.createElement('canvas');
+                            const MAX_SIZE = 1600;
+                            let w = img.width, h = img.height;
+                            if (w > h) { if (w > MAX_SIZE) { h *= MAX_SIZE / w; w = MAX_SIZE; } }
+                            else { if (h > MAX_SIZE) { w *= MAX_SIZE / h; h = MAX_SIZE; } }
+                            canvas.width = w; canvas.height = h;
+                            const context = canvas.getContext('2d');
+                            context.drawImage(img, 0, 0, w, h);
+                            resolve(canvas.toDataURL('image/jpeg', 0.85));
+                        };
+                        img.src = objectUrl;
+                    });
+                    currentItemPhotos.push(dataUrl);
+                }
+
+                URL.revokeObjectURL(objectUrl);
+            } catch (err) {
+                console.error("Photo process error:", err);
+            }
+        }
+
+        renderPhotoGrid();
+        if (overlay) overlay.classList.add('hidden');
     }
 
     function renderPhotoGrid() {
@@ -3042,6 +3145,17 @@ document.addEventListener('DOMContentLoaded', () => {
             const offset = -currentSlide * 100;
             track.style.transform = `translateX(${offset}%)`;
             track.style.transition = 'transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+
+            // Dot göstergelerini güncelle
+            const dots = document.querySelectorAll('.carousel-dots-container .c-dot');
+            dots.forEach((dot, idx) => {
+                if (idx === currentSlide) {
+                    dot.classList.add('active');
+                } else {
+                    dot.classList.remove('active');
+                }
+            });
+
             console.log(`📍 Carousel slide: ${currentSlide + 1}/${slides.length}`);
         }
 
@@ -3525,5 +3639,59 @@ document.addEventListener('DOMContentLoaded', () => {
             localStorage.removeItem('restore_point');
         }
     }
+
+    // =========================================================================
+    // LIST STATISTICS MODAL
+    // =========================================================================
+
+    window.showListStats = function (type) {
+        const modal = document.getElementById('modal-list-stats');
+        if (!modal) {
+            console.error("Statistics modal not found.");
+            return;
+        }
+
+        const typeItems = items.filter(i => i.type === type);
+        const completed = typeItems.filter(i => i.isBought);
+        const totalPrice = typeItems.reduce((sum, i) => sum + (i.price || 0), 0);
+        const progress = typeItems.length > 0 ? Math.round((completed.length / typeItems.length) * 100) : 0;
+
+        // Visual Colors & Icons
+        const isCeyiz = type === 'ceyiz';
+        const color = isCeyiz ? '#FFB7B2' : '#a29bfe';
+        const icon = isCeyiz ? 'fa-home' : 'fa-user-tie';
+        const title = isCeyiz ? 'Çeyiz' : 'Bohça';
+
+        // Update Modal Content
+        const iconContainer = document.getElementById('stats-icon-container');
+        if (iconContainer) iconContainer.style.background = color;
+
+        const mainIcon = document.getElementById('stats-main-icon');
+        if (mainIcon) mainIcon.className = `fas ${icon}`;
+
+        const modalTitle = document.getElementById('stats-modal-title');
+        if (modalTitle) modalTitle.textContent = title;
+
+        const progressBar = document.getElementById('stat-progress-bar');
+        if (progressBar) {
+            progressBar.style.width = `${progress}%`;
+            progressBar.style.background = color;
+        }
+
+        const progressRatio = document.getElementById('stat-progress-ratio');
+        if (progressRatio) progressRatio.textContent = `${completed.length}/${typeItems.length}`;
+
+        const progressPercent = document.getElementById('stat-progress-percent');
+        if (progressPercent) {
+            progressPercent.textContent = `%${progress}`;
+            progressPercent.style.color = color;
+        }
+
+        const priceEl = document.getElementById('stat-total-price');
+        if (priceEl) priceEl.textContent = `₺${totalPrice.toLocaleString()}`;
+
+        // Open modal
+        window.openModal('modal-list-stats');
+    };
 
 });

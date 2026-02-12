@@ -138,9 +138,6 @@
 
                         <!-- Countdown Card (Unified) -->
                         <!-- Carousel Wrapper -->
-
-
-                        <!-- 2. Countdown/Calendar Carousel -->
                         <div class="countdown-carousel-wrapper">
                             <div class="carousel-track" id="home-carousel-track">
                                 <!-- SLIDE 1: Countdown -->
@@ -229,58 +226,34 @@
                                 <div class="c-dot" data-slide="1"></div>
                                 <div class="c-dot" data-slide="2"></div>
                             </div>
+
+
                         </div>
 
-                        <!-- 3. Quick Progress Summary -->
-                        <div class="home-quick-stats" style="margin: 1rem 0;">
-                            <div class="stat-card modern" style="padding: 1.25rem !important;">
-                                <div
-                                    style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                                    <div style="display: flex; align-items: center; gap: 10px;">
-                                        <div
-                                            style="width: 40px; height: 40px; border-radius: 12px; background: hsla(0, 72%, 67%, 0.1); color: var(--primary-color); display: flex; align-items: center; justify-content: center;">
-                                            <i class="fas fa-chart-line"></i>
-                                        </div>
-                                        <div>
-                                            <span
-                                                style="display: block; font-size: 0.85rem; font-weight: 700; color: var(--text-color);">Genel
-                                                İlerleme</span>
-                                            <small style="color: var(--text-light);" id="home-total-bought-text">0/0
-                                                ürün alındı</small>
-                                        </div>
-                                    </div>
-                                    <span id="home-total-percent"
-                                        style="font-size: 1.2rem; font-weight: 800; color: var(--primary-color);">%0</span>
-                                </div>
+                        <!-- Mini Dashboard Removed per user request -->
 
-                                <div style="display: flex; flex-direction: column; gap: 12px;">
-                                    <div onclick="window.showListStats('ceyiz')" style="cursor: pointer;">
-                                        <div
-                                            style="display: flex; justify-content: space-between; font-size: 0.75rem; font-weight: 700; color: var(--text-light); text-transform: uppercase; margin-bottom: 4px;">
-                                            <span>Çeyiz</span>
-                                            <span id="home-ceyiz-ratio">0/0</span>
-                                        </div>
-                                        <div
-                                            style="height: 6px; background: rgba(0,0,0,0.05); border-radius: 3px; overflow: hidden;">
-                                            <div id="home-ceyiz-bar"
-                                                style="width: 0%; height: 100%; background: #FFB7B2; border-radius: 3px; transition: width 0.5s ease;">
-                                            </div>
-                                        </div>
+
+                        <!-- Content from original home section -->
+                        <div class="home-actions-wrapper">
+                            <div class="home-actions" data-home-id="actions">
+                                <button class="home-action-card ceyiz" data-nav="ceyiz"
+                                    onclick="event.preventDefault(); event.stopPropagation(); if(window.showListStats) { window.showListStats('ceyiz'); } else { alert('Çeyiz istatistikleri yükleniyor...'); }">
+                                    <div class="action-icon-circle"><i class="fas fa-list"></i></div>
+                                    <div class="action-text">
+                                        <span class="action-title">&Ccedil;eyiz Listesi</span>
+                                        <span class="action-desc">Eksikleri Tamamla</span>
                                     </div>
-                                    <div onclick="window.showListStats('damat')" style="cursor: pointer;">
-                                        <div
-                                            style="display: flex; justify-content: space-between; font-size: 0.75rem; font-weight: 700; color: var(--text-light); text-transform: uppercase; margin-bottom: 4px;">
-                                            <span>Bohça</span>
-                                            <span id="home-damat-ratio">0/0</span>
-                                        </div>
-                                        <div
-                                            style="height: 6px; background: rgba(0,0,0,0.05); border-radius: 3px; overflow: hidden;">
-                                            <div id="home-damat-bar"
-                                                style="width: 0%; height: 100%; background: #a29bfe; border-radius: 3px; transition: width 0.5s ease;">
-                                            </div>
-                                        </div>
+                                    <i class="fas fa-chevron-right action-arrow"></i>
+                                </button>
+                                <button class="home-action-card damat" data-nav="damat"
+                                    onclick="event.preventDefault(); event.stopPropagation(); if(window.showListStats) { window.showListStats('damat'); } else { alert('Bohça istatistikleri yükleniyor...'); }">
+                                    <div class="action-icon-circle"><i class="fas fa-suitcase"></i></div>
+                                    <div class="action-text">
+                                        <span class="action-title">Boh&ccedil;a Listesi</span>
+                                        <span class="action-desc">Haz&#305;rl&#305;klar&#305; Y&ouml;net</span>
                                     </div>
-                                </div>
+                                    <i class="fas fa-chevron-right action-arrow"></i>
+                                </button>
                             </div>
                         </div>
 
@@ -413,9 +386,7 @@
                                 <!-- Lists Breakdown -->
                                 <div class="stat-card modern"
                                     style="display:flex; flex-direction:column; justify-content:center; gap:10px;">
-                                    <div class="mini-list-stat clickable-stat"
-                                        onclick="window.showListStats && window.showListStats('ceyiz')"
-                                        style="cursor: pointer; transition: transform 0.2s ease;">
+                                    <div class="mini-list-stat">
                                         <div class="mls-header">
                                             <span class="mls-icon ceyiza"><i class="fas fa-home"></i></span>
                                             <span>Çeyiz</span>
@@ -425,9 +396,7 @@
                                         </div>
                                         <div class="mls-val" id="stat-ceyiz-ratio">0/0</div>
                                     </div>
-                                    <div class="mini-list-stat clickable-stat"
-                                        onclick="window.showListStats && window.showListStats('damat')"
-                                        style="cursor: pointer; transition: transform 0.2s ease;">
+                                    <div class="mini-list-stat">
                                         <div class="mls-header">
                                             <span class="mls-icon damata"><i class="fas fa-user-tie"></i></span>
                                             <span>Bohça</span>
@@ -1187,25 +1156,11 @@
                     <h4
                         style="font-size: 0.8rem; color: var(--text-light); text-transform: uppercase; font-weight: 700; margin: 0 0 0.8rem 0;">
                         Notlar</h4>
-                    <div id="detail-notes-container" onclick="window.startQuickNoteEdit && window.startQuickNoteEdit()"
-                        style="background: var(--bg-hover); padding: 1.2rem; border-radius: 16px; min-height: 80px; position: relative; cursor: pointer; transition: all 0.2s ease;">
+                    <div id="detail-notes-container"
+                        style="background: var(--bg-hover); padding: 1.2rem; border-radius: 16px; min-height: 80px; position: relative;">
                         <p id="detail-notes"
                             style="margin: 0; font-size: 0.95rem; color: var(--text-color); line-height: 1.6; white-space: pre-wrap; font-style: italic;">
                             Henüz bir not eklenmemiş...</p>
-
-                        <!-- Quick Note Editor (Hidden by default) -->
-                        <div id="quick-note-editor" class="hidden"
-                            style="display: none; flex-direction: column; gap: 10px;">
-                            <textarea id="quick-note-input" class="modern-textarea"
-                                style="width: 100%; min-height: 80px; background: white; border: 1px solid var(--primary-color); padding: 10px; border-radius: 12px; font-family: inherit; font-size: 0.95rem;"
-                                placeholder="Notunuzu yazın..."></textarea>
-                            <div style="display: flex; gap: 8px; justify-content: flex-end;">
-                                <button onclick="event.stopPropagation(); window.cancelQuickNoteEdit()"
-                                    style="padding: 6px 12px; border-radius: 8px; border: 1px solid #ddd; background: white; font-size: 0.8rem; font-weight: 600; cursor: pointer;">Vazgeç</button>
-                                <button onclick="event.stopPropagation(); window.saveQuickNote()"
-                                    style="padding: 6px 12px; border-radius: 8px; border: none; background: var(--primary-color); color: white; font-size: 0.8rem; font-weight: 600; cursor: pointer;">Kaydet</button>
-                            </div>
-                        </div>
                     </div>
                 </div>
 
@@ -1230,65 +1185,6 @@
                     class="btn-ghost" style="flex: 1; border-radius: 14px; border: 1px solid var(--border-color);">
                     Kapat
                 </button>
-            </div>
-        </div>
-    </div>
-
-
-    <!-- List Statistics Modal -->
-    <div id="modal-list-stats" class="modal hidden">
-        <div class="modal-backdrop"></div>
-        <div class="modal-content-sheet glass-sheet"
-            style="max-width: 400px; border-radius: 32px; display: flex; flex-direction: column; padding: 2rem;">
-
-            <div style="display: flex; justify-content: flex-end; margin-bottom: -1rem;">
-                <button class="close-modal-sheet" type="button"
-                    onclick="window.closeModalHelper(document.getElementById('modal-list-stats'))"
-                    style="background: var(--bg-hover); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: none; cursor: pointer; color: var(--text-color);">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-
-            <div class="sheet-body" style="text-align: center; padding: 1rem 0;">
-                <div id="stats-icon-container"
-                    style="width: 80px; height: 80px; border-radius: 24px; margin: 0 auto 1.5rem; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; color: white; background: var(--primary-color); box-shadow: 0 10px 25px rgba(0,0,0,0.1);">
-                    <i class="fas fa-home" id="stats-main-icon"></i>
-                </div>
-
-                <h2 id="stats-modal-title"
-                    style="font-size: 1.8rem; font-weight: 800; margin-bottom: 0.5rem; color: var(--text-color);">Çeyiz
-                </h2>
-                <p id="stats-modal-subtitle" style="color: var(--text-light); margin-bottom: 2rem; font-size: 1rem;">
-                    Liste İlerleme Durumu</p>
-
-                <div style="background: var(--bg-hover); padding: 1.5rem; border-radius: 24px;">
-                    <div class="mls-bar-bg"
-                        style="height: 12px; background: rgba(0,0,0,0.06); border-radius: 12px; overflow: hidden; margin-bottom: 1rem;">
-                        <div class="mls-bar-fill" id="stat-progress-bar"
-                            style="height: 100%; border-radius: 12px; width: 0%; transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1); background: var(--primary-color);">
-                        </div>
-                    </div>
-
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <div style="text-align: left;">
-                            <span id="stat-progress-ratio"
-                                style="display: block; font-size: 1.5rem; font-weight: 800; color: var(--text-color);">0/0</span>
-                            <small style="color: var(--text-light); font-weight: 600;">Eşya Tamamlandı</small>
-                        </div>
-                        <div style="text-align: right;">
-                            <span id="stat-progress-percent"
-                                style="display: block; font-size: 1.5rem; font-weight: 800; color: var(--primary-color);">%0</span>
-                            <small style="color: var(--text-light); font-weight: 600;">Toplam İlerleme</small>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="stat-price-container"
-                    style="margin-top: 1.5rem; display: flex; align-items: center; justify-content: center; gap: 8px; color: var(--text-light); font-weight: 600;">
-                    <i class="fas fa-tag"></i>
-                    <span>Toplam Harcama: </span>
-                    <span id="stat-total-price" style="color: var(--text-color); font-weight: 800;">₺0</span>
-                </div>
             </div>
         </div>
     </div>
@@ -1331,8 +1227,11 @@
                         class="fas fa-times"></i></button>
             </div>
             <div class="viewer-content">
-                <div id="viewer-track" class="viewer-track">
-                    <!-- Slides will be injected here dynamically -->
+                <div id="viewer-zoom-wrapper" class="zoom-wrapper">
+                    <!-- Carousel Layout -->
+                    <img id="viewer-prev-image" class="viewer-side-image" src="" alt="">
+                    <img id="viewer-image" src="" alt="Tam Ekran Görüntü">
+                    <img id="viewer-next-image" class="viewer-side-image" src="" alt="">
                 </div>
             </div>
             <!-- Fotoğraf İndikatörleri (Noktalar) -->
