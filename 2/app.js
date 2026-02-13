@@ -2281,6 +2281,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 selectedPickerDate = null;
             }
 
+            pickerYearsOpen = false;
+            // Reset year picker DOM state
+            const yc = document.getElementById('picker-years-container');
+            const dh = document.querySelector('#modal-date-picker .picker-days-header');
+            const dg = document.getElementById('picker-grid');
+            const my = document.getElementById('picker-month-year');
+            if (yc) yc.style.display = 'none';
+            if (dh) dh.style.display = '';
+            if (dg) dg.style.display = '';
+            if (my) my.classList.remove('years-open');
+            const pb = document.getElementById('picker-prev');
+            const nb = document.getElementById('picker-next');
+            if (pb) pb.style.visibility = '';
+            if (nb) nb.style.visibility = '';
             renderPicker();
             const modal = document.getElementById('modal-date-picker');
             if (modal) {
@@ -2307,7 +2321,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const month = pickerCurrentDate.getMonth();
 
             const monthNames = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
-            monthYear.textContent = `${monthNames[month]} ${year}`;
+            monthYear.innerHTML = `${monthNames[month]} ${year} <i class="fas fa-chevron-down year-chevron"></i>`;
 
             const firstDay = new Date(year, month, 1).getDay();
             const daysInMonth = new Date(year, month + 1, 0).getDate();
@@ -2361,6 +2375,83 @@ document.addEventListener('DOMContentLoaded', () => {
                 window.showToast('Lütfen bir tarih seçin');
             }
         });
+
+        // === YEAR PICKER TOGGLE ===
+        let pickerYearsOpen = false;
+
+        function toggleYearsPicker() {
+            const monthYearEl = document.getElementById('picker-month-year');
+            const daysHeader = document.querySelector('#modal-date-picker .picker-days-header');
+            const daysGrid = document.getElementById('picker-grid');
+            const yearsContainer = document.getElementById('picker-years-container');
+            const prevBtn = document.getElementById('picker-prev');
+            const nextBtn = document.getElementById('picker-next');
+            if (!yearsContainer) return;
+
+            pickerYearsOpen = !pickerYearsOpen;
+
+            if (pickerYearsOpen) {
+                // Show years grid, hide days
+                if (daysHeader) daysHeader.style.display = 'none';
+                if (daysGrid) daysGrid.style.display = 'none';
+                yearsContainer.style.display = 'grid';
+                if (prevBtn) prevBtn.style.visibility = 'hidden';
+                if (nextBtn) nextBtn.style.visibility = 'hidden';
+                if (monthYearEl) monthYearEl.classList.add('years-open');
+                renderYearsPicker();
+            } else {
+                // Show days, hide years
+                if (daysHeader) daysHeader.style.display = '';
+                if (daysGrid) daysGrid.style.display = '';
+                yearsContainer.style.display = 'none';
+                if (prevBtn) prevBtn.style.visibility = '';
+                if (nextBtn) nextBtn.style.visibility = '';
+                if (monthYearEl) monthYearEl.classList.remove('years-open');
+                renderPicker();
+            }
+        }
+
+        function renderYearsPicker() {
+            const container = document.getElementById('picker-years-container');
+            if (!container) return;
+
+            container.innerHTML = '';
+            const currentYear = new Date().getFullYear();
+            const selectedYear = pickerCurrentDate.getFullYear();
+            const startYear = currentYear - 5;
+            const endYear = currentYear + 10;
+
+            for (let y = startYear; y <= endYear; y++) {
+                const cell = document.createElement('div');
+                cell.className = 'picker-year-cell';
+                cell.textContent = y;
+
+                if (y === currentYear) cell.classList.add('current-year');
+                if (y === selectedYear) cell.classList.add('selected-year');
+
+                cell.addEventListener('click', () => {
+                    pickerCurrentDate.setFullYear(y);
+                    pickerYearsOpen = true; // Will be toggled to false
+                    toggleYearsPicker();
+                });
+
+                container.appendChild(cell);
+            }
+
+            // Scroll to selected year
+            setTimeout(() => {
+                const selectedCell = container.querySelector('.selected-year');
+                if (selectedCell) {
+                    selectedCell.scrollIntoView({ block: 'center', behavior: 'smooth' });
+                }
+            }, 50);
+        }
+
+        // Wire up month-year click
+        const pickerMonthYear = document.getElementById('picker-month-year');
+        if (pickerMonthYear) {
+            pickerMonthYear.addEventListener('click', toggleYearsPicker);
+        }
 
         // Helper: ISO to DD.MM.YYYY
         function formatToDisplay(isoDate) {
@@ -2542,12 +2633,13 @@ document.addEventListener('DOMContentLoaded', () => {
     let unsubscribes = [];
 
     const firebaseConfig = {
-        apiKey: "AIzaSyAs-PLACEHOLDER",
+        apiKey: "AIzaSyDnP_QyltRRwKjoUfJraQMqkV3_SJYigoU",
         authDomain: "ceyiz-defteri-sync.firebaseapp.com",
         projectId: "ceyiz-defteri-sync",
-        storageBucket: "ceyiz-defteri-sync.appspot.com",
-        messagingSenderId: "123456789",
-        appId: "1:123456789:web:abcdef"
+        storageBucket: "ceyiz-defteri-sync.firebasestorage.app",
+        messagingSenderId: "490613867046",
+        appId: "1:490613867046:web:8f9af6ceaa4a7af10edce7",
+        measurementId: "G-20EMTT2NT4"
     };
 
     async function initCloudSync() {
@@ -2557,6 +2649,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             if (typeof firebase === 'undefined') {
                 console.warn("☁️ Firebase SDK henüz yüklenmemiş.");
+                if (window.showToast) window.showToast('⚠️ Firebase yüklenemedi. İnternet bağlantınızı kontrol edin.');
                 return;
             }
 
@@ -2571,6 +2664,8 @@ document.addEventListener('DOMContentLoaded', () => {
             setupCloudListeners(syncCode);
         } catch (err) {
             console.error("Firebase Init Error:", err);
+            if (window.showToast) window.showToast('❌ Bağlantı hatası: ' + err.message);
+            syncActive = false;
         }
     }
 
@@ -2635,6 +2730,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     function setupDataSafetyListeners() {
+        console.log("🛡️ Veri Güvenliği Dinleyicileri Kuruluyor...");
         // Backup Buttons
         const btnBackup = document.getElementById('btn-backup-copy');
         if (btnBackup) btnBackup.addEventListener('click', exportBackup);
@@ -2705,7 +2801,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 const code = codeInput ? codeInput.value.trim().toUpperCase() : '';
 
                 if (code.length < 4) {
-                    alert("Lütfen en az 4 haneli bir kod giriniz.");
+                    if (window.showToast) window.showToast("⚠️ Lütfen en az 4 haneli bir kod giriniz.");
+                    return;
+                }
+
+                if (typeof firebase === 'undefined') {
+                    if (window.showToast) window.showToast("⚠️ Firebase yüklenemedi. İnternet bağlantınızı kontrol edin.");
                     return;
                 }
 
@@ -2713,10 +2814,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 saveData();
 
                 if (window.showToast) window.showToast('☁️ Bulut bağlantısı kuruluyor...');
-                await initCloudSync();
-                if (syncActive) {
-                    await window.syncToCloud();
-                    if (window.showToast) window.showToast('✅ Bulut senkronizasyonu aktif!');
+
+                try {
+                    await initCloudSync();
+                    if (syncActive) {
+                        await window.syncToCloud();
+                        if (window.showToast) window.showToast('✅ Bulut senkronizasyonu aktif! Kod: ' + code);
+
+                        // Button Feedback
+                        btnConnect.innerHTML = "BAĞLANDI ✅";
+                        btnConnect.style.background = "#4CAF50"; // Green
+                        btnConnect.style.borderColor = "#4CAF50";
+                        btnConnect.disabled = true;
+                    } else {
+                        if (window.showToast) window.showToast("❌ Bağlantı kurulamadı.");
+                    }
+                } catch (e) {
+                    if (window.showToast) window.showToast("❌ Bağlantı hatası: " + e.message);
                 }
             });
         }

@@ -16,6 +16,7 @@
     <link rel="stylesheet" href="nikah-animation.css">
     <link rel="stylesheet" href="splash-design.css">
     <link rel="stylesheet" href="splash-infinity-animation.css">
+    <link rel="stylesheet" href="calendar-redesign.css">
     <link
         href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap"
         rel="stylesheet">
@@ -1501,10 +1502,70 @@
 
             #modal-date-picker #picker-month-year {
                 font-size: 1.6rem !important;
-                /* Smaller month name */
                 font-weight: 900 !important;
                 color: var(--cal-primary) !important;
                 letter-spacing: -0.5px;
+                cursor: pointer;
+                user-select: none;
+                transition: opacity 0.2s;
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+            }
+
+            #modal-date-picker #picker-month-year:active {
+                opacity: 0.6;
+            }
+
+            #modal-date-picker #picker-month-year .year-chevron {
+                font-size: 0.7rem;
+                transition: transform 0.3s ease;
+            }
+
+            #modal-date-picker #picker-month-year.years-open .year-chevron {
+                transform: rotate(180deg);
+            }
+
+            /* Year Grid Styles */
+            #modal-date-picker .picker-years-grid {
+                display: grid;
+                grid-template-columns: repeat(4, 1fr);
+                gap: 10px;
+                padding: 0.5rem;
+                max-height: 350px;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            #modal-date-picker .picker-year-cell {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 14px 8px;
+                font-size: 1.05rem;
+                font-weight: 600;
+                color: var(--cal-text);
+                border-radius: 14px;
+                cursor: pointer;
+                transition: all 0.2s ease;
+                user-select: none;
+            }
+
+            #modal-date-picker .picker-year-cell:active {
+                transform: scale(0.93);
+            }
+
+            #modal-date-picker .picker-year-cell.current-year {
+                border: 2px solid var(--cal-primary);
+                color: var(--cal-primary);
+                font-weight: 700;
+            }
+
+            #modal-date-picker .picker-year-cell.selected-year {
+                background: var(--cal-primary);
+                color: white;
+                font-weight: 800;
+                box-shadow: 0 4px 12px var(--cal-shadow);
             }
 
             #modal-date-picker .picker-days-header {
@@ -1601,20 +1662,22 @@
                     <span>Pzt</span><span>Sal</span><span>Çar</span><span>Per</span><span>Cum</span><span>Cmt</span><span>Paz</span>
                 </div>
                 <div id="picker-grid" class="picker-grid"></div>
+                <!-- Year Picker Grid (hidden by default) -->
+                <div id="picker-years-container" class="picker-years-grid" style="display: none;"></div>
             </div>
             <div class="picker-footer">
                 <button id="btn-confirm-date">TARİHİ ONAYLA</button>
             </div>
         </div>
     </div>
+    <!-- Firebase SDK (v8 Compatibility) - Must load BEFORE app.js -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     <script src="app.js"></script>
 
     <script src="missing_funcs.js"></script>
     <script src="touch-drag-support.js"></script>
 
-    <!-- Firebase SDK (v8 Compatibility) -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     <!-- Custom UI Confirm Modal -->
     <div id="modal-confirm" class="modal hidden" style="z-index: 2147483647;">
         <div class="modal-backdrop"></div>

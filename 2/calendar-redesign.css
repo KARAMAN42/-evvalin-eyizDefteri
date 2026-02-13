@@ -1,0 +1,302 @@
+/* ============================================
+   FULL CALENDAR MODAL — PREMIUM REDESIGN
+   Pure visual overrides, no functionality changes.
+   ============================================ */
+
+/* --- Modal Sheet: Softer, more premium --- */
+#modal-full-calendar .calendar-sheet {
+    background: linear-gradient(180deg,
+            rgba(255, 252, 253, 0.98) 0%,
+            rgba(255, 248, 250, 0.96) 100%) !important;
+    border-radius: 36px !important;
+    border: none !important;
+    box-shadow: 0 -12px 60px rgba(180, 100, 120, 0.12) !important;
+    margin-bottom: 12px !important;
+    max-height: calc(85vh - 24px) !important;
+    height: calc(85vh - 24px) !important;
+}
+
+body.dark-mode #modal-full-calendar .calendar-sheet {
+    background: linear-gradient(180deg,
+            rgba(30, 28, 32, 0.98) 0%,
+            rgba(25, 23, 28, 0.96) 100%) !important;
+    box-shadow: 0 -12px 60px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* --- Modal Header: refined typography --- */
+#modal-full-calendar .modal-sheet-header {
+    padding: 1.8rem 1.8rem 0.8rem !important;
+    border-bottom: none !important;
+}
+
+#modal-full-calendar .modal-title {
+    font-size: 1.4rem !important;
+    font-weight: 800 !important;
+    letter-spacing: -0.3px;
+}
+
+#modal-full-calendar .sheet-subtitle {
+    font-size: 0.78rem !important;
+    opacity: 0.6;
+    margin-top: 2px;
+}
+
+#modal-full-calendar .close-modal-sheet {
+    width: 38px !important;
+    height: 38px !important;
+    border-radius: 50% !important;
+    background: rgba(0, 0, 0, 0.05) !important;
+    border: none !important;
+    transition: all 0.2s ease !important;
+}
+
+#modal-full-calendar .close-modal-sheet:active {
+    transform: scale(0.9) !important;
+    background: rgba(0, 0, 0, 0.1) !important;
+}
+
+body.dark-mode #modal-full-calendar .close-modal-sheet {
+    background: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* --- Calendar Controls: Premium navigation --- */
+#modal-full-calendar .full-calendar-controls {
+    padding: 0.8rem 1.5rem 0.5rem !important;
+    background: transparent !important;
+    margin-bottom: 0.3rem;
+}
+
+#modal-full-calendar #full-cal-month-year {
+    font-size: 1.35rem !important;
+    font-weight: 800 !important;
+    background: linear-gradient(135deg, #C87080, #B85C66) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    background-clip: text !important;
+    letter-spacing: -0.5px;
+    margin: 0 !important;
+}
+
+body.dark-mode #modal-full-calendar #full-cal-month-year {
+    background: linear-gradient(135deg, #E8A5A5, #D4908E) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    background-clip: text !important;
+}
+
+/* "Bugüne Dön" button refinement */
+#modal-full-calendar #btn-today {
+    font-size: 0.65rem !important;
+    font-weight: 700 !important;
+    padding: 3px 12px !important;
+    border-radius: 20px !important;
+    color: var(--cal-primary) !important;
+    background: rgba(200, 112, 128, 0.08) !important;
+    border: 1px solid rgba(200, 112, 128, 0.15) !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.8px !important;
+    transition: all 0.2s ease !important;
+    margin-top: 6px !important;
+}
+
+#modal-full-calendar #btn-today:active {
+    transform: scale(0.95) !important;
+    background: rgba(200, 112, 128, 0.15) !important;
+}
+
+body.dark-mode #modal-full-calendar #btn-today {
+    background: rgba(232, 165, 165, 0.1) !important;
+    border-color: rgba(232, 165, 165, 0.2) !important;
+}
+
+/* Navigation arrows — softer pill shape */
+#modal-full-calendar .full-calendar-controls .btn-icon-sm {
+    width: 40px !important;
+    height: 40px !important;
+    border-radius: 14px !important;
+    background: rgba(200, 112, 128, 0.06) !important;
+    color: var(--cal-primary) !important;
+    border: 1px solid rgba(200, 112, 128, 0.12) !important;
+    font-size: 0.9rem !important;
+    box-shadow: none !important;
+    transition: all 0.2s ease !important;
+}
+
+#modal-full-calendar .full-calendar-controls .btn-icon-sm:active {
+    transform: scale(0.9) !important;
+    background: rgba(200, 112, 128, 0.15) !important;
+}
+
+body.dark-mode #modal-full-calendar .full-calendar-controls .btn-icon-sm {
+    background: rgba(232, 165, 165, 0.08) !important;
+    border-color: rgba(232, 165, 165, 0.12) !important;
+}
+
+/* --- Days Header: refined weight --- */
+#modal-full-calendar .calendar-days-header {
+    padding: 0 1.5rem !important;
+    margin-bottom: 0.3rem !important;
+}
+
+#modal-full-calendar .calendar-days-header span {
+    font-size: 0.68rem !important;
+    font-weight: 700 !important;
+    color: rgba(0, 0, 0, 0.3) !important;
+    letter-spacing: 0.5px !important;
+}
+
+body.dark-mode #modal-full-calendar .calendar-days-header span {
+    color: rgba(255, 255, 255, 0.3) !important;
+}
+
+/* --- Day Cells: Modern rounded style --- */
+#modal-full-calendar .cal-day {
+    border-radius: 14px !important;
+    font-size: 0.95rem !important;
+    font-weight: 600 !important;
+    color: rgba(0, 0, 0, 0.7) !important;
+    transition: all 0.2s ease !important;
+    border: none !important;
+    background: transparent !important;
+}
+
+body.dark-mode #modal-full-calendar .cal-day {
+    color: rgba(255, 255, 255, 0.7) !important;
+}
+
+#modal-full-calendar .cal-day:active:not(.empty) {
+    transform: scale(0.88) !important;
+    background: rgba(200, 112, 128, 0.06) !important;
+}
+
+/* Today: elegant filled circle */
+#modal-full-calendar .cal-day.today {
+    background: linear-gradient(145deg, #D4707A, #C05A65) !important;
+    color: white !important;
+    font-weight: 700 !important;
+    box-shadow: 0 4px 14px rgba(200, 90, 100, 0.35) !important;
+    transform: none !important;
+    border: none !important;
+}
+
+body.dark-mode #modal-full-calendar .cal-day.today {
+    background: linear-gradient(145deg, #C87080, #A85A65) !important;
+    box-shadow: 0 4px 14px rgba(200, 90, 100, 0.25) !important;
+}
+
+/* Selected day */
+#modal-full-calendar .cal-day.selected {
+    background: rgba(200, 112, 128, 0.1) !important;
+    color: #C05A65 !important;
+    border: 2px solid rgba(200, 112, 128, 0.4) !important;
+    font-weight: 700 !important;
+}
+
+body.dark-mode #modal-full-calendar .cal-day.selected {
+    background: rgba(232, 165, 165, 0.1) !important;
+    color: #E8A5A5 !important;
+    border-color: rgba(232, 165, 165, 0.3) !important;
+}
+
+/* Event dots — refined */
+#modal-full-calendar .cal-day.has-event::after,
+#modal-full-calendar .cal-day.has-user-event::after {
+    width: 4px !important;
+    height: 4px !important;
+    bottom: 5px !important;
+    background: #D4707A !important;
+}
+
+#modal-full-calendar .cal-day.has-user-event::after {
+    background: #7B8CDE !important;
+}
+
+#modal-full-calendar .cal-day.today.has-event::after,
+#modal-full-calendar .cal-day.today.has-user-event::after {
+    background: white !important;
+}
+
+/* Empty days */
+#modal-full-calendar .cal-day.empty {
+    opacity: 0 !important;
+}
+
+/* --- Events Section: Premium card list --- */
+#modal-full-calendar .section-label-area {
+    padding: 0.5rem 1.8rem 0 !important;
+    margin-top: 0 !important;
+}
+
+#modal-full-calendar .section-label {
+    font-size: 0.72rem !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1.5px !important;
+    color: var(--cal-primary) !important;
+    opacity: 0.8;
+}
+
+#modal-full-calendar #month-events-list {
+    padding: 0.8rem 1.5rem 1.5rem !important;
+    border-top: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+/* Event cards: glassmorphism treatment */
+#modal-full-calendar .event-card-mini {
+    background: rgba(255, 255, 255, 0.6) !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+    border: 1px solid rgba(200, 112, 128, 0.1) !important;
+    border-radius: 16px !important;
+    padding: 12px 16px !important;
+    margin-bottom: 8px !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03) !important;
+    transition: transform 0.2s ease !important;
+}
+
+#modal-full-calendar .event-card-mini:active {
+    transform: scale(0.98) !important;
+}
+
+body.dark-mode #modal-full-calendar .event-card-mini {
+    background: rgba(45, 40, 48, 0.7) !important;
+    border-color: rgba(232, 165, 165, 0.08) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Event date badge inside cards */
+#modal-full-calendar .event-card-mini .event-date-badge {
+    background: rgba(200, 112, 128, 0.1) !important;
+    color: var(--cal-primary) !important;
+    border-radius: 12px !important;
+    font-weight: 800 !important;
+}
+
+body.dark-mode #modal-full-calendar .event-card-mini .event-date-badge {
+    background: rgba(232, 165, 165, 0.1) !important;
+}
+
+/* Calendar Grid spacing */
+#modal-full-calendar #full-calendar-grid {
+    gap: 6px !important;
+    padding: 0.5rem 1.5rem 0.8rem !important;
+}
+
+/* Empty state for events */
+#modal-full-calendar .empty-events-premium {
+    padding: 2rem 1rem !important;
+    opacity: 0.5;
+}
+
+/* --- Dark mode corrections --- */
+body.dark-mode #modal-full-calendar .full-calendar-controls {
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+body.dark-mode #modal-full-calendar #month-events-list {
+    background: transparent !important;
+    box-shadow: none !important;
+}

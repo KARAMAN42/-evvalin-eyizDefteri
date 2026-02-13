@@ -235,25 +235,26 @@ body:has(#home-section.active-section) {
    but usually it's fine. 
 */
 
-/* Compact Countdown Card - User Request Phase 4 (More Breathing Room) */
-/* Compact Countdown Card - User Request Phase 4 (More Breathing Room) */
+/* ====== PREMIUM COUNTDOWN CARD REDESIGN ====== */
 .unified-countdown-card {
     display: flex !important;
     flex-direction: row !important;
     justify-content: center !important;
-    align-items: center !important;
-    padding: 0.2rem !important;
-    gap: 0 !important;
-    min-height: 280px !important;
+    align-items: stretch !important;
+    padding: 10px !important;
+    gap: 10px !important;
+    min-height: 200px !important;
     max-width: 95% !important;
     margin: 0 auto !important;
-    background: rgba(255, 255, 255, 0.25) !important;
-    backdrop-filter: blur(25px);
-    /* Strong glass effect for home cards */
-    -webkit-backdrop-filter: blur(25px);
-    border-radius: 24px;
-    border: 1px solid rgba(255, 255, 255, 0.4);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05) !important;
+    background: rgba(255, 255, 255, 0.15) !important;
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
+    border-radius: 28px;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    box-shadow:
+        0 8px 32px rgba(180, 120, 130, 0.08),
+        0 2px 8px rgba(0, 0, 0, 0.04),
+        inset 0 1px 0 rgba(255, 255, 255, 0.5) !important;
 }
 
 .countdown-info {
@@ -261,79 +262,77 @@ body:has(#home-section.active-section) {
     flex-direction: column;
     justify-content: center;
     align-items: center !important;
-    /* Center text */
-    gap: 0 !important;
+    gap: 2px !important;
     width: 100%;
-    /* Ensure full width for centering */
 }
 
 .countdown-label {
-    font-size: 0.8rem !important;
-    /* Enlarged from 0.6rem */
-    margin-bottom: 2px !important;
-    opacity: 0.7;
-    letter-spacing: 1.5px;
+    font-size: 0.7rem !important;
+    margin-bottom: 4px !important;
+    opacity: 1;
+    letter-spacing: 2.5px;
     text-transform: uppercase;
     line-height: 1;
     text-align: center !important;
-    font-weight: 600;
+    font-weight: 700;
+    font-family: 'Poppins', sans-serif;
 }
 
 .countdown-date {
     display: none !important;
-    /* Hide date to save space per "squeezed" feedback */
 }
 
 .countdown-timer {
-    font-size: 1rem !important;
-    /* Enlarged font */
+    font-size: 0.95rem !important;
     font-weight: 700 !important;
-    margin-top: 6px !important;
-    /* Increased spacing */
-    color: var(--primary-color);
-    line-height: 1.4 !important;
+    margin-top: 8px !important;
+    line-height: 1.3 !important;
     text-align: center !important;
+    letter-spacing: -0.3px;
 }
 
-/* Resize SVGs to be larger icons */
+/* SVG Icons — refined sizing */
 .unified-countdown-card svg,
 .infinity-svg,
 .nikah-svg {
-    width: 36px !important;
-    /* Increased from 28px */
+    width: 42px !important;
     height: auto !important;
-    max-height: 36px !important;
-    margin-bottom: 6px !important;
-    /* More breathing room */
+    max-height: 42px !important;
+    margin-bottom: 10px !important;
     display: block !important;
     margin-left: auto !important;
     margin-right: auto !important;
+    filter: drop-shadow(0 2px 6px rgba(180, 120, 130, 0.3));
 }
 
 .countdown-section {
     flex: 1 !important;
-    /* Force equal width */
     flex-basis: 0 !important;
-    /* Ensure they start from 0 to divide equally */
     display: flex !important;
     flex-direction: column !important;
     align-items: center !important;
     justify-content: center !important;
-    padding: 0.2rem !important;
+    padding: 20px 12px !important;
+    position: relative;
+    overflow: hidden;
+    border-radius: 22px !important;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-/* NiÅŸan & Nikah Sections - Match Home Buttons (Rose Theme) */
-/* Dark Mode Overrides for NiÅŸan/Nikah to match buttons exactly */
+.countdown-section:active {
+    transform: scale(0.97);
+}
+
+/* --- Dark Mode Overrides for Nişan/Nikah sections --- */
 body.dark-mode .countdown-section.nisan,
 body.dark-mode .countdown-section.nikah {
-    background: linear-gradient(135deg, #3E2F32, #36282B) !important;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+    box-shadow:
+        0 6px 20px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
     color: var(--text-color) !important;
-    /* Use theme text color which is light in dark mode */
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-/* Ensure text in Dark Mode uses theme color (light grey/white) */
 body.dark-mode .countdown-section.nisan .countdown-label,
 body.dark-mode .countdown-section.nisan .countdown-timer,
 body.dark-mode .countdown-section.nisan .countdown-date,
@@ -368,72 +367,121 @@ body.dark-mode .countdown-section.nikah .heart-path {
     fill: var(--primary-color) !important;
 }
 
-.countdown-section.nisan,
-.countdown-section.nikah {
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.68), rgba(255, 247, 249, 0.68)) !important;
-    border-radius: 20px !important;
-    margin: 8px !important;
-    /* Slightly more margin */
-    padding: 25px 15px !important;
-    /* Increased padding */
-    height: calc(100% - 16px) !important;
-    /* Fill card height */
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05) !important;
+/* --- Nişan Card: Warm rose gradient --- */
+.countdown-section.nisan {
+    background: linear-gradient(160deg, rgba(255, 240, 243, 0.92), rgba(255, 228, 233, 0.88), rgba(252, 215, 222, 0.85)) !important;
+    border: 1px solid rgba(224, 160, 170, 0.25) !important;
+    box-shadow:
+        0 8px 24px rgba(200, 130, 140, 0.12),
+        inset 0 1px 0 rgba(255, 255, 255, 0.7) !important;
     color: var(--primary-dark) !important;
-    border: 1px solid rgba(255, 255, 255, 0.8) !important;
-    position: relative;
-    overflow: hidden;
-
-
-    display: flex !important;
-    flex-direction: column !important;
-    justify-content: center !important;
 }
 
-body.dark-mode .countdown-section.nisan,
-body.dark-mode .countdown-section.nikah {
-    background: linear-gradient(135deg, rgba(44, 44, 46, 0.95), rgba(58, 58, 60, 0.95)) !important;
-    border-color: rgba(255, 255, 255, 0.1) !important;
-    color: var(--primary-color) !important;
+/* --- Nikah Card: Soft lavender gradient --- */
+.countdown-section.nikah {
+    background: linear-gradient(160deg, rgba(243, 237, 255, 0.92), rgba(232, 225, 250, 0.88), rgba(220, 215, 245, 0.85)) !important;
+    border: 1px solid rgba(170, 155, 210, 0.25) !important;
+    box-shadow:
+        0 8px 24px rgba(150, 130, 190, 0.12),
+        inset 0 1px 0 rgba(255, 255, 255, 0.7) !important;
+    color: #6B5B8A !important;
 }
 
-.countdown-section.nisan .countdown-timer,
-.countdown-section.nikah .countdown-timer {
-    color: var(--primary-color) !important;
+/* Nişan label & timer colors */
+.countdown-section.nisan .countdown-label {
+    color: #C4707A !important;
+    opacity: 1 !important;
 }
 
-/* Ensure labels are readable */
-.countdown-section.nisan .countdown-label,
+.countdown-section.nisan .countdown-timer {
+    color: #B85C66 !important;
+}
+
+/* Nikah label & timer colors */
 .countdown-section.nikah .countdown-label {
-    color: var(--text-light) !important;
-    opacity: 0.8;
+    color: #8A77B0 !important;
+    opacity: 1 !important;
 }
 
-body.dark-mode .countdown-section.nisan .countdown-label,
+.countdown-section.nikah .countdown-timer {
+    color: #7462A0 !important;
+}
+
+/* Nikah SVG uses purple stroke */
+.countdown-section.nikah .heart-path {
+    stroke: #8A77B0 !important;
+    fill: none !important;
+}
+
+/* Dark Mode: Nişan */
+body.dark-mode .countdown-section.nisan {
+    background: linear-gradient(160deg, rgba(60, 35, 40, 0.95), rgba(50, 28, 33, 0.9)) !important;
+    border-color: rgba(232, 165, 165, 0.15) !important;
+    box-shadow:
+        0 8px 24px rgba(0, 0, 0, 0.35),
+        inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
+}
+
+body.dark-mode .countdown-section.nisan .countdown-label {
+    color: #E8A5A5 !important;
+}
+
+body.dark-mode .countdown-section.nisan .countdown-timer {
+    color: #E8A5A5 !important;
+}
+
+/* Dark Mode: Nikah */
+body.dark-mode .countdown-section.nikah {
+    background: linear-gradient(160deg, rgba(40, 35, 60, 0.95), rgba(33, 28, 50, 0.9)) !important;
+    border-color: rgba(160, 140, 210, 0.15) !important;
+    box-shadow:
+        0 8px 24px rgba(0, 0, 0, 0.35),
+        inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
+}
+
 body.dark-mode .countdown-section.nikah .countdown-label {
-    color: var(--primary-light) !important;
+    color: #B0A0D0 !important;
 }
 
-/* Glass Shine Effect */
+body.dark-mode .countdown-section.nikah .countdown-timer {
+    color: #B0A0D0 !important;
+}
+
+body.dark-mode .countdown-section.nikah .heart-path {
+    stroke: #B0A0D0 !important;
+}
+
+/* Shimmer shine effect on cards */
 .countdown-section::before {
     content: '';
     position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+    top: -60%;
+    left: -60%;
+    width: 220%;
+    height: 220%;
+    background: radial-gradient(ellipse at 30% 30%,
+            rgba(255, 255, 255, 0.25) 0%,
+            rgba(255, 255, 255, 0.05) 30%,
+            transparent 60%);
     pointer-events: none;
+    animation: shimmerRotate 8s linear infinite;
 }
 
-body.dark-mode .countdown-section.nisan,
-body.dark-mode .countdown-section.nikah {
-    background: linear-gradient(135deg, rgba(60, 40, 45, 0.9), rgba(40, 30, 35, 0.8)) !important;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), inset 0 0 10px rgba(255, 255, 255, 0.05) !important;
+@keyframes shimmerRotate {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
-.countdown-section svg {
-    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+body.dark-mode .countdown-section::before {
+    background: radial-gradient(ellipse at 30% 30%,
+            rgba(255, 255, 255, 0.06) 0%,
+            rgba(255, 255, 255, 0.02) 30%,
+            transparent 60%);
 }
 
 /* Adjust Divider */
@@ -456,7 +504,7 @@ body.dark-mode .countdown-section.nikah {
 /* FIX: Toast Container shouldn't block clicks when empty/invisible */
 #toast-container {
     pointer-events: none;
-    z-index: 9999;
+    z-index: 2147483647 !important;
 }
 
 #toast-container .toast-content,
