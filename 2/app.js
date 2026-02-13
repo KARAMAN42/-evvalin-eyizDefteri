@@ -1329,9 +1329,59 @@ document.addEventListener('DOMContentLoaded', () => {
 
         function getZoomState(idx) {
             if (!zoomStates[idx]) {
-                zoomStates[idx] = { scale: 1, posX: 0, posY: 0, lastPosX: 0, lastPosY: 0, lastScale: 1, isDragging: false };
+                zoomStates[idx] = {
+                    scale: 1, posX: 0, posY: 0,
+                    lastPosX: 0, lastPosY: 0, lastScale: 1,
+                    isDragging: false, lastTap: 0,
+                    pinchMidX: 0, pinchMidY: 0
+                };
             }
             return zoomStates[idx];
+        }
+
+        // Pan sınırlarını hesapla ve uygula
+        function clampPan(state, idx) {
+            const wrapper = document.getElementById(`zoom-wrapper-${idx}`);
+            if (!wrapper || state.scale <= 1) {
+                state.posX = 0;
+                state.posY = 0;
+                return;
+            }
+
+            const slide = wrapper.closest('.viewer-slide');
+            if (!slide) return;
+
+            const slideW = slide.clientWidth;
+            const slideH = slide.clientHeight;
+
+            // Görüntünün gerçek boyutlarını hesapla (object-fit: contain mantığıyla)
+            const img = wrapper.querySelector('img');
+            if (!img) return;
+
+            const imgNatW = img.naturalWidth || slideW;
+            const imgNatH = img.naturalHeight || slideH;
+            const imgAspect = imgNatW / imgNatH;
+            const slideAspect = slideW / slideH;
+
+            let renderedW, renderedH;
+            if (imgAspect > slideAspect) {
+                renderedW = slideW;
+                renderedH = slideW / imgAspect;
+            } else {
+                renderedH = slideH;
+                renderedW = slideH * imgAspect;
+            }
+
+            // Zoom uygulandığında genişleme miktarı
+            const scaledW = renderedW * state.scale;
+            const scaledH = renderedH * state.scale;
+
+            // Ekrana sığmayan kısım kadar kaydırılabilir
+            const maxPanX = Math.max(0, (scaledW - slideW) / 2);
+            const maxPanY = Math.max(0, (scaledH - slideH) / 2);
+
+            state.posX = Math.min(maxPanX, Math.max(-maxPanX, state.posX));
+            state.posY = Math.min(maxPanY, Math.max(-maxPanY, state.posY));
         }
 
         function applyZoomTransform(idx) {
@@ -1347,8 +1397,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 isPanning = false;
                 isSwiping = false;
                 const state = getZoomState(currentViewerIndex);
-                state.initialDist = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY);
+                state.initialDist = Math.hypot(
+                    e.touches[0].pageX - e.touches[1].pageX,
+                    e.touches[0].pageY - e.touches[1].pageY
+                );
                 state.lastScale = state.scale;
+                state.lastPosX = state.posX;
+                state.lastPosY = state.posY;
+
+                // Pinch odak noktası (iki parmağın ortası)
+                state.pinchMidX = (e.touches[0].pageX + e.touches[1].pageX) / 2;
+                state.pinchMidY = (e.touches[0].pageY + e.touches[1].pageY) / 2;
+
             } else if (e.touches.length === 1) {
                 startX = e.touches[0].pageX;
                 startY = e.touches[0].pageY;
@@ -1357,13 +1417,31 @@ document.addEventListener('DOMContentLoaded', () => {
                 state.lastTouchY = startY - state.posY;
                 state.isDragging = true;
 
-                // Double Tap Check
+                // Double Tap Check — zoom toggle
                 const now = Date.now();
                 if (now - (state.lastTap || 0) < 300) {
-                    state.scale = state.scale > 1 ? 1 : 2.5;
-                    if (state.scale === 1) { state.posX = 0; state.posY = 0; }
+                    if (state.scale > 1) {
+                        // Sıfırla
+                        state.scale = 1;
+                        state.posX = 0;
+                        state.posY = 0;
+                    } else {
+                        // Dokunulan noktaya zoom yap
+                        state.scale = 2.5;
+                        const wrapper = document.getElementById(`zoom-wrapper-${currentViewerIndex}`);
+                        if (wrapper) {
+                            const rect = wrapper.getBoundingClientRect();
+                            const cx = rect.left + rect.width / 2;
+                            const cy = rect.top + rect.height / 2;
+                            // Dokunulan nokta merkeze gelsin
+                            state.posX = (cx - startX) * (state.scale - 1);
+                            state.posY = (cy - startY) * (state.scale - 1);
+                        }
+                        clampPan(state, currentViewerIndex);
+                    }
                     applyZoomTransform(currentViewerIndex);
                     state.lastTap = 0;
+                    state.isDragging = false; // çift tıklama sonrası sürükleme olmasın
                 } else {
                     state.lastTap = now;
                 }
@@ -1375,9 +1453,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (e.touches.length === 2) {
                 e.preventDefault();
-                const dist = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY);
-                state.scale = Math.min(Math.max(1, (dist / state.initialDist) * state.lastScale), 4);
+                const newDist = Math.hypot(
+                    e.touches[0].pageX - e.touches[1].pageX,
+                    e.touches[0].pageY - e.touches[1].pageY
+                );
+                const newScale = Math.min(Math.max(1, (newDist / state.initialDist) * state.lastScale), 4);
+
+                // Yeni pinch ortası
+                const newMidX = (e.touches[0].pageX + e.touches[1].pageX) / 2;
+                const newMidY = (e.touches[0].pageY + e.touches[1].pageY) / 2;
+
+                // Focal point bazlı pozisyon hesabı:
+                // Pinch ortasının wrapper'daki konumu aynı kalmalı
+                const scaleRatio = newScale / state.lastScale;
+                state.posX = newMidX - state.pinchMidX + state.lastPosX * scaleRatio;
+                state.posY = newMidY - state.pinchMidY + state.lastPosY * scaleRatio;
+                state.scale = newScale;
+
+                clampPan(state, currentViewerIndex);
                 applyZoomTransform(currentViewerIndex);
+
             } else if (e.touches.length === 1 && state.isDragging) {
                 const moveX = e.touches[0].pageX;
                 const moveY = e.touches[0].pageY;
@@ -1385,14 +1480,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 const dy = moveY - startY;
 
                 if (state.scale > 1) {
-                    // Panning inside zoomed image
+                    // Zoom yapılmış halde sürükleme (pan)
                     e.preventDefault();
                     isPanning = true;
                     state.posX = moveX - state.lastTouchX;
                     state.posY = moveY - state.lastTouchY;
+                    clampPan(state, currentViewerIndex);
                     applyZoomTransform(currentViewerIndex);
                 } else {
-                    // Potential Swiping between images
+                    // Slaytlar arası kaydırma (swipe)
                     if (Math.abs(dx) > Math.abs(dy) * 1.5) {
                         e.preventDefault();
                         isSwiping = true;
@@ -1421,26 +1517,51 @@ document.addEventListener('DOMContentLoaded', () => {
                 isSwiping = false;
             }
 
-            // Parmak çekildiğinde zoom'u sıfırla, eski yerine dönsün
-            if (state.scale !== 1 || state.posX !== 0 || state.posY !== 0) {
+            // Zoom 1'in altına düşmüşse veya çok yakınsa sıfırla (snap)
+            if (state.scale <= 1.05) {
                 state.scale = 1;
                 state.posX = 0;
                 state.posY = 0;
                 state.lastScale = 1;
-                state.isDragging = false;
-                applyZoomTransform(currentViewerIndex); // Animasyonlu geri dönüş
+                applyZoomTransform(currentViewerIndex);
+            } else {
+                // Zoom korunsun, sadece sınırları kontrol et
+                clampPan(state, currentViewerIndex);
+                applyZoomTransform(currentViewerIndex);
             }
             isPanning = false;
         });
 
-        // Close triggers
+        // Close triggers — zoom sıfırlama
         modal.querySelectorAll('.viewer-close-trigger').forEach(btn => {
-            btn.addEventListener('click', () => window.closeModalHelper(modal));
+            btn.addEventListener('click', () => {
+                // Tüm zoom state'lerini sıfırla
+                Object.keys(zoomStates).forEach(k => {
+                    zoomStates[k].scale = 1;
+                    zoomStates[k].posX = 0;
+                    zoomStates[k].posY = 0;
+                    zoomStates[k].lastScale = 1;
+                    const w = document.getElementById(`zoom-wrapper-${k}`);
+                    if (w) w.style.transform = '';
+                });
+                window.closeModalHelper(modal);
+            });
         });
 
         // Modal backdrop click
         modal.addEventListener('click', (e) => {
             if (e.target === modal || e.target.classList.contains('viewer-container')) {
+                // Zoom state sıfırla
+                const state = getZoomState(currentViewerIndex);
+                if (state.scale > 1) {
+                    // Zoom varsa sadece zoom'u sıfırla, modal kapama
+                    state.scale = 1;
+                    state.posX = 0;
+                    state.posY = 0;
+                    state.lastScale = 1;
+                    applyZoomTransform(currentViewerIndex);
+                    return; // Modalı kapatma, sadece zoom sıfırla
+                }
                 window.closeModalHelper(modal);
             }
         });
