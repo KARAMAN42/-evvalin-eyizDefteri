@@ -2667,6 +2667,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             if (typeof firebase === 'undefined') {
+                alert("⚠️ DEBUG: Firebase SDK Yüklü Değil!");
                 console.warn("☁️ Firebase SDK henüz yüklenmemiş.");
                 if (window.showToast) window.showToast('⚠️ Firebase yüklenemedi. İnternet bağlantınızı kontrol edin.');
                 return;
@@ -2710,6 +2711,7 @@ document.addEventListener('DOMContentLoaded', () => {
         unsubscribes.push(docRef.onSnapshot(doc => {
             if (doc.exists) {
                 const remote = doc.data();
+                if (window.showToast) window.showToast('📥 Veri alındı (Kontrol ediliyor...)');
                 handleRemoteData(remote);
             }
         }));
@@ -2744,8 +2746,21 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     window.syncToCloud = async function () {
-        if (!syncActive || !db || !settings.syncCode) return;
+        console.log("☁️ syncToCloud çağrıldı. Durum:", {
+            active: syncActive,
+            db: !!db,
+            code: settings.syncCode
+        });
+
+        if (!syncActive || !db || !settings.syncCode) {
+            console.warn("☁️ Sync iptal: Gerekli koşullar sağlanmadı.");
+            if (window.showToast) window.showToast('⚠️ Sync İptal: Bağlantı yok veya kod eksik.');
+            return;
+        }
         const code = settings.syncCode.trim().toUpperCase();
+
+        // Debug Toast
+        // if (window.showToast) window.showToast('📤 Veri buluta gönderiliyor...');
 
         try {
             await db.collection("families").doc(code).set({
@@ -2755,8 +2770,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 lastUpdated: new Date().toISOString()
             });
             console.log("☁️ Veriler buluta itildi.");
+            if (window.showToast) window.showToast('☁️ Veriler güncellendi.');
         } catch (err) {
             console.warn("Cloud Push Failed:", err);
+            if (window.showToast) window.showToast('❌ Gönderme hatası: ' + err.message);
         }
     };
 
@@ -2882,6 +2899,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Auto-init cloud sync if code exists
+        // alert("🐛 DEBUG: setupDataSafetyListeners Bitti -> initCloudSync Çağrılıyor");
         initCloudSync();
     }
 
@@ -3688,6 +3706,8 @@ document.addEventListener('DOMContentLoaded', () => {
     initTheme(); // Tema tercihini uygula
     setupThemeListeners(); // Dinleyiciyi tak (Not: Modal DOM'da statikse çalışır)
     setupSettingsListeners(); // Ayarlar ve tarih dinleyicileri
+    setupSettingsListeners(); // Ayarlar ve tarih dinleyicileri
+    // alert("🐛 DEBUG: setupDataSafetyListeners Çağrılıyor...");
     setupDataSafetyListeners(); // Veri Güvenliği ve Bulut Senkronizasyonu (YENİ)
     setupBudgetListeners(); // Bütçe dinleyicileri (YENİ)
     setupReorderListeners(); // Sıralama dinleyicileri (YENİ)
