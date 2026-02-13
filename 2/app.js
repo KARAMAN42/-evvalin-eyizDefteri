@@ -222,26 +222,28 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function saveData() {
+    function saveData(options = {}) {
         try {
-            const dataToSave = JSON.stringify({
+            localStorage.setItem(STORAGE_KEY, JSON.stringify({
                 items,
                 userCategories,
-                settings,
-                version: '2.0',
-                lastUpdate: new Date().toISOString()
-            });
+                settings
+            }));
 
-            localStorage.setItem(STORAGE_KEY, dataToSave);
-
-            // Secondary backup for safety
-            localStorage.setItem(STORAGE_KEY + '_safe_copy', dataToSave);
+            // Güvenli Kopya (Her kayıtta alıyoruz)
+            localStorage.setItem(STORAGE_KEY + '_safe_copy', JSON.stringify({
+                items,
+                userCategories,
+                settings
+            }));
 
             console.log("💾 Veri kaydedildi (Asıl + Güvenli Kopya).");
             updateStats();
 
             // Trigger Cloud Sync if active
-            if (window.syncToCloud) window.syncToCloud();
+            if (window.syncToCloud && !options.suppressSync) {
+                window.syncToCloud();
+            }
         } catch (e) {
             console.error("❌ Veri kaydetme hatası:", e);
         }
@@ -909,12 +911,106 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // Ürün Silme
+    // Ürün Silme & Geri Alma (Undo)
+    let lastDeletedItem = null;
+    let undoTimeout = null;
+
     window.deleteItem = function (id) {
-        items = items.filter(i => i.id !== id);
+        const index = items.findIndex(i => i.id === id);
+        if (index === -1) return;
+
+        // Yedeği Al
+        lastDeletedItem = { item: items[index], index: index };
+
+        // Sil
+        items.splice(index, 1);
         saveData();
         renderApp();
         console.log("🗑️ Ürün silindi.");
+
+        // Undo Toast Göster
+        showUndoToast("Ürün silindi.", () => {
+            if (lastDeletedItem) {
+                items.splice(lastDeletedItem.index, 0, lastDeletedItem.item);
+                saveData();
+                renderApp();
+                lastDeletedItem = null;
+                if (window.showToast) window.showToast("♻️ Ürün geri getirildi!");
+            }
+        });
     };
+
+    function showUndoToast(message, onUndo) {
+        // Varsa eski toast'u kaldır
+        const existing = document.getElementById('toast-undo-container');
+        if (existing) existing.remove();
+
+        const toast = document.createElement('div');
+        toast.id = 'toast-undo-container';
+        toast.className = 'toast-container'; // Existing CSS class
+        // Override styles for positioning if needed, or rely on CSS
+        toast.style.position = 'fixed';
+        toast.style.bottom = '90px'; // Fab üstünde
+        toast.style.left = '50%';
+        toast.style.transform = 'translateX(-50%)';
+        toast.style.zIndex = '10000';
+        toast.style.display = 'flex';
+        toast.style.alignItems = 'center';
+        toast.style.animation = 'fadeInUp 0.3s ease forwards';
+
+        toast.innerHTML = `
+            <span>${message}</span>
+            <button id="btn-undo-action" style="
+                background: rgba(255,255,255,0.25); 
+                border: 1px solid rgba(255,255,255,0.4);
+                color: white; 
+                padding: 4px 12px; 
+                border-radius: 20px; 
+                margin-left: 12px; 
+                cursor: pointer;
+                font-weight: 600;
+                font-size: 0.9rem;
+                display: flex;
+                align-items: center;
+                gap: 5px;
+            ">
+                <i class="fas fa-undo"></i> Geri Al
+            </button>
+            <button id="btn-dismiss-undo" style="
+                background: transparent;
+                border: none;
+                color: rgba(255,255,255,0.8);
+                margin-left: 8px;
+                font-size: 1.2rem;
+                cursor: pointer;
+            ">&times;</button>
+        `;
+
+        document.body.appendChild(toast);
+
+        // Auto Dismiss
+        if (undoTimeout) clearTimeout(undoTimeout);
+        undoTimeout = setTimeout(() => {
+            if (toast && toast.parentNode) {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(-50%) translateY(20px)';
+                toast.style.transition = 'all 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }
+        }, 5000); // 5 saniye bekle
+
+        // Listeners
+        document.getElementById('btn-undo-action').addEventListener('click', () => {
+            onUndo();
+            toast.remove();
+            clearTimeout(undoTimeout);
+        });
+
+        document.getElementById('btn-dismiss-undo').addEventListener('click', () => {
+            toast.remove();
+            clearTimeout(undoTimeout);
+        });
+    }
 
     // Ürün Detay Değişkeni (Global ID takibi için)
     let currentDetailId = null;
@@ -2667,7 +2763,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             if (typeof firebase === 'undefined') {
-                alert("⚠️ DEBUG: Firebase SDK Yüklü Değil!");
                 console.warn("☁️ Firebase SDK henüz yüklenmemiş.");
                 if (window.showToast) window.showToast('⚠️ Firebase yüklenemedi. İnternet bağlantınızı kontrol edin.');
                 return;
@@ -2681,9 +2776,7 @@ document.addEventListener('DOMContentLoaded', () => {
             syncActive = true;
             console.log("☁️ Bulut bağlantısı kuruldu (Kod: " + syncCode + ")");
 
-            setupCloudListeners(syncCode);
-
-            // Update UI
+            // UI Update
             const btnConnect = document.getElementById('btn-sync-connect');
             const btnDisconnect = document.getElementById('btn-sync-disconnect');
             const codeInput = document.getElementById('setting-cloud-code');
@@ -2694,6 +2787,36 @@ document.addEventListener('DOMContentLoaded', () => {
                 codeInput.value = syncCode;
                 codeInput.disabled = true;
             }
+
+            // --- SYNC PRIORITY LOGIC ---
+            // İlk bağlantıda: Bulutta veri varsa yereli ez (Client is Mirror)
+            // Bulut boşsa: Yereli gönder (Client is Source)
+            const docRef = db.collection("families").doc(syncCode);
+            try {
+                if (window.showToast) window.showToast('☁️ Bulut verisi kontrol ediliyor...');
+                const doc = await docRef.get();
+                if (doc.exists) {
+                    const remote = doc.data();
+                    if (remote && remote.items && remote.items.length > 0) {
+                        console.log("📥 Bulutta veri bulundu, yerel veri güncelleniyor...");
+                        handleRemoteData(remote);
+                        if (window.showToast) window.showToast('✅ Buluttaki veriler yüklendi.');
+                    } else {
+                        // Bulut var ama item yoksa veya boşsa, yerel veriyi gönder (Merge riski almamak için)
+                        console.log("☁️ Bulut boş görünüyor, yerel veri gönderiliyor...");
+                        await window.syncToCloud();
+                    }
+                } else {
+                    console.log("☁️ Bulutta kayıt yok, yerel veri gönderiliyor...");
+                    await window.syncToCloud();
+                }
+            } catch (checkErr) {
+                console.error("Sync Check Error:", checkErr);
+                // Hata durumunda (internet vs) listener'ı yine de başlatmayı dene
+            }
+
+            setupCloudListeners(syncCode);
+
         } catch (err) {
             console.error("Firebase Init Error:", err);
             if (window.showToast) window.showToast('❌ Bağlantı hatası: ' + err.message);
