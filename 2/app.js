@@ -239,6 +239,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
             console.log("💾 Veri kaydedildi (Asıl + Güvenli Kopya).");
             updateStats();
+
+            // Trigger Cloud Sync if active
+            if (window.syncToCloud) window.syncToCloud();
         } catch (e) {
             console.error("❌ Veri kaydetme hatası:", e);
         }
