@@ -2644,7 +2644,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function initCloudSync() {
         const syncCode = (settings.syncCode || "").trim().toUpperCase();
-        if (!syncCode || syncCode.length < 4) return;
+
+        // If no code, ensure UI is ready for new connection
+        if (!syncCode || syncCode.length < 4) {
+            const codeInput = document.getElementById('setting-cloud-code');
+            const btnConnect = document.getElementById('btn-sync-connect');
+            if (codeInput) {
+                codeInput.disabled = false;
+                codeInput.value = "";
+            }
+            if (btnConnect) {
+                btnConnect.disabled = false;
+                btnConnect.innerHTML = "Bağlan";
+                btnConnect.style.background = "";
+                btnConnect.style.borderColor = "";
+            }
+            return;
+        }
 
         try {
             if (typeof firebase === 'undefined') {
@@ -2662,6 +2678,18 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log("☁️ Bulut bağlantısı kuruldu (Kod: " + syncCode + ")");
 
             setupCloudListeners(syncCode);
+
+            // Update UI
+            const btnConnect = document.getElementById('btn-sync-connect');
+            const btnDisconnect = document.getElementById('btn-sync-disconnect');
+            const codeInput = document.getElementById('setting-cloud-code');
+
+            if (btnConnect) btnConnect.style.display = 'none';
+            if (btnDisconnect) btnDisconnect.style.display = 'block';
+            if (codeInput) {
+                codeInput.value = syncCode;
+                codeInput.disabled = true;
+            }
         } catch (err) {
             console.error("Firebase Init Error:", err);
             if (window.showToast) window.showToast('❌ Bağlantı hatası: ' + err.message);
@@ -2835,8 +2863,57 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
+        // Sync Disconnect
+        const btnDisconnect = document.getElementById('btn-sync-disconnect');
+        if (btnDisconnect) {
+            btnDisconnect.addEventListener('click', () => {
+                window.showConfirm(
+                    'Bağlantıyı Kes',
+                    'Bulut bağlantısını kesmek istediğinize emin misiniz?',
+                    () => {
+                        disconnectFromCloud();
+                    },
+                    "Bağlantıyı Kes"
+                );
+            });
+        }
+
         // Auto-init cloud sync if code exists
         initCloudSync();
+    }
+
+    // DISCONNECT FUNCTION
+    function disconnectFromCloud() {
+        console.log("🔌 Bulut bağlantısı kesiliyor...");
+
+        // 1. Unsubscribe listeners
+        unsubscribes.forEach(u => u());
+        unsubscribes = [];
+        syncActive = false;
+
+        // 2. Clear Settings
+        settings.syncCode = "";
+        saveData();
+
+        // 3. Reset UI
+        const btnConnect = document.getElementById('btn-sync-connect');
+        const btnDisconnect = document.getElementById('btn-sync-disconnect');
+        const codeInput = document.getElementById('setting-cloud-code');
+
+        if (btnConnect) {
+            btnConnect.style.display = 'block';
+            btnConnect.innerHTML = "Bağlan";
+            btnConnect.disabled = false;
+            btnConnect.style.background = ""; // Reset to default
+            btnConnect.style.borderColor = "";
+        }
+        if (btnDisconnect) btnDisconnect.style.display = 'none';
+        if (codeInput) {
+            codeInput.value = "";
+            codeInput.disabled = false;
+        }
+
+        if (window.showToast) window.showToast('🔌 Bağlantı kesildi.');
     }
 
 
@@ -3745,7 +3822,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // if (!hasDemoItem) ...
 
     // KİŞİSELLEŞTİRİLMİŞ ONAY MODALI
-    window.showConfirm = function (title, message, onConfirm) {
+    window.showConfirm = function (title, message, onConfirm, confirmBtnText = "Evet, Sil") {
         const modal = document.getElementById('modal-confirmation');
         const titleEl = document.getElementById('confirm-title');
         const msgEl = document.getElementById('confirm-message');
@@ -3755,6 +3832,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         titleEl.textContent = title;
         msgEl.innerHTML = message.replace(/\n/g, '<br>');
+        if (btnConfirm) btnConfirm.textContent = confirmBtnText;
 
         // Temizle ve yeni listener ekle (Clone methodu ile eski listenerları sil)
         const newBtn = btnConfirm.cloneNode(true);
