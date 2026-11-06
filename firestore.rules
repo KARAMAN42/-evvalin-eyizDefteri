@@ -1,0 +1,20 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    // Bu uygulama yalnızca önceden oluşturulmuş Firebase Auth hesapları içindir.
+    // Üretimde daha dar UID/e-posta izin listesi kullanılması önerilir.
+    match /products/{document=**} {
+      allow read, write: if signedIn();
+    }
+    match /categories/{document=**} {
+      allow read, write: if signedIn();
+    }
+    match /settings/{document=**} {
+      allow read, write: if signedIn();
+    }
+  }
+}
