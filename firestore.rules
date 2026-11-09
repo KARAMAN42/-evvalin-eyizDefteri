@@ -5,8 +5,8 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    // Bu uygulama yalnızca önceden oluşturulmuş Firebase Auth hesapları içindir.
-    // Üretimde daha dar UID/e-posta izin listesi kullanılması önerilir.
+    // Uygulama giriş ekranı göstermeden Firebase anonim oturumu açar.
+    // Ortak koleksiyonlar Şevval ve Yusuf'un cihazları arasında paylaşılır.
     match /products/{document=**} {
       allow read, write: if signedIn();
     }

@@ -19,13 +19,13 @@ npm run build
 
 ## Veri ve kimlik doğrulama
 
-- Firebase Authentication e-posta/şifre ile giriş sağlar.
+- Firebase Authentication arka planda anonim oturum açar; kullanıcıdan e-posta veya şifre istenmez.
 - Firestore `products`, `categories` ve `settings/main` yolları gerçek zamanlı dinlenir.
 - Firestore kalıcı yerel önbelleği çevrimdışı kullanım ve yeniden bağlanma desteği sağlar.
 - Görseller Firebase Storage altında `products/{uid}/...` yoluna yüklenir.
 - JSON yedekleme/geri yükleme ve CSV dışa aktarma bulunur.
 
-Firebase istemci yapılandırması gizli değildir; gerçek güvenlik Firestore ve Storage kurallarına bağlıdır. Bu depodaki `firestore.rules` yalnızca oturum açmış kullanıcıları kabul eder. Firebase projesinde iki kullanıcı dışında hesap bulunacaksa kurallar UID veya e-posta izin listesiyle daha da daraltılmalıdır.
+Firebase istemci yapılandırması gizli değildir; gerçek güvenlik Firestore ve Storage kurallarına bağlıdır. Bu depodaki `firestore.rules` yalnızca Firebase tarafından oluşturulmuş oturumları kabul eder. Giriş ekranı bulunmadığı için canlı uygulamanın adresini bilen bir kişi anonim oturum oluşturabilir; uygulama bağlantısı yalnızca Şevval ve Yusuf ile paylaşılmalıdır.
 
 ## Dağıtım
 

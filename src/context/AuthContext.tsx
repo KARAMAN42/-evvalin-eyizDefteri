@@ -7,8 +7,7 @@ import {
 } from 'react';
 import {
   onAuthStateChanged,
-  signInWithEmailAndPassword,
-  signOut,
+  signInAnonymously,
   type User,
 } from 'firebase/auth';
 import { auth } from '../firebase';
@@ -16,8 +15,8 @@ import { auth } from '../firebase';
 interface AuthContextValue {
   user: User | null;
   loading: boolean;
-  signIn: (email: string, password: string) => Promise<void>;
-  logOut: () => Promise<void>;
+  error: string;
+  retry: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -25,25 +24,37 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  async function startAnonymousSession() {
+    setLoading(true);
+    setError('');
+    try {
+      const credential = await signInAnonymously(auth);
+      setUser(credential.user);
+    } catch (sessionError) {
+      console.error('Firebase anonim oturum hatası', sessionError);
+      setError('Ortak bulut alanına bağlanılamadı. İnternet bağlantını kontrol edip tekrar dene.');
+    } finally {
+      setLoading(false);
+    }
+  }
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-      setUser(firebaseUser);
-      setLoading(false);
+      if (firebaseUser) {
+        setUser(firebaseUser);
+        setError('');
+        setLoading(false);
+        return;
+      }
+      void startAnonymousSession();
     });
     return unsubscribe;
   }, []);
 
-  async function signIn(email: string, password: string) {
-    await signInWithEmailAndPassword(auth, email, password);
-  }
-
-  async function logOut() {
-    await signOut(auth);
-  }
-
   return (
-    <AuthContext.Provider value={{ user, loading, signIn, logOut }}>
+    <AuthContext.Provider value={{ user, loading, error, retry: startAnonymousSession }}>
       {children}
     </AuthContext.Provider>
   );

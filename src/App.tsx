@@ -10,7 +10,6 @@ import { ToastProvider } from './components/Toast';
 import { AppProvider, useApp } from './context/AppContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { DashboardPage } from './pages/DashboardPage';
-import { LoginPage } from './pages/LoginPage';
 
 const ProductsPage = lazy(() => import('./pages/ProductsPage').then((module) => ({ default: module.ProductsPage })));
 const StatisticsPage = lazy(() => import('./pages/StatisticsPage').then((module) => ({ default: module.StatisticsPage })));
@@ -24,9 +23,10 @@ function Application() {
   return <><Routes><Route element={<Layout />}><Route index element={<DashboardPage />} /><Route path="/urunler" element={<ProductsPage />} /><Route path="/istatistik" element={<StatisticsPage />} /><Route path="/ayarlar" element={<SettingsPage />} /><Route path="*" element={<Navigate to="/" replace />} /></Route></Routes><ProductForm /></>;
 }
 function AuthGate() {
-  const { user, loading } = useAuth();
+  const { user, loading, error, retry } = useAuth();
   if (loading) return <Loading />;
-  return user ? <AppProvider><Application /></AppProvider> : <LoginPage />;
+  if (error) return <div className="login-root"><div className="login-card"><div className="login-logo"><Heart fill="currentColor" /></div><h1>Bağlantı kurulamadı</h1><p>{error}</p><button className="btn-primary login-button" type="button" onClick={() => void retry()}><RefreshCcw />Tekrar dene</button></div></div>;
+  return user ? <AppProvider><Application /></AppProvider> : <Loading />;
 }
 function UpdatePrompt() {
   const { needRefresh: [needRefresh, setNeedRefresh], updateServiceWorker } = useRegisterSW();
