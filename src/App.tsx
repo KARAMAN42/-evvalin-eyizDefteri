@@ -1,5 +1,4 @@
-import { useRegisterSW } from 'virtual:pwa-register/react';
-import { Heart, RefreshCcw, X } from 'lucide-react';
+import { Heart, RefreshCcw } from 'lucide-react';
 import { lazy } from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { ErrorBoundary } from './components/ErrorBoundary';
@@ -28,11 +27,6 @@ function AuthGate() {
   if (error) return <div className="login-root"><div className="login-card"><div className="login-logo"><Heart fill="currentColor" /></div><h1>Bağlantı kurulamadı</h1><p>{error}</p><button className="btn-primary login-button" type="button" onClick={() => void retry()}><RefreshCcw />Tekrar dene</button></div></div>;
   return user ? <AppProvider><Application /></AppProvider> : <Loading />;
 }
-function UpdatePrompt() {
-  const { needRefresh: [needRefresh, setNeedRefresh], updateServiceWorker } = useRegisterSW();
-  if (!needRefresh) return null;
-  return <div className="update-banner"><RefreshCcw /><span>Uygulamanın yeni sürümü hazır.</span><button onClick={() => void updateServiceWorker(true)}>Güncelle</button><button onClick={() => setNeedRefresh(false)} aria-label="Kapat"><X /></button></div>;
-}
 export default function App() {
-  return <ErrorBoundary><ToastProvider><AuthProvider><BrowserRouter><AuthGate /></BrowserRouter><UpdatePrompt /></AuthProvider></ToastProvider></ErrorBoundary>;
+  return <ErrorBoundary><ToastProvider><AuthProvider><BrowserRouter><AuthGate /></BrowserRouter></AuthProvider></ToastProvider></ErrorBoundary>;
 }
