@@ -11,7 +11,7 @@
     "preview": "vite preview"
   },
   "engines": {
-    "node": ">=22"
+    "node": "22.x"
   },
   "overrides": {
     "@grpc/grpc-js": "^1.13.6"
